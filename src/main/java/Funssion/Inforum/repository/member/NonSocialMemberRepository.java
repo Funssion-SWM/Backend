@@ -1,7 +1,7 @@
-package Funssion.Inforum.db.repository.member;
+package Funssion.Inforum.repository.member;
 
-import Funssion.Inforum.db.entity.member.Dao_Member;
-import Funssion.Inforum.model.member.Dto_Member;
+import Funssion.Inforum.entity.member.Member;
+import Funssion.Inforum.dto.member.Dto_Member;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -25,50 +25,55 @@ public class NonSocialMemberRepository implements MemberRepository{
     }
     @Override
     //DAO 의 Member 객체로 정의
-    public Dto_Member save(Dto_Member member) {
+    public Member save(Member member) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(this.jdbcTemplate);
         //----------------- member_user 테이블 insert ----------------//
-        jdbcInsert.withTableName("member.user").usingGeneratedKeyColumns("user_id");
-
+        jdbcInsert.withSchemaName("MEMBER").withTableName("USER").usingGeneratedKeyColumns("user_id");
+        System.out.println("real");
         Map<String, Object> userTable = new HashMap<>(3);
+        System.out.printf("checking %s",member.getUser_name());
         userTable.put("user_name", member.getUser_name());
-        userTable.put("login_type", 0);
+        userTable.put("login_type", 1);
         LocalDateTime currentDateTime = LocalDateTime.now();
         userTable.put("user_createdAt",currentDateTime);
+        Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(userTable));
+        member.setUser_id(key.longValue());
+        return member;
         //----------------------------------------------------------//
 
         //---------------- auth_nonsocial 테이블 insert -------------//
-        jdbcInsert.withTableName("member.auth_nonsocial").usingGeneratedKeyColumns("user_nonsocial_id");
-
-        Map<String,Object> authTable = new HashMap<>(3);
-        authTable.put("user_email", member.getUser_email());
-        authTable.put("user_pwd",member.)
-
-        //----------------- auth_nonsocial 테이블 insert -------------//
-        Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
-        daoMember.setUser_id(key.longValue());
-        return daoMember;
+        //객체지향원리를 잘 적용하려면, db를 굳이 composition할 이유가 있을까?
+//        jdbcInsert.withTableName("member.auth_nonsocial").usingGeneratedKeyColumns("user_nonsocial_id");
+//
+//        Map<String,Object> authTable = new HashMap<>(3);
+//        authTable.put("user_email", member.getUser_email());
+//        authTable.put("user_pwd",member.)
+//
+//        //----------------- auth_nonsocial 테이블 insert -------------//
+//        Number key = jdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
+//        daoMember.setUser_id(key.longValue());
+//        return daoMember;
     }
 
     @Override
-    public Optional<Dao_Member> findByEmail(String Email) {
-        jdbcTemplate.queryForObject("select ")
-    }
-
-    @Override
-    public Optional<Dao_Member> findByName(String Name) {
+    public Optional<Member> findByEmail(String Email) {
         return Optional.empty();
     }
 
-    private RowMapper<Dao_Member> memberRowMapper(){
-        return new RowMapper<Dao_Member>() {
+    @Override
+    public Optional<Member> findByName(String Name) {
+        return Optional.empty();
+    }
+
+    private RowMapper<Member> memberRowMapper(){
+        return new RowMapper<Member>() {
             @Override
-            public Dao_Member mapRow(ResultSet rs, int rowNum) throws SQLException {
-                Dao_Member daoMember = new Dao_Member();
+            public Member mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Member daoMember = new Member();
                 daoMember.setUser_id(rs.getLong("user_id"));
                 daoMember.setUser_name(rs.getString("user_name"));
                 return daoMember;
             }
-        }
+        };
     }
 }

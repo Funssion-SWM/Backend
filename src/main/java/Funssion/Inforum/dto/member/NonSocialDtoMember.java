@@ -1,4 +1,4 @@
-package Funssion.Inforum.model.member;
+package Funssion.Inforum.dto.member;
 
 public class NonSocialDtoMember extends Dto_Member {
     private String user_pwd;

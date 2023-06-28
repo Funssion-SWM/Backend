@@ -1,11 +1,11 @@
-package Funssion.Inforum.db.entity.member;
+package Funssion.Inforum.entity.member;
 
-public class NonSocialDaoMember extends Dao_Member {
-    private long user_non_social_id;
+public class NonSocialMember extends Member {
+    private Long user_non_social_id;
     private String user_email;
     private String user_pwd;
 
-    public long getUser_non_social_id() {
+    public Long getUser_non_social_id() {
         return user_non_social_id;
     }
 
