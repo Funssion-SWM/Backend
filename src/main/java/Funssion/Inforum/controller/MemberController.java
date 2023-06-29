@@ -9,12 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
 
 @Controller
+@RequestMapping("/users")
 public class MemberController {
 
     private final MemberService memberService;
@@ -23,16 +22,21 @@ public class MemberController {
     public MemberController(MemberService memberService){
         this.memberService = memberService;
     }
-    @GetMapping("/hi")
-    @ResponseBody
-    public String check(){
-        System.out.println("hi");
-        return "hiiii";
-    }
-    @PostMapping("/users")
+
+    @PostMapping("")
     @ResponseBody
     public ResponseEntity create(@RequestBody MemberRequest memberRegisterRequest){ //dto로 바꿔야함
         memberService.join(memberRegisterRequest);
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @GetMapping("emailVal")
+    @ResponseBody
+    public ResponseEntity validateDuplicateEmail(@RequestParam(value="email", required=true) String email){
+        MemberRequest memberRequest = new MemberRequest();
+        memberRequest.setUser_email(email);
+        memberService.validateDuplicateEmail(memberRequest);
+
+
     }
 }

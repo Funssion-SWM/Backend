@@ -14,10 +14,14 @@ public class MemberService {
     public MemberService(MemberRepository memberRepository){
         this.memberRepository = memberRepository;
     }
-
     public void join (MemberRequest memberRegisterRequest){
+
+        //중복 처리 한번더 검증
+        validateDuplicateEmail(memberRegisterRequest);
+        validateDuplicateName(memberRegisterRequest);
+
         //로그인 타입별 다른 회원가입 로직
-        switch(memberRegisterRequest.getType()){
+        switch(memberRegisterRequest.getType()) {
             case 0: // non-social 회원가입의 경우
             {
                 NonSocialMember member = new NonSocialMember(); //DTO를 DAO로 변환
@@ -27,7 +31,17 @@ public class MemberService {
                 memberRepository.save(member);
             }
         }
+    }
 
+    public void validateDuplicateName(MemberRequest memberRequest){
+        memberRepository.findByName(memberRequest.getUser_name()).ifPresent(m->{
+            throw new IllegalStateException("이미 존재하는 회원 닉네임입니다.");
+        });
+    }
 
+    public void validateDuplicateEmail(MemberRequest memberRequest){
+        memberRepository.findByEmail(memberRequest.getUser_email()).ifPresent(m->{
+            throw new IllegalStateException("이미 존재하는 이메일입니다.");
+        });
     }
 }

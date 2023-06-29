@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,19 +49,21 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         authTable.put("user_pwd",member.getUser_pwd());
         System.out.println("user key"+user_key);
         authTable.put("user_id",user_key);
-        //----------------- auth_nonsocial 테이블 insert -------------//
+        //---------------------------------------------------------//
         Number nonsocial_key = jdbcInsertNonSocialUser.executeAndReturnKey(new MapSqlParameterSource(authTable));
         return member;
     }
 
     @Override
     public Optional<NonSocialMember> findByEmail(String Email) {
-        return Optional.empty();
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.NONSOCIALUSER WHERE USER_EMAIL = ?",memberRowMapper(),Email);
+        return result.stream().findAny();
     }
 
     @Override
     public Optional<NonSocialMember> findByName(String Name) {
-        return Optional.empty();
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.USER WHERE USER_NAME = ?",memberRowMapper(),Name);
+        return result.stream().findAny();
     }
 
     private RowMapper<NonSocialMember> memberRowMapper(){
@@ -69,7 +72,6 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = new NonSocialMember();
                 member.setUser_id(rs.getLong("user_id"));
-                member.setUser_name(rs.getString("user_name"));
                 return member;
             }
         };
