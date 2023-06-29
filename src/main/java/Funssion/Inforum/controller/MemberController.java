@@ -1,8 +1,12 @@
 package Funssion.Inforum.controller;
 
+import Funssion.Inforum.dto.member.MemberRequest;
 import Funssion.Inforum.entity.member.Member;
+import Funssion.Inforum.entity.member.NonSocialMember;
 import Funssion.Inforum.service.member.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,9 +31,8 @@ public class MemberController {
     }
     @PostMapping("/users")
     @ResponseBody
-    public Long create(@RequestBody Member memberForm){ //dto로 바꿔야함
-        Member member = new Member();
-        member.setUser_name(memberForm.getUser_name());
-        return memberService.join(member);
+    public ResponseEntity create(@RequestBody MemberRequest memberRegisterRequest){ //dto로 바꿔야함
+        memberService.join(memberRegisterRequest);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }

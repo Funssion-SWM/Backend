@@ -1,8 +1,10 @@
 package Funssion.Inforum.dto.member;
 //DTO 정의
-public class Dto_Member {
+public class MemberRequest {
     private String user_name;
     private String user_email; //DTO이므로 소셜로그인 이메일, 개인 인증 이메일 둘다 user_email에 속함
+    private Integer type;
+    private String user_pwd;
 
     public String getUser_name() {
         return user_name;
@@ -18,5 +20,21 @@ public class Dto_Member {
 
     public void setUser_email(String user_email) {
         this.user_email = user_email;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public String getUser_pwd() {
+        return user_pwd;
+    }
+
+    public void setUser_pwd(String user_pwd) {
+        this.user_pwd = user_pwd;
     }
 }

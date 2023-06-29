@@ -1,10 +1,15 @@
 package Funssion.Inforum.entity.member;
 
 public class NonSocialMember extends Member {
+//    public NonSocialMember(String email, String pwd, String nickname){
+//        super(nickname);
+//        this.user_email = email;
+//        this.user_pwd = pwd;
+//    }
+
     private Long user_non_social_id;
     private String user_email;
     private String user_pwd;
-
     public Long getUser_non_social_id() {
         return user_non_social_id;
     }

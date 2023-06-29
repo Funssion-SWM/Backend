@@ -8,6 +8,7 @@ create table Member.user(
 
 create table Member.NonSocialUser(
     user_email_id NUMBER AUTO_INCREMENT,
+    user_id NUMBER NOT NULL,
     user_email VARCHAR(60) NOT NULL UNIQUE,
     user_pwd VARCHAR(20) NOT NULL,
     PRIMARY KEY (user_email_id)

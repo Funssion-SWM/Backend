@@ -3,6 +3,12 @@ package Funssion.Inforum.entity.member;
 // 상속을 이용하여 Social 로그인 Member, Non Social 로그인 Member 분리
 public class Member {
     //user_id는 setter getter 설정을 하지 않는다. -> 어차피 jdbc template으로 최근 PK값 가져오기 때문이다.
+    public Member(){
+        user_name = null;
+    };
+    public Member(String nickname){
+        this.user_name = nickname;
+    }
     private Long user_id;
     private String user_name;
     private Integer login_type; // login_type:0 = non-social, login_type:1 = social
