@@ -32,11 +32,10 @@ public class MemberController {
 
     @GetMapping("emailVal")
     @ResponseBody
-    public ResponseEntity validateDuplicateEmail(@RequestParam(value="email", required=true) String email){
+    public String validateDuplicateEmail(@RequestParam(value="email", required=true) String email){
         MemberRequest memberRequest = new MemberRequest();
         memberRequest.setUser_email(email);
         memberService.validateDuplicateEmail(memberRequest);
-
-
+        return "ok";
     }
 }
