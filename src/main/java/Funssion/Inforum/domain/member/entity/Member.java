@@ -1,6 +1,10 @@
-package Funssion.Inforum.entity.member;
+package Funssion.Inforum.domain.member.entity;
+
+import lombok.Getter;
+import lombok.Setter;
 
 // 상속을 이용하여 Social 로그인 Member, Non Social 로그인 Member 분리
+@Getter @Setter
 public class Member {
     //user_id는 setter getter 설정을 하지 않는다. -> 어차피 jdbc template으로 최근 PK값 가져오기 때문이다.
     public Member(){

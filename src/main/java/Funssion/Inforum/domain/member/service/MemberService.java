@@ -1,8 +1,8 @@
-package Funssion.Inforum.service.member;
+package Funssion.Inforum.domain.member.service;
 
-import Funssion.Inforum.dto.member.MemberRequest;
-import Funssion.Inforum.entity.member.NonSocialMember;
-import Funssion.Inforum.repository.member.MemberRepository;
+import Funssion.Inforum.domain.member.dto.MemberRequest;
+import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import Funssion.Inforum.domain.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

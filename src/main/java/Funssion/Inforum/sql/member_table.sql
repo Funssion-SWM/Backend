@@ -1,15 +1,16 @@
 create table Member.user(
-    user_id NUMBER AUTO_INCREMENT,
+    user_id INT AUTO_INCREMENT,
     user_name VARCHAR(15) NOT NULL UNIQUE,
     login_type INT NOT NULL DEFAULT 0,
-    user_createdAt DATE,
+    created_date TIMESTAMP,
     PRIMARY KEY (user_id)
 );
 
-create table Member.NonSocialUser(
-    user_email_id NUMBER AUTO_INCREMENT,
-    user_id NUMBER NOT NULL,
+create table Member.auth(
+    auth_id INT AUTO_INCREMENT,
+    user_id INT NOT NULL,
     user_email VARCHAR(60) NOT NULL UNIQUE,
     user_pwd VARCHAR(20) NOT NULL,
-    PRIMARY KEY (user_email_id)
-)
+    PRIMARY KEY (auth_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+);

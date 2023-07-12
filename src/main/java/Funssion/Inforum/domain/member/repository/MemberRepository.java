@@ -1,6 +1,6 @@
-package Funssion.Inforum.repository.member;
+package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.entity.member.Member;
+import Funssion.Inforum.domain.member.entity.Member;
 
 import java.util.Optional;
 

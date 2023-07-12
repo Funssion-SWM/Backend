@@ -1,4 +1,4 @@
-package Funssion.Inforum.dto.member;
+package Funssion.Inforum.domain.member.dto;
 //DTO 정의
 public class MemberRequest {
     private String user_name;

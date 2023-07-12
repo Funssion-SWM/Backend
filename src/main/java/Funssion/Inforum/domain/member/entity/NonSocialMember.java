@@ -1,4 +1,4 @@
-package Funssion.Inforum.entity.member;
+package Funssion.Inforum.domain.member.entity;
 
 public class NonSocialMember extends Member {
 //    public NonSocialMember(String email, String pwd, String nickname){

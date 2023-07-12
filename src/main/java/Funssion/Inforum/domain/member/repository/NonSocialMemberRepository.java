@@ -1,6 +1,6 @@
-package Funssion.Inforum.repository.member;
+package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.entity.member.NonSocialMember;
+import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
-public class NonSocialMemberRepository implements MemberRepository<NonSocialMember>{
+public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
 
     public NonSocialMemberRepository(DataSource dataSource){ //IDE에서 버그로 dataSource 빨간줄쳐지기도 함

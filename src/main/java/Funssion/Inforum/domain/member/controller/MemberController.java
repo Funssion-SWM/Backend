@@ -1,17 +1,16 @@
-package Funssion.Inforum.controller;
+package Funssion.Inforum.domain.member.controller;
 
-import Funssion.Inforum.dto.member.MemberRequest;
-import Funssion.Inforum.entity.member.Member;
-import Funssion.Inforum.entity.member.NonSocialMember;
-import Funssion.Inforum.service.member.MemberService;
+import Funssion.Inforum.domain.member.service.MemberService;
+import Funssion.Inforum.domain.member.dto.MemberRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @Controller
 @RequestMapping("/users")
 public class MemberController {
@@ -26,6 +25,7 @@ public class MemberController {
     @PostMapping("")
     @ResponseBody
     public ResponseEntity create(@RequestBody MemberRequest memberRegisterRequest){ //dto로 바꿔야함
+        log.info("check");
         memberService.join(memberRegisterRequest);
         return new ResponseEntity(HttpStatus.OK);
     }
