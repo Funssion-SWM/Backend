@@ -46,7 +46,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
         Map<String,Object> authTable = new HashMap<>(3);
         authTable.put("user_email", member.getUser_email());
-        authTable.put("user_pwd",member.getUser_pwd());
+        authTable.put("user_pwd",member.getUser_pw());
         System.out.println("user key"+user_key);
         authTable.put("user_id",user_key);
         //---------------------------------------------------------//
