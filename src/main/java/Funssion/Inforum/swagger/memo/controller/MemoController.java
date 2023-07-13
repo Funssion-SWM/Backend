@@ -1,7 +1,8 @@
 package Funssion.Inforum.swagger.memo.controller;
 
 import Funssion.Inforum.swagger.memo.entity.MemoEntity;
-import Funssion.Inforum.swagger.memo.form.MemoCreateDataForm;
+import Funssion.Inforum.swagger.memo.request.MemoCreateDataForm;
+import Funssion.Inforum.swagger.memo.response.MemoListDataForm;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,16 +25,16 @@ public class MemoController {
     @Operation(summary = "Get memo list",description = "get memo list in main page and my page", tags = {"memo"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "bad request, query is not defined"),
-            @ApiResponse(responseCode = "404", description = "user not found"),
+            @ApiResponse(responseCode = "400", description = "bad request, query is not defined", content = @Content),
+            @ApiResponse(responseCode = "404", description = "user not found", content = @Content),
     })
     @GetMapping
-    public List<MemoEntity> memos(@Parameter(description = "criteria in hot memos, period={day, week, month, year}, defult is day", required = false) @RequestParam String period,
-                                  @Parameter(description = "criteria in sorting, sortBy={hot, new}, default is hot", required = false) @RequestParam String sortBy,
-                                  @Parameter(description = "get one user's memo list", required = false) @RequestParam String userId) {
-        ArrayList<MemoEntity> memos = new ArrayList<MemoEntity>();
-        memos.add(new MemoEntity(1, 1, "정진우", "JDK란?", "JDK이다.", "green", LocalDate.now(), LocalDate.now()));
-        memos.add(new MemoEntity(2, 2, "김태훈", "DB란?", "H2이다.", "black", LocalDate.now(), LocalDate.now()));
+    public List<MemoListDataForm> memos(@Parameter(description = "criteria in hot memos, period={day, week, month, year}, defult is day") @RequestParam(required = false) String period,
+                                        @Parameter(description = "criteria in sorting, sortBy={hot, new}, default is hot") @RequestParam(required = false) String sortBy,
+                                        @Parameter(description = "get one user's memo list") @RequestParam(required = false) String userId) {
+        ArrayList<MemoListDataForm> memos = new ArrayList<MemoListDataForm>();
+        memos.add(new MemoListDataForm(1,"JDK란?", "JDK이다", "green", LocalDate.now(), "1", "정진우"));
+        memos.add(new MemoListDataForm(2,"JPA란?", "JPA이다", "black", LocalDate.now(), "2", "김태훈"));
         return memos;
     }
 
@@ -44,7 +45,7 @@ public class MemoController {
     })
     @GetMapping("{id}")
     public MemoEntity memo(@Parameter(description = "memo id") @PathVariable String id) {
-        return new MemoEntity(1, 1, "정진우", "JDK란?", "JDK이다.", "green", LocalDate.now(), LocalDate.now());
+        return new MemoEntity(1,  "JDK란?", "JDK이다.", "green", 1, "정진우", LocalDate.now(), LocalDate.now());
     }
 
     @Operation(summary = "Create memo", tags = {"memo"})
@@ -53,7 +54,7 @@ public class MemoController {
     })
     @PostMapping(consumes = "application/json")
     public MemoEntity creteMemo(@Parameter(description = "create form") @RequestBody MemoCreateDataForm createDataForm) {
-        return new MemoEntity(1, 1, "정진우", "JDK란?", "JDK이다.", "green", LocalDate.now(), LocalDate.now());
+        return new MemoEntity(1,  "JDK란?", "JDK이다.", "green",1, "정진우", LocalDate.now(), LocalDate.now());
     }
 
     @Operation(summary = "Update memo", tags = {"memo"})
@@ -64,7 +65,7 @@ public class MemoController {
     @PostMapping(value = "{id}",consumes = "application/json")
     public MemoEntity updateMemo(@Parameter(description = "create form") @RequestBody MemoCreateDataForm createDataForm,
                            @Parameter(description = "memo id") @PathVariable int id) {
-        return new MemoEntity(1, 1, "정진우", "JDK란?", "JDK이다.", "green", LocalDate.now(), LocalDate.now());
+        return new MemoEntity(1,  "JDK란?", "JDK이다.", "green",1, "정진우", LocalDate.now(), LocalDate.now());
     }
 
     @Operation(summary = "Delete memo", tags = {"memo"})

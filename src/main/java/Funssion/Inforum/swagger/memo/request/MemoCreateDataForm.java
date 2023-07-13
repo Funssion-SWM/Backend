@@ -1,4 +1,4 @@
-package Funssion.Inforum.swagger.memo.form;
+package Funssion.Inforum.swagger.memo.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
