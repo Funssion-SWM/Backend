@@ -18,26 +18,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
-<<<<<<< HEAD
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.postgresql:postgresql'
-	implementation 'org.projectlombok:lombok'
-=======
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
->>>>>>> develope
+	implementation 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
 }
 
-//configurations {
-//	// PostgreSQL JDBC 드라이버를 사용할 컴파일 타임에만 의존하도록 설정합니다.
-//	// 테스트 환경에서는 H2를 사용하므로 테스트 실행 시에는 PostgreSQL이 필요하지 않습니다.
-//	compileOnly {
-//		// 테스트 환경에서는 PostgreSQL 드라이버를 제외합니다.
-//		exclude group: 'org.postgresql', module: 'postgresql'
-//	}
-//}
 
 tasks.named('test') {
 	useJUnitPlatform()

@@ -1,6 +1,10 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.domain.member.SHA256;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -8,6 +12,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -16,47 +21,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
+@RequiredArgsConstructor
 @Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
 public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
 
-    public NonSocialMemberRepository(DataSource dataSource){ //IDE에서 버그로 dataSource 빨간줄쳐지기도 함
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
+    ObjectMapper objectMapper = new ObjectMapper();
     @Override
     //DAO 의 Member 객체로 정의
-    public NonSocialMember save(NonSocialMember member) {
-        SimpleJdbcInsert jdbcInsertUser = new SimpleJdbcInsert(this.jdbcTemplate);
-        //----------------- member_user 테이블 insert ----------------//
-        jdbcInsertUser.withSchemaName("MEMBER").withTableName("USER").usingGeneratedKeyColumns("user_id");
-        Map<String, Object> userTable = new HashMap<>(3);
-        userTable.put("user_name", member.getUser_name());
-        userTable.put("login_type", 0);
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        userTable.put("user_createdAt",currentDateTime);
-        System.out.println(member.getUser_name()+member.getUser_email()+member.getUser_email());
-        Number user_key = jdbcInsertUser.executeAndReturnKey(new MapSqlParameterSource(userTable));
-        member.setUser_id(user_key.longValue());
-
+    public NonSocialMember save(NonSocialMember member) throws NoSuchAlgorithmException {
+        SimpleJdbcInsert jdbcInsertMember = new SimpleJdbcInsert(this.jdbcTemplate);
+        //----------------- member.user 테이블 insert ----------------//
+        jdbcInsertMember.withSchemaName("MEMBER").withTableName("USER").usingGeneratedKeyColumns("user_id");
+        Map<String, Object> insertMember = new HashMap<>(3);
+        insertMember.put("user_name", member.getUser_name());
+        insertMember.put("login_type", 0);
+        insertMember.put("created_date",LocalDateTime.now());
+        Number user_key = jdbcInsertMember.executeAndReturnKey(new MapSqlParameterSource(insertMember));
+        log.info("user_key = {}",user_key);
         //----------------------------------------------------------//
 
-        //---------------- auth_nonsocial 테이블 insert -------------//
-        SimpleJdbcInsert jdbcInsertNonSocialUser = new SimpleJdbcInsert(this.jdbcTemplate);
-        jdbcInsertNonSocialUser.withSchemaName("MEMBER").withTableName("nonsocialuser").usingGeneratedKeyColumns("user_email_id");
+        //---------------- member.auth 테이블 insert -------------//
+        SHA256 sha256 = new SHA256();
+        SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
+        jdbcInsertAuth.withSchemaName("MEMBER").withTableName("auth").usingGeneratedKeyColumns("auth_id");
+        Map<String,Object> insertAuth = new HashMap<>(3);
+        insertAuth.put("user_email", member.getUser_email());
+        insertAuth.put("user_pw",sha256.encrypt(member.getUser_pw()));
+        insertAuth.put("user_id",user_key);
+        Number nonsocial_key = jdbcInsertAuth.executeAndReturnKey(new MapSqlParameterSource(insertAuth));
 
-        Map<String,Object> authTable = new HashMap<>(3);
-        authTable.put("user_email", member.getUser_email());
-        authTable.put("user_pwd",member.getUser_pw());
-        System.out.println("user key"+user_key);
-        authTable.put("user_id",user_key);
         //---------------------------------------------------------//
-        Number nonsocial_key = jdbcInsertNonSocialUser.executeAndReturnKey(new MapSqlParameterSource(authTable));
-        return member;
+        NonSocialMember authMember = objectMapper.convertValue(insertAuth, NonSocialMember.class);
+        return authMember;
     }
 
     @Override
     public Optional<NonSocialMember> findByEmail(String Email) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.NONSOCIALUSER WHERE USER_EMAIL = ?",memberRowMapper(),Email);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.AUTH WHERE USER_EMAIL = ?",memberRowMapper(),Email);
         return result.stream().findAny();
     }
 

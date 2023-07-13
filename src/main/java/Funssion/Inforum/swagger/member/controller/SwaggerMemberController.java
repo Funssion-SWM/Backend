@@ -22,10 +22,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
-@Controller
+
 @RequiredArgsConstructor
 @Tag(name = "Member", description = "사용자 정보 API")
-public class MemberController {
+public class SwaggerMemberController {
     @Operation(summary = "닉네임 중복체크",description = "같은 닉네임을 가진 유저는 없어야 하므로, 중복체크 필수", tags = {"Member"})
     @GetMapping("/auth/nickname/{MyNickname}")
     @ResponseBody
