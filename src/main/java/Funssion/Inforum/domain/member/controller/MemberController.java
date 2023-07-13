@@ -34,7 +34,7 @@ public class MemberController {
     @PostMapping("/users")
     @ResponseBody
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "302", description = "회원가입 성공, redirection", content = @Content(schema=@Schema(implementation= SuccessResponse.class),mediaType = "application/json")),
+            @ApiResponse(responseCode = "201", description = "회원가입 성공, redirection 필요", content = @Content(schema=@Schema(implementation= SuccessResponse.class),mediaType = "application/json")),
             @ApiResponse(responseCode = "409", description = "이미 존재하는 회원 정보입니다.", content = @Content(schema=@Schema(implementation= ErrorResponse.class),mediaType = "application/json")),
             @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema=@Schema(implementation= ErrorResponse.class),mediaType = "application/json")),
     })
@@ -45,7 +45,7 @@ public class MemberController {
         }
         log.info("create in controller, member = {}", memberSaveForm);
         Long save_id = memberService.join(memberSaveForm);
-        return new ResponseEntity(HttpStatus.FOUND);
+        return new ResponseEntity(HttpStatus.CREATED);
     }
 
     @GetMapping("emailVal")
