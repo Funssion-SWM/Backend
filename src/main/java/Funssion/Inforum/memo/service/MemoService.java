@@ -39,7 +39,7 @@ public class MemoService {
         int days = getDays(period);
 
         if (orderBy == "new") {
-            return new ArrayList<>(memoRepository.findAllByPeriod(days, "created_date"));
+            return new ArrayList<>(memoRepository.findAllByPeriod(days));
         } else if (orderBy.isEmpty() || orderBy == "hot") {
             // TODO: 좋아요 필드 추가되면 orderByField로 넣기
             throw  new InvalidParameterException("orderBy is undefined value");

@@ -29,10 +29,10 @@ public class MemoController {
             @ApiResponse(responseCode = "404", description = "user not found", content = @Content),
     })
     @GetMapping
-    public List<MemoListDataForm> memos(@Parameter(description = "criteria in hot memos, period={day, week, month, year}, defult is day") @RequestParam(required = false) String period,
-                                        @Parameter(description = "criteria in sorting, sortBy={hot, new}, default is hot") @RequestParam(required = false) String sortBy,
+    public ArrayList<MemoListDataForm> memos(@Parameter(description = "criteria in hot memos, period={day, week, month, year}, defult is day") @RequestParam(required = false) String period,
+                                        @Parameter(description = "criteria in sorting, orderBy={hot, new}, default is hot") @RequestParam(required = false) String orderBy,
                                         @Parameter(description = "get one user's memo list") @RequestParam(required = false) String userId) {
-        ArrayList<MemoListDataForm> memos = new ArrayList<MemoListDataForm>();
+        ArrayList<MemoListDataForm> memos = new ArrayList<>();
         memos.add(new MemoListDataForm(1,"JDK란?", "JDK이다", "green", LocalDate.now(), "1", "정진우"));
         memos.add(new MemoListDataForm(2,"JPA란?", "JPA이다", "black", LocalDate.now(), "2", "김태훈"));
         return memos;
@@ -73,6 +73,6 @@ public class MemoController {
             @ApiResponse(responseCode = "200", description = "successful deleted", content = @Content),
             @ApiResponse(responseCode = "404", description = "memo not found", content = @Content),
     })
-    @DeleteMapping(value = "{id}",consumes = "application/json")
+    @DeleteMapping(value = "{id}")
     public void deleteMemo(@Parameter(description = "memo id") @PathVariable int id) {}
 }

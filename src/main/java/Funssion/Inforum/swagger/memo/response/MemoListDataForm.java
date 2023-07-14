@@ -1,7 +1,10 @@
 package Funssion.Inforum.swagger.memo.response;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 
+@Data
 public class MemoListDataForm {
     private int memoId;
     private String memoTitle;

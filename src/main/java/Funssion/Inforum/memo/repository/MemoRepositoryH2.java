@@ -52,9 +52,9 @@ public class MemoRepositoryH2 implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByPeriod(int period, String orderByField) {
-        String sql = "select * from memo where created_date >= current_date - CAST(? AS int) order by ? desc";
-        return template.query(sql,memoRowMapper(), period, orderByField);
+    public List<Memo> findAllByPeriod(int period) {
+        String sql = "select * from memo where created_date >= current_date - CAST(? AS int) order by created_date desc";
+        return template.query(sql,memoRowMapper(), period);
     }
 
     @Override
