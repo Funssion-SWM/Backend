@@ -10,7 +10,7 @@ public interface MemoRepository {
 
     Memo create(int userId, String userName, MemoSaveForm form);
     List<Memo> findAllByUserId(int userId);
-    public List<Memo> findAllByPeriod(int period);
+    public List<Memo> findAllByPeriod(int period, String orderByField);
     Memo findById(int id);
     public Memo update(int id, MemoSaveForm form);
     void delete(int id);
