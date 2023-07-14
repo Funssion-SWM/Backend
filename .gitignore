@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### TEST ###
+# RDS 연동 전까지는 테스트 제외
+src/test
