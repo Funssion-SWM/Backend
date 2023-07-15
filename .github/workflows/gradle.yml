@@ -9,9 +9,9 @@ name: Java CI/CD with Gradle
 
 on:
   push:
-    branches: [ "develope" ]
+    branches: [ "swagger" ]
   pull_request:
-    branches: [ "develope" ]
+    branches: [ "swagger" ]
 
 jobs:
   build:
