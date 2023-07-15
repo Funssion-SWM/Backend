@@ -1,17 +1,19 @@
 package Funssion.Inforum.memo.repository;
 
 
-import Funssion.Inforum.memo.entity.Memo;
-import Funssion.Inforum.memo.form.MemoSaveForm;
+import Funssion.Inforum.memo.dto.MemoDto;
+import Funssion.Inforum.memo.dto.MemoListDto;
+import Funssion.Inforum.memo.dto.MemoSaveDto;
 
 import java.util.List;
 
 public interface MemoRepository {
 
-    Memo create(int userId, String userName, MemoSaveForm form);
-    List<Memo> findAllByUserId(int userId);
-    public List<Memo> findAllByPeriod(int period);
-    Memo findById(int id);
-    public Memo update(int id, MemoSaveForm form);
+    MemoDto create(int userId, String userName, MemoSaveDto form);
+    List<MemoListDto> findAllByUserId(int userId);
+    List<MemoListDto> findAllByPeriodWithMostPopular(int period);
+    List<MemoListDto> findAllWithNewest();
+    MemoDto findById(int id);
+    MemoDto update(int id, MemoSaveDto form);
     void delete(int id);
 }

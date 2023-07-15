@@ -1,17 +1,18 @@
 package Funssion.Inforum.memo.service;
 
+import Funssion.Inforum.memo.dto.MemoDto;
+import Funssion.Inforum.memo.dto.MemoListDto;
 import Funssion.Inforum.memo.entity.Memo;
-import Funssion.Inforum.memo.form.MemoSaveForm;
+import Funssion.Inforum.memo.dto.MemoSaveDto;
 import Funssion.Inforum.memo.repository.MemoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -30,22 +31,22 @@ public class MemoService {
         periodToDaysMap.put("year", 365);
     }
 
-    public ArrayList<Memo> getMemosBy(String period, String orderBy, String userId) {
-
-        if (!userId.isEmpty()) {
-            return new ArrayList<>(memoRepository.findAllByUserId(Integer.valueOf(userId)));
-        }
+    public ArrayList<MemoListDto> getMemosInMainPage(String period, String orderBy) {
 
         int days = getDays(period);
 
         if (orderBy == "new") {
-            return new ArrayList<>(memoRepository.findAllByPeriod(days));
+            return new ArrayList<>(memoRepository.findAllWithNewest());
         } else if (orderBy.isEmpty() || orderBy == "hot") {
-            // TODO: 좋아요 필드 추가되면 orderByField로 넣기
-            throw  new InvalidParameterException("orderBy is undefined value");
+            // TODO: 좋아요 필드 추가되면 repository 넣기
+            return new ArrayList<>(memoRepository.findAllByPeriodWithMostPopular(days));
         } else {
-            throw  new InvalidParameterException("orderBy is undefined value");
+            throw new InvalidParameterException("orderBy is undefined value");
         }
+    }
+
+    public ArrayList<MemoListDto> getMemosByUserID(int userId) {
+        return new ArrayList<>(memoRepository.findAllByUserId(userId));
     }
 
     private static int getDays(String period) {
@@ -58,21 +59,21 @@ public class MemoService {
         return days;
     }
 
-    public Memo createMemo(MemoSaveForm form) {
+    public MemoDto createMemo(MemoSaveDto form) {
         // TODO: jwt 토큰에서 userId, userName 가져오기
         return memoRepository.create(1, "정진우", form);
     }
 
-    public Memo getMemoBy(String memoId) {
-        return memoRepository.findById(Integer.valueOf(memoId));
+    public MemoDto getMemoBy(int memoId) {
+        return memoRepository.findById(memoId);
     }
 
-    public Memo updateMemo(String memoId, MemoSaveForm form) {
+    public MemoDto updateMemo(int memoId, MemoSaveDto form) {
         // TODO: jwt 토큰에서 userId 가져오기
-        return memoRepository.update(Integer.valueOf(memoId), form);
+        return memoRepository.update(memoId, form);
     }
 
-    public void deleteMemo(String memoId) {
-        memoRepository.delete(Integer.valueOf(memoId));
+    public void deleteMemo(int memoId) {
+        memoRepository.delete(memoId);
     }
 }
