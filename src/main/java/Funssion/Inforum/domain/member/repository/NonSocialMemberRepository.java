@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,12 +28,13 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     private final JdbcTemplate jdbcTemplate;
 
     ObjectMapper objectMapper = new ObjectMapper();
+    @Transactional
     @Override
     //DAO 의 Member 객체로 정의
     public NonSocialMember save(NonSocialMember member) throws NoSuchAlgorithmException {
         SimpleJdbcInsert jdbcInsertMember = new SimpleJdbcInsert(this.jdbcTemplate);
         //----------------- member.user 테이블 insert ----------------//
-        jdbcInsertMember.withSchemaName("MEMBER").withTableName("USER").usingGeneratedKeyColumns("user_id");
+        jdbcInsertMember.withSchemaName("MEMBER").withTableName("MEMBER_USER").usingGeneratedKeyColumns("user_id");
         Map<String, Object> insertMember = new HashMap<>(3);
         insertMember.put("user_name", member.getUser_name());
         insertMember.put("login_type", 0);
@@ -45,7 +46,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         //---------------- member.auth 테이블 insert -------------//
         SHA256 sha256 = new SHA256();
         SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
-        jdbcInsertAuth.withSchemaName("MEMBER").withTableName("auth").usingGeneratedKeyColumns("auth_id");
+        jdbcInsertAuth.withSchemaName("MEMBER").withTableName("MEMBER_AUTH").usingGeneratedKeyColumns("auth_id");
         Map<String,Object> insertAuth = new HashMap<>(3);
         insertAuth.put("user_email", member.getUser_email());
         insertAuth.put("user_pw",sha256.encrypt(member.getUser_pw()));
@@ -59,13 +60,13 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByEmail(String Email) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.AUTH WHERE USER_EMAIL = ?",memberRowMapper(),Email);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberRowMapper(),Email);
         return result.stream().findAny();
     }
 
     @Override
     public Optional<NonSocialMember> findByName(String Name) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.USER WHERE USER_NAME = ?",memberRowMapper(),Name);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberRowMapper(),Name);
         return result.stream().findAny();
     }
 

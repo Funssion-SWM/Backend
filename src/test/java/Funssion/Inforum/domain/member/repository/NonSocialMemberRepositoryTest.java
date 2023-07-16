@@ -1,12 +1,9 @@
 package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.domain.member.dto.MemberSaveForm;
-import Funssion.Inforum.domain.member.entity.Member;
-import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import Funssion.Inforum.domain.member.dto.NonSocialMemberSaveForm;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -14,9 +11,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.LongToIntFunction;
 
-import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor
 class NonSocialMemberRepositoryTest {
 
@@ -32,10 +27,10 @@ class NonSocialMemberRepositoryTest {
     @Test
     void checkDuplicateName(){
 
-        MemberSaveForm memberSaveForm = new MemberSaveForm("hi",0,"abcde@gmail.com","123456");
+        NonSocialMemberSaveForm nonSocialMemberSaveForm = new NonSocialMemberSaveForm("hi",0,"abcde@gmail.com","123456");
         jdbcInsertMember.withSchemaName("MEMBER").withTableName("USER").usingGeneratedKeyColumns("user_id");
         Map<String, Object> insertMember = new HashMap<>(3);
-        insertMember.put("user_name", memberSaveForm.getUser_name());
+        insertMember.put("user_name", nonSocialMemberSaveForm.getUser_name());
         insertMember.put("login_type", 0);
         insertMember.put("created_date",LocalDateTime.now());
         Number user_key = jdbcInsertMember.executeAndReturnKey(new MapSqlParameterSource(insertMember));
