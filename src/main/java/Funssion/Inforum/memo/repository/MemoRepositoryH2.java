@@ -2,8 +2,8 @@ package Funssion.Inforum.memo.repository;
 
 import Funssion.Inforum.memo.dto.MemoDto;
 import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.entity.Memo;
 import Funssion.Inforum.memo.dto.MemoSaveDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Repository
+@Slf4j
 public class MemoRepositoryH2 implements MemoRepository{
 
     private final JdbcTemplate template;
@@ -31,6 +32,8 @@ public class MemoRepositoryH2 implements MemoRepository{
     public MemoDto create(int userId, String userName, MemoSaveDto form) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
+        log.debug("form = {}",form);
+
         String sql = "INSERT INTO memo (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
                 "VALUES (?, ?, ?, ?, ?, ?, ?);";
         template.update(con -> {
@@ -38,7 +41,7 @@ public class MemoRepositoryH2 implements MemoRepository{
             psmt.setInt(1,userId);
             psmt.setString(2,userName);
             psmt.setString(3,form.getMemoTitle());
-            psmt.setObject(4,form.getMemoText());
+            psmt.setString(4,form.getMemoText().toString());
             psmt.setString(5,form.getMemoColor());
             psmt.setDate(6,Date.valueOf(LocalDate.now()));
             psmt.setDate(7,null);
@@ -51,7 +54,9 @@ public class MemoRepositoryH2 implements MemoRepository{
     @Override
     public List<MemoListDto> findAllByUserId(int userId) {
         String sql = "select * from memo where user_id = ?";
-        return template.query(sql, memoListRowMapper(), userId);
+        List<MemoListDto> memoList = template.query(sql, memoListRowMapper(), userId);
+        if (memoList.isEmpty()) throw new NoSuchElementException("memo not found");
+        return memoList;
     }
 
     @Override
@@ -87,6 +92,7 @@ public class MemoRepositoryH2 implements MemoRepository{
         String sql = "delete from memo where memo_id = ?";
         if (template.update(sql, id) == 0)
             throw new NoSuchElementException("memo not found");
+
     }
 
     private RowMapper<MemoListDto> memoListRowMapper() {

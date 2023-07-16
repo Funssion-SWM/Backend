@@ -2,6 +2,8 @@ package Funssion.Inforum.memo.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.sql.Date;
 

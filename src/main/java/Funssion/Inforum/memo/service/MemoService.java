@@ -2,20 +2,20 @@ package Funssion.Inforum.memo.service;
 
 import Funssion.Inforum.memo.dto.MemoDto;
 import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.entity.Memo;
 import Funssion.Inforum.memo.dto.MemoSaveDto;
 import Funssion.Inforum.memo.repository.MemoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MemoService {
 
@@ -35,11 +35,12 @@ public class MemoService {
 
         int days = getDays(period);
 
-        if (orderBy == "new") {
+        log.debug("orderby value = {}",orderBy);
+        if (orderBy.equals("new")) {
             return new ArrayList<>(memoRepository.findAllWithNewest());
-        } else if (orderBy.isEmpty() || orderBy == "hot") {
+        } else if (orderBy.isEmpty() || orderBy.equals("hot")) {
             // TODO: 좋아요 필드 추가되면 repository 넣기
-            return new ArrayList<>(memoRepository.findAllByPeriodWithMostPopular(days));
+            throw new InvalidParameterException("orderBy is undefined value");
         } else {
             throw new InvalidParameterException("orderBy is undefined value");
         }

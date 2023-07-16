@@ -1,8 +1,12 @@
 package Funssion.Inforum.memo.dto;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @Data
 @Builder
