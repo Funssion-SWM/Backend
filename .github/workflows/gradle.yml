@@ -10,8 +10,6 @@ name: Java CI/CD with Gradle
 on:
   push:
     branches: [ "swagger" ]
-  pull_request:
-    branches: [ "swagger" ]
 
 jobs:
   build:
@@ -49,7 +47,7 @@ jobs:
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.HOST_DEV }}
+        host: ${{ secrets.HOST_SWAGGER }}
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
