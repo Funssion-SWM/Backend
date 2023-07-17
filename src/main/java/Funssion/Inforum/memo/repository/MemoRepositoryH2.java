@@ -48,7 +48,7 @@ public class MemoRepositoryH2 implements MemoRepository{
             return psmt;
         }, keyHolder);
 
-        return findById(keyHolder.getKey().intValue());
+        return findById((Integer) keyHolder.getKeys().get("memo_id"));
     }
 
     @Override
