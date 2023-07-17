@@ -20,10 +20,12 @@ public class CustomUserDetails implements UserDetails, Serializable {
     private String nickname;	//닉네임
     private Collection<GrantedAuthority> authorities;	//권한 목록
 
-    public CustomUserDetails(Long authId, String userEmail, String userPw) {
+    public CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
         this.id = String.valueOf(authId);
         this.email = userEmail;
         this.password = userPw;
+        this.emailVerified = emailVerified;
+        this.locked = !locked;
     }
 
 
@@ -95,7 +97,9 @@ public class CustomUserDetails implements UserDetails, Serializable {
     @Override
     public boolean isEnabled() {
         //이메일이 인증되어 있고 계정이 잠겨있지 않으면 true
-        return (emailVerified && !locked);
+        //로직이 상식과 조금 벗어나서, Customizing 하였음
+        return (emailVerified && locked);
+
     }
 
 }

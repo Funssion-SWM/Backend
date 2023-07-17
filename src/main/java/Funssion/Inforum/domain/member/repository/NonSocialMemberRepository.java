@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.domain.member.SHA256;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +26,7 @@ import java.util.Optional;
 @Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
 public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     ObjectMapper objectMapper = new ObjectMapper();
     @Transactional
@@ -44,12 +45,12 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         //----------------------------------------------------------//
 
         //---------------- member.auth 테이블 insert -------------//
-        SHA256 sha256 = new SHA256();
+        //SHA256 sha256 = new SHA256(); JWT 에서 sha256 Encoder Standard~ deprecated되어 bcrypt로 변경
         SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
         jdbcInsertAuth.withSchemaName("MEMBER").withTableName("MEMBER_AUTH").usingGeneratedKeyColumns("auth_id");
         Map<String,Object> insertAuth = new HashMap<>(3);
         insertAuth.put("user_email", member.getUser_email());
-        insertAuth.put("user_pw",sha256.encrypt(member.getUser_pw()));
+        insertAuth.put("user_pw",passwordEncoder.encode(member.getUser_pw()));
         insertAuth.put("user_id",user_key);
         Number nonsocial_key = jdbcInsertAuth.executeAndReturnKey(new MapSqlParameterSource(insertAuth));
 
@@ -60,22 +61,26 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByEmail(String Email) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberRowMapper(),Email);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberAuthRowMapper(),Email);
         return result.stream().findAny();
     }
 
     @Override
     public Optional<NonSocialMember> findByName(String Name) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberRowMapper(),Name);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberAuthRowMapper(),Name);
         return result.stream().findAny();
     }
 
-    private RowMapper<NonSocialMember> memberRowMapper(){
+    //Auth table mapper
+    private RowMapper<NonSocialMember> memberAuthRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = new NonSocialMember();
                 member.setUser_id(rs.getLong("user_id"));
+                member.setAuth_id(rs.getLong("auth_id"));
+                member.setUser_pw(rs.getString("user_pw"));
+                member.setUser_email(rs.getString("user_email"));
                 return member;
             }
         };

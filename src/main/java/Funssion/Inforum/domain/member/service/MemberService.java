@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
+/* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
 @Service
 public class MemberService implements UserDetailsService {
@@ -51,7 +52,7 @@ public class MemberService implements UserDetailsService {
                 throw new NotYetImplementException("해당 요청은 아직 구현되지 않았습니다.");
             }
         }
-        return user_id;
+        return user_id; // non valid request, return -1
     }
 
     public void validateDuplicateName(NonSocialMemberSaveForm memberForm, Integer login_type){
@@ -93,12 +94,11 @@ public class MemberService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         Optional<NonSocialMember> nonSocialMember = nonSocialmemberRepository.findByEmail(userEmail);
-        System.out.println("nonSocialMember = " + nonSocialMember);
 
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
-            log.info("member info in loadbyusername method = {}", member.getAuth_id());
-            return new CustomUserDetails(member.getAuth_id(),member.getUser_email(),member.getUser_pw());
+            log.info("member info in loadByUsername method = {}", member.getAuth_id());
+            return new CustomUserDetails(member.getAuth_id(),member.getUser_email(),member.getUser_pw(),true,false);
         } else {
             throw new UsernameNotFoundException("User not found with userEmail: " + userEmail);
         }
