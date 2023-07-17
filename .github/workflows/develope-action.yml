@@ -55,8 +55,8 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
             sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/swagger
-            sudo docker run -dp 80:8080 ${{ secrets.DOCKER_REPO }}/swagger
+            sudo docker pull ${{ secrets.DOCKER_DEV_REPO }}/swagger
+            sudo docker run -dp 80:8080 ${{ secrets.DOCKER_DEV_REPO }}/swagger
             
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2.0.0
