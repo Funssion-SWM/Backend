@@ -1,17 +1,15 @@
-package Funssion.Inforum.memo.entity;
+package Funssion.Inforum.memo.dto;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Data;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.sql.Date;
 
-
 @Data
 @Builder
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class Memo {
+public class MemoDto {
     private int memoId;
     private int userId;
     private String userName;
