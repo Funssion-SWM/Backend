@@ -53,4 +53,9 @@ public class MemberController {
         memberService.validateDuplicateEmail(nonSocialMemberSaveForm, nonSocialMemberSaveForm.getLogin_type());
         return "ok";
     }
+    @ResponseBody
+    @GetMapping("/check")
+    public String checkToken(){
+        return "ok";
+    }
 }

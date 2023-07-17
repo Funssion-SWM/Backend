@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 
 
 public class CustomUserDetails implements UserDetails, Serializable {
@@ -34,7 +35,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return Collections.emptyList();
     }
 
     /**
@@ -97,7 +98,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
     @Override
     public boolean isEnabled() {
         //이메일이 인증되어 있고 계정이 잠겨있지 않으면 true
-        //로직이 상식과 조금 벗어나서, Customizing 하였음
+        //상식과 조금 벗어나서, Customizing 하였음
         return (emailVerified && locked);
 
     }

@@ -30,6 +30,19 @@ public class ExControllerAdvice {
         log.error("[DuplicationHandlerException] ex ", e);
         return new ErrorResult("Duplication", e.getMessage());
     }
+//    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public ResponseEntity<String> AccessDeniedHandle(AccessDeniedException e){
+//        log.error("[AccessDeniedException] ex ", e);
+//        return new ResponseEntity(e.getMessage(),HttpStatus.UNAUTHORIZED);
+//    }
+//    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+//    @ExceptionHandler(AuthenticationException.class)
+//    public ResponseEntity<String> AuthenticationExcpetionHandle(AuthenticationException e){
+//        log.error("[AuthenticationException] ex ", e);
+//        return new ResponseEntity(e.getMessage(),HttpStatus.UNAUTHORIZED);
+//    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(BindingResult bindingResult) {
         Map<String, String> errors = new HashMap<>();

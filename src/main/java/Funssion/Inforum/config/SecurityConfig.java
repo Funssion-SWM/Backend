@@ -56,13 +56,16 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((authorizeRequests)->
                         authorizeRequests
-//                                .requestMatchers("/users).permitAll()
+                                //users 포함한 end point 보안 적용 X
                                 .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
+                                .requestMatchers("/error/**").permitAll()
                                 .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
                                 .requestMatchers("/favicon.ico").permitAll()
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
                 )
-
+                .exceptionHandling((exceptionHandling)->exceptionHandling
+                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
 
         return httpSecurity.build();

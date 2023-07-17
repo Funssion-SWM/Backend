@@ -98,7 +98,7 @@ public class MemberService implements UserDetailsService {
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
             log.info("member info in loadByUsername method = {}", member.getAuth_id());
-            return new CustomUserDetails(member.getAuth_id(),member.getUser_email(),member.getUser_pw(),true,false);
+            return new CustomUserDetails(member.getAuth_id(),member.getUser_email(),member.getUser_pw(),true,false );
         } else {
             throw new UsernameNotFoundException("User not found with userEmail: " + userEmail);
         }
