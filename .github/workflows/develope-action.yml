@@ -59,7 +59,7 @@ jobs:
             sudo docker run -dp 80:8080 ${{ secrets.DOCKER_REPO }}/inforum-dev
             
     - name: Notify Slack
-      uses: rtCamp/action-slack-notify@v2.0.0
+      uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_COLOR: '#00FF00'
         SLACK_TITLE: 'Build and Deploy'
