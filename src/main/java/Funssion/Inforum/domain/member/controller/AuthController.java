@@ -50,7 +50,7 @@ public class AuthController {
         HttpHeaders httpHeaders = new HttpHeaders();
         // response header에 jwt token에 넣어줌
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-        httpHeaders.add("Access-Control-Allow-Origin","http://localhost:3000");
+        httpHeaders.add("location","http://localhost:3000");
 
         // tokenDto를 이용해 response body에도 넣어서 리턴
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);

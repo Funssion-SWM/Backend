@@ -6,7 +6,6 @@ import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -69,7 +68,6 @@ public class SecurityConfig {
                                         /* swagger v3 */
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**").permitAll()
-                                .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
                                 .requestMatchers("/favicon.ico").permitAll()
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
                 )
