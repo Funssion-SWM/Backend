@@ -6,7 +6,7 @@ build/
 !**/src/test/**/build/
 
 # 환경변수
-.src/main/resources/application-jwt.properties
+*.properties
 
 ### STS ###
 .apt_generated
@@ -14,7 +14,7 @@ build/
 .factorypath
 .project
 .settings
-.springBeans
+.springBeanse
 .sts4-cache
 bin/
 !**/src/main/**/bin/

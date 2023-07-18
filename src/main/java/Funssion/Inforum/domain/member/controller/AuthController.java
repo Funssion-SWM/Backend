@@ -4,13 +4,6 @@ import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginForm;
 import Funssion.Inforum.domain.member.dto.TokenDto;
 import Funssion.Inforum.jwt.JwtFilter;
 import Funssion.Inforum.jwt.TokenProvider;
-import Funssion.Inforum.swagger.ErrorResponse;
-import Funssion.Inforum.swagger.SuccessResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +26,13 @@ public class AuthController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    @Operation(summary = "로그인 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
+//    @Operation(summary = "로그인 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
     @ResponseBody
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그인 성공, redirection 필요", content = @Content(schema = @Schema(implementation = SuccessResponse.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 정보입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
-    })
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "로그인 성공, redirection 필요", content = @Content(schema = @Schema(implementation = SuccessResponse.class), mediaType = "application/json")),
+//            @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 정보입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
+//            @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
+//    })
     @PostMapping("/users/login")
     public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginForm nonSocialMemberLoginForm) {
 
@@ -57,6 +50,7 @@ public class AuthController {
         HttpHeaders httpHeaders = new HttpHeaders();
         // response header에 jwt token에 넣어줌
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        httpHeaders.add("Access-Control-Allow-Origin","http://localhost:3000");
 
         // tokenDto를 이용해 response body에도 넣어서 리턴
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
