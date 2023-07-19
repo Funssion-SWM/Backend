@@ -20,11 +20,11 @@ import java.util.NoSuchElementException;
 
 @Repository
 @Slf4j
-public class MemoRepositoryH2 implements MemoRepository{
+public class MemoRepositoryJdbc implements MemoRepository{
 
     private final JdbcTemplate template;
 
-    public MemoRepositoryH2(DataSource dataSource) {
+    public MemoRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
     }
 

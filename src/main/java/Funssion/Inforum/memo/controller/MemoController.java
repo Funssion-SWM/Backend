@@ -34,7 +34,7 @@ public class MemoController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public MemoDto memoAdd(@Validated MemoSaveDto memoSaveDto) {
+    public MemoDto memoAdd(@Validated @ModelAttribute MemoSaveDto memoSaveDto) {
         return memoService.createMemo(memoSaveDto);
     }
 
@@ -44,7 +44,7 @@ public class MemoController {
     }
 
     @PostMapping("/{id}")
-    public MemoDto memoModify(@PathVariable int id, @Validated MemoSaveDto memoSaveDto) {
+    public MemoDto memoModify(@PathVariable int id, @Validated @ModelAttribute MemoSaveDto memoSaveDto) {
         return memoService.updateMemo(id, memoSaveDto);
     }
 
