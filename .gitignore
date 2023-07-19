@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+*.properties
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -35,9 +36,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### TEST ###
-# RDS 연동 전까지는 테스트 제외
-src/test
-
-src/main/resources/application.properties

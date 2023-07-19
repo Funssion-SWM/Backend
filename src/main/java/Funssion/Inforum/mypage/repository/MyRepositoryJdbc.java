@@ -14,10 +14,20 @@ import java.util.NoSuchElementException;
 public class MyRepositoryJdbc implements MyRepository{
 
     private final JdbcTemplate template;
-    @Override
-    public List<MyRecordNumDto> findRecordNumByUserId(String userId) {
-        String sql = "";
+//    @Override
+//    public List<MyRecordNumDto> findRecordNumByUserId(String userId) {
+//        String sql = "";
+//
+//        template.query()
+//    }
 
-        template.query()
+
+
+    @Override
+    public List<MemoListDto> findAllByUserId(int userId) {
+        String sql = "select * from memo where user_id = ?";
+        List<MemoListDto> memoList = template.query(sql, MemoListDto.memoListRowMapper(), userId);
+        if (memoList.isEmpty()) throw new NoSuchElementException("memo not found");
+        return memoList;
     }
 }

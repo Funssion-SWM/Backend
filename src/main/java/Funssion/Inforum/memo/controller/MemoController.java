@@ -23,10 +23,8 @@ public class MemoController {
     @GetMapping
     public ArrayList<MemoListDto> memoList(
             @RequestParam(required = false, defaultValue = "day") String period,
-            @RequestParam(required = false, defaultValue = "new") String orderBy,
-            @RequestParam(required = false) Integer userId) {
+            @RequestParam(required = false, defaultValue = "new") String orderBy) {
 
-        if (userId != null) return memoService.getMemosByUserID(userId);
         ArrayList<MemoListDto> memos = memoService.getMemosInMainPage(period, orderBy);
         log.debug("memos={}",memos);
         return memos;
