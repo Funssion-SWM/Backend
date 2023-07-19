@@ -23,10 +23,8 @@ public class MemoController {
     @GetMapping
     public ArrayList<MemoListDto> memoList(
             @RequestParam(required = false, defaultValue = "day") String period,
-            @RequestParam(required = false, defaultValue = "new") String orderBy,
-            @RequestParam(required = false) Integer userId) {
+            @RequestParam(required = false, defaultValue = "new") String orderBy) {
 
-        if (userId != null) return memoService.getMemosByUserID(userId);
         ArrayList<MemoListDto> memos = memoService.getMemosInMainPage(period, orderBy);
         log.debug("memos={}",memos);
         return memos;
@@ -34,7 +32,7 @@ public class MemoController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
-    public MemoDto memoAdd(@Validated MemoSaveDto memoSaveDto) {
+    public MemoDto memoAdd(@Validated @ModelAttribute MemoSaveDto memoSaveDto) {
         return memoService.createMemo(memoSaveDto);
     }
 
@@ -44,7 +42,7 @@ public class MemoController {
     }
 
     @PostMapping("/{id}")
-    public MemoDto memoModify(@PathVariable int id, @Validated MemoSaveDto memoSaveDto) {
+    public MemoDto memoModify(@PathVariable int id, @Validated @ModelAttribute MemoSaveDto memoSaveDto) {
         return memoService.updateMemo(id, memoSaveDto);
     }
 

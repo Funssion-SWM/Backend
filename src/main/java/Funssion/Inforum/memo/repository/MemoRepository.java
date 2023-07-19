@@ -10,7 +10,6 @@ import java.util.List;
 public interface MemoRepository {
 
     MemoDto create(int userId, String userName, MemoSaveDto form);
-    List<MemoListDto> findAllByUserId(int userId);
     List<MemoListDto> findAllByPeriodWithMostPopular(int period);
     List<MemoListDto> findAllWithNewest();
     MemoDto findById(int id);

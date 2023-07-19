@@ -16,6 +16,7 @@ public class Memo {
     private int userId;
     private String userName;
     private String memoTitle;
+    private String memoDescription;
     private String memoText;
     private String memoColor;
     private Date createdDate;
