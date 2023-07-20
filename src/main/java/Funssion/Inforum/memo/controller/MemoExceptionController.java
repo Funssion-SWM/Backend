@@ -11,7 +11,7 @@ import java.security.InvalidParameterException;
 import java.util.NoSuchElementException;
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice("Funssion.Inforum.memo")
 public class MemoExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
