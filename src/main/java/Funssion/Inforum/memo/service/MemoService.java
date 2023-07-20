@@ -46,10 +46,6 @@ public class MemoService {
         }
     }
 
-    public ArrayList<MemoListDto> getMemosByUserID(int userId) {
-        return new ArrayList<>(memoRepository.findAllByUserId(userId));
-    }
-
     private static int getDays(String period) {
         if (period.isEmpty()) period = "day";
 
