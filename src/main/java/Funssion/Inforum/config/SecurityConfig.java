@@ -6,6 +6,7 @@ import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,6 +28,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,7 +45,7 @@ public class SecurityConfig {
                                 .accessDeniedHandler(jwtAccessDeniedHandler)
                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
-
+                .formLogin((formLogin)->formLogin.disable())
                 // enable h2-console
                 .headers((headers)->
                         headers.contentTypeOptions(contentTypeOptionsConfig ->
@@ -58,6 +60,7 @@ public class SecurityConfig {
                                 //users 포함한 end point 보안 적용 X
                                 .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
                                 .requestMatchers("/error/**").permitAll()
+                                .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
                                 .requestMatchers("/swagger-ui/**","/v2/api-docs",
                                         "/swagger-resources",
                                         "/swagger-resources/**",
