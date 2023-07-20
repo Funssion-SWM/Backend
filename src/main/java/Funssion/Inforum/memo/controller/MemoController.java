@@ -24,7 +24,6 @@ public class MemoController {
     public ArrayList<MemoListDto> memoList(
             @RequestParam(required = false, defaultValue = "day") String period,
             @RequestParam(required = false, defaultValue = "new") String orderBy) {
-
         ArrayList<MemoListDto> memos = memoService.getMemosInMainPage(period, orderBy);
         log.debug("memos={}",memos);
         return memos;

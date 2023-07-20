@@ -1,13 +1,16 @@
 package Funssion.Inforum.memo.service;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.memo.dto.MemoDto;
 import Funssion.Inforum.memo.dto.MemoListDto;
 import Funssion.Inforum.memo.dto.MemoSaveDto;
 import Funssion.Inforum.memo.repository.MemoRepository;
+import Funssion.Inforum.mypage.repository.MyRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ public class MemoService {
 
     private static Map<String, Integer> periodToDaysMap;
     private final MemoRepository memoRepository;
+    private final MyRepository myRepository;
 
     @PostConstruct
     private void init() {
@@ -56,9 +60,12 @@ public class MemoService {
         return days;
     }
 
+    @Transactional
     public MemoDto createMemo(MemoSaveDto form) {
         // TODO: jwt 토큰에서 userId, userName 가져오기
-        return memoRepository.create(1, "정진우", form);
+        MemoDto memoDto = memoRepository.create(1, "정진우", form);
+        myRepository.updateHistory(PostType.MEMO, memoDto.getMemoId(), 1);
+        return memoDto;
     }
 
     public MemoDto getMemoBy(int memoId) {
