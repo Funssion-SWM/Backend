@@ -43,7 +43,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public Optional<MyUserInfoDto> findUserInfoByUserId(int userId) {
-        String sql = "select user_name from member_user where user_id = ?";
+        String sql = "select user_name from member.member_user where user_id = ?";
         return template.query(sql, MyUserInfoDto.myUserInfoDtoRowMapper(), userId).stream().findAny();
     }
 
