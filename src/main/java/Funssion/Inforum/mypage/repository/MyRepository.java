@@ -6,7 +6,6 @@ import Funssion.Inforum.memo.dto.MemoListDto;
 import Funssion.Inforum.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.mypage.dto.MyUserInfoDto;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 

@@ -9,6 +9,7 @@ import Funssion.Inforum.mypage.repository.MyRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,10 +63,15 @@ public class MemoService {
 
     @Transactional
     public MemoDto createMemo(MemoSaveDto form) {
-        // TODO: jwt 토큰에서 userId, userName 가져오기
-        MemoDto memoDto = memoRepository.create(1, "정진우", form);
-        myRepository.updateHistory(PostType.MEMO, memoDto.getMemoId(), 1);
+        Integer userId = getUserId();
+        String userName = memoRepository.findByUserId(userId);
+        MemoDto memoDto = memoRepository.create(userId, userName, form);
+        myRepository.updateHistory(PostType.MEMO, memoDto.getMemoId(), userId);
         return memoDto;
+    }
+
+    private static Integer getUserId() {
+        return Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public MemoDto getMemoBy(int memoId) {
@@ -73,7 +79,6 @@ public class MemoService {
     }
 
     public MemoDto updateMemo(int memoId, MemoSaveDto form) {
-        // TODO: jwt 토큰에서 userId 가져오기
         return memoRepository.update(memoId, form);
     }
 

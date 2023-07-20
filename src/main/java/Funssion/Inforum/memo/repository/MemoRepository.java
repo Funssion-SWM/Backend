@@ -13,6 +13,7 @@ public interface MemoRepository {
     List<MemoListDto> findAllByPeriodWithMostPopular(int period);
     List<MemoListDto> findAllWithNewest();
     MemoDto findById(int id);
+    String findByUserId(Integer userId);
     MemoDto update(int id, MemoSaveDto form);
     void delete(int id);
 }

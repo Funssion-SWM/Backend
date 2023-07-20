@@ -4,19 +4,16 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.memo.dto.MemoListDto;
 import Funssion.Inforum.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.mypage.dto.MyUserInfoDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Repository
-public class MyRepositoryJdbc implements MyRepository{
+public class MyRepositoryJdbc implements MyRepository {
     private JdbcTemplate template;
     public MyRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);

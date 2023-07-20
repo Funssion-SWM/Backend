@@ -1,12 +1,10 @@
 package Funssion.Inforum.mypage.service;
 
 import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.repository.MemoRepository;
 import Funssion.Inforum.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.mypage.dto.MyUserInfoDto;
 import Funssion.Inforum.mypage.repository.MyRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

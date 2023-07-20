@@ -70,6 +70,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return memos.get(0);
     }
 
+    public String findByUserId(Integer userId) {
+        String sql = "select user_name from member.member_user where user_id = ?";
+        return template.queryForObject(sql, String.class, userId);
+    }
+
     @Override
     public MemoDto update(int id, MemoSaveDto form) {
         String sql = "update memo set memo_title = ?, memo_text = ?, memo_color = ?, updated_date = ? where memo_id = ?";
