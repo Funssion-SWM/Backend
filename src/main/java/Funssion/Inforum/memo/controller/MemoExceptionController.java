@@ -17,21 +17,21 @@ public class MemoExceptionController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidParameterException.class)
     public String handleInvalidParamEx(InvalidParameterException e) {
-        log.error("error message={}",e.getMessage(), e);
+        log.warn("error message={}",e.getMessage(), e);
         return e.getMessage();
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NoSuchElementException.class)
     public String handleMemoNotFoundEx(NoSuchElementException e) {
-        log.error("error message={}", e.getMessage(), e);
+        log.warn("error message={}", e.getMessage(), e);
         return e.getMessage();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleValidationFailEx(MethodArgumentNotValidException e) {
-        log.error("error message={}", e.getMessage(), e);
+        log.warn("error message={}", e.getMessage(), e);
         return e.getMessage();
     }
 }

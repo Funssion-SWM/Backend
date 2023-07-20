@@ -3,19 +3,24 @@ package Funssion.Inforum.mypage.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.memo.dto.MemoListDto;
 import Funssion.Inforum.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.mypage.dto.MyUserInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import javax.sql.DataSource;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
 public class MyRepositoryJdbc implements MyRepository{
-    private final JdbcTemplate template;
+    private JdbcTemplate template;
+    public MyRepositoryJdbc(DataSource dataSource) {
+        this.template = new JdbcTemplate(dataSource);
+    }
 
     @Override
     public List<MemoListDto> findAllByUserId(int userId) {
@@ -32,13 +37,18 @@ public class MyRepositoryJdbc implements MyRepository{
                 "where user_id = ?), dat as\n" +
                 "(select jsonb_array_elements(record) as dates\n" +
                 "from rec)\n" +
-                "select dates->>'date' as date, dates->>'count' as postCnt\n" +
+                "select dates->>'date' as date, dates->>'count' as post_cnt\n" +
                 "from dat\n" +
                 "order by date";
 
         return template.query(sql, MyRecordNumDto.myRecordNumRowMapper(), userId);
     }
 
+    @Override
+    public Optional<MyUserInfoDto> findUserInfoByUserId(int userId) {
+        String sql = "select user_name from member_user where user_id = ?";
+        return template.query(sql, MyUserInfoDto.myUserInfoDtoRowMapper(), userId).stream().findAny();
+    }
 
     @Override
     public void updateHistory(PostType type, int postId, int userId) {
@@ -57,7 +67,7 @@ public class MyRepositoryJdbc implements MyRepository{
                 "\t\telse records||('[{\"date\": \"'||current_date::text||'\", \"count\": 1, \"contents\" : [{ \"id\": '||?||', \"type\": \"'||?||'\" }] }]')::jsonb\n" +
                 "\tend\n" +
                 "from dat\n" +
-                "where user_id = ?;\n";
+                "where user_id = ?\n";
         template.update(sql, userId, postId, type.toString(), postId, type.toString(), postId, type.toString(), userId);
     }
 }
