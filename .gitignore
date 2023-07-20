@@ -6,6 +6,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+/src/test/
+
 # 환경변수
 *.properties
 
