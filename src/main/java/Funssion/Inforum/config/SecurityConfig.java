@@ -57,9 +57,7 @@ public class SecurityConfig {
                                 //users 포함한 end point 보안 적용 X
                                 .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
                                 .requestMatchers("/error/**").permitAll()
-<<<<<<< Updated upstream
                                 .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
-=======
                                 .requestMatchers("/swagger-ui/**","/v2/api-docs",
                                         "/swagger-resources",
                                         "/swagger-resources/**",
@@ -71,7 +69,6 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/swagger-ui/**").permitAll()
 //                                .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
->>>>>>> Stashed changes
                                 .requestMatchers("/favicon.ico").permitAll()
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
                 )
