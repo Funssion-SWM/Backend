@@ -28,9 +28,9 @@ class MemoRepositoryJdbcTest {
     private PlatformTransactionManager transactionManager;
     private TransactionStatus transactionStatus;
 
-    private MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA다", "yellow");
-    private MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK다", "green");
-    private MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT다", "blue");
+    private MemoSaveDto form1 = new MemoSaveDto("JPA란?", "","JPA다", "yellow");
+    private MemoSaveDto form2 = new MemoSaveDto("JDK란?", "","JDK다", "green");
+    private MemoSaveDto form3 = new MemoSaveDto("JWT란?", "","JWT다", "blue");
 
     @BeforeEach
     void beforeEach() {
