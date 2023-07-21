@@ -6,10 +6,10 @@ import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +18,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Slf4j
 @Configuration
@@ -47,6 +52,7 @@ public class SecurityConfig {
                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .formLogin((formLogin)->formLogin.disable())
+                .cors(Customizer.withDefaults())
                 // enable h2-console
                 .headers((headers)->
                         headers.contentTypeOptions(contentTypeOptionsConfig ->
@@ -63,7 +69,6 @@ public class SecurityConfig {
                                 .requestMatchers("/error/**").permitAll()
                                 .requestMatchers(HttpMethod.GET ,"/memos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/mypage/**").permitAll()
-//                                .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
                                 .requestMatchers("/swagger-ui/**","/v2/api-docs",
                                         "/swagger-resources",
                                         "/swagger-resources/**",
@@ -85,4 +90,13 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
