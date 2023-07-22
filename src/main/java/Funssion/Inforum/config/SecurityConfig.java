@@ -52,7 +52,6 @@ public class SecurityConfig {
                                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .formLogin((formLogin)->formLogin.disable())
-                .cors(Customizer.withDefaults())
                 // enable h2-console
                 .headers((headers)->
                         headers.contentTypeOptions(contentTypeOptionsConfig ->
@@ -90,13 +89,13 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 }
