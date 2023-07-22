@@ -4,7 +4,6 @@ import Funssion.Inforum.domain.memo.dto.MemoDto;
 import Funssion.Inforum.domain.memo.dto.MemoListDto;
 import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,7 +15,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Repository
@@ -38,6 +36,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
         String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
                 "VALUES (?, ?, ?, to_json(?::text), ?, ?, ?);";
+
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             psmt.setInt(1,userId);
