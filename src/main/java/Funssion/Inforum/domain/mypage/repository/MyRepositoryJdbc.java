@@ -22,9 +22,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public List<MemoListDto> findAllByUserId(int userId) {
         String sql = "select * from memo.info where user_id = ?";
-        List<MemoListDto> memoList = template.query(sql, MemoListDto.memoListRowMapper(), userId);
-        if (memoList.isEmpty()) throw new NoSuchElementException("memo not found");
-        return memoList;
+        return template.query(sql, MemoListDto.memoListRowMapper(), userId);
     }
 
     @Override
@@ -65,6 +63,7 @@ public class MyRepositoryJdbc implements MyRepository {
                 "\tend\n" +
                 "from dat\n" +
                 "where user_id = ?\n";
+
         template.update(sql, userId, postId, type.toString(), postId, type.toString(), postId, type.toString(), userId);
     }
 }

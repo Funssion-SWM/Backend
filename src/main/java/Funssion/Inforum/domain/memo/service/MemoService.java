@@ -1,62 +1,56 @@
 package Funssion.Inforum.domain.memo.service;
 
+import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.domain.memo.dto.MemoDto;
 import Funssion.Inforum.domain.memo.dto.MemoListDto;
 import Funssion.Inforum.domain.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class MemoService {
 
-    private static Map<String, Integer> periodToDaysMap;
     private final MemoRepository memoRepository;
     private final MyRepository myRepository;
 
-    @PostConstruct
-    private void init() {
-        periodToDaysMap = new ConcurrentHashMap<>();
-        periodToDaysMap.put("day", 1);
-        periodToDaysMap.put("week", 7);
-        periodToDaysMap.put("month", 30);
-        periodToDaysMap.put("year", 365);
-    }
-
-    public ArrayList<MemoListDto> getMemosInMainPage(String period, String orderBy) {
+    public List<MemoListDto> getMemosInMainPage(String period, String orderBy) {
 
         int days = getDays(period);
 
-        log.debug("orderby value = {}",orderBy);
-        if (orderBy.equals("new")) {
-            return new ArrayList<>(memoRepository.findAllWithNewest());
-        } else if (orderBy.isEmpty() || orderBy.equals("hot")) {
-            // TODO: 좋아요 필드 추가되면 repository 넣기
-            throw new InvalidParameterException("orderBy is undefined value");
-        } else {
-            throw new InvalidParameterException("orderBy is undefined value");
+        MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy);
+
+        switch (memoOrderType) {
+            case NEW -> {
+                return new ArrayList<>(memoRepository.findAllWithNewest());
+            }
+            //TODO : v2 에서 좋아요 순 정렬 메서드 추가
+            case HOT -> throw new IllegalArgumentException("orderBy is undefined value");
+            default -> throw new IllegalArgumentException("orderBy is undefined value");
         }
     }
 
     private static int getDays(String period) {
-        if (period.isEmpty()) period = "day";
-
-        Integer days = periodToDaysMap.get(period);
-        if (days == null) {
-            throw new InvalidParameterException("period is undefined value");
+        DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
+        int days = 0;
+        switch (dateType) {
+            case DAY -> days = 1;
+            case WEEK -> days = 7;
+            case MONTH -> days = 31;
+            case YEAR -> days = 365;
+            default -> days = 0;
         }
         return days;
     }
@@ -65,9 +59,9 @@ public class MemoService {
     public MemoDto createMemo(MemoSaveDto form) {
         Integer userId = getUserId();
         String userName = memoRepository.findByUserId(userId);
-        MemoDto memoDto = memoRepository.create(userId, userName, form);
-        myRepository.updateHistory(PostType.MEMO, memoDto.getMemoId(), userId);
-        return memoDto;
+        Integer memoId = memoRepository.create(userId, userName, form);
+        myRepository.updateHistory(PostType.MEMO, memoId, userId);
+        return memoRepository.findById(memoId).orElseThrow();
     }
 
     private static Integer getUserId() {
@@ -75,14 +69,18 @@ public class MemoService {
     }
 
     public MemoDto getMemoBy(int memoId) {
-        return memoRepository.findById(memoId);
+        return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
     }
 
+    @Transactional
     public MemoDto updateMemo(int memoId, MemoSaveDto form) {
-        return memoRepository.update(memoId, form);
+        if (memoRepository.update(memoId, form) == 0)
+            throw new IllegalStateException("update fail");
+        return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
     }
 
     public void deleteMemo(int memoId) {
-        memoRepository.delete(memoId);
+        if (memoRepository.delete(memoId) == 0)
+            throw new IllegalStateException("delete fail");
     }
 }

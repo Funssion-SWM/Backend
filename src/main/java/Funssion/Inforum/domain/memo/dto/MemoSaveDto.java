@@ -17,12 +17,6 @@ public class MemoSaveDto {
     @NotBlank(message = "색을 지정해주세요")
     private String memoColor;
 
-    public MemoSaveDto(String memoTitle,String memoText, String memoColor) {
-        this.memoTitle = memoTitle;
-        this.memoText = memoText;
-        this.memoColor = memoColor;
-    }
-
     public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor) {
         this.memoTitle = memoTitle;
         this.memoDescription = memoDescription;
