@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.memo.controller;
 
+import Funssion.Inforum.domain.exception.ErrorResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,8 +16,8 @@ import java.util.NoSuchElementException;
 public class MemoExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(InvalidParameterException.class)
-    public String handleInvalidParamEx(InvalidParameterException e) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public String handleInvalidParamEx(IllegalArgumentException e) {
         log.warn("error message={}",e.getMessage(), e);
         return e.getMessage();
     }
@@ -32,6 +33,13 @@ public class MemoExceptionController {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleValidationFailEx(MethodArgumentNotValidException e) {
         log.warn("error message={}", e.getMessage(), e);
+        return e.getMessage();
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(IllegalStateException.class)
+    public String handleDBFailEx(MethodArgumentNotValidException e) {
+        log.error("error message={}", e.getMessage(), e);
         return e.getMessage();
     }
 }

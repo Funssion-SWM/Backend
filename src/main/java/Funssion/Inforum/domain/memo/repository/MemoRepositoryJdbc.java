@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.memo.dto.MemoDto;
 import Funssion.Inforum.domain.memo.dto.MemoListDto;
 import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,6 +17,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Repository
 @Slf4j
@@ -27,31 +29,32 @@ public class MemoRepositoryJdbc implements MemoRepository{
         this.template = new JdbcTemplate(dataSource);
     }
 
+    // insert and return PK
     @Override
-    public MemoDto create(int userId, String userName, MemoSaveDto form) {
+    public Integer create(Integer userId, String userName, MemoSaveDto form) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         log.debug("form = {}",form);
 
         String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
-                "VALUES (?, ?, ?, ?, ?, ?, ?);";
+                "VALUES (?, ?, ?, to_json(?::text), ?, ?, ?);";
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             psmt.setInt(1,userId);
             psmt.setString(2,userName);
             psmt.setString(3,form.getMemoTitle());
-            psmt.setString(4,form.getMemoText().toString());
+            psmt.setString(4,form.getMemoText());
             psmt.setString(5,form.getMemoColor());
             psmt.setDate(6,Date.valueOf(LocalDate.now()));
             psmt.setDate(7,null);
             return psmt;
         }, keyHolder);
 
-        return findById((Integer) keyHolder.getKeys().get("memo_id"));
+        return (Integer) keyHolder.getKeys().get("memo_id");
     }
 
     @Override
-    public List<MemoListDto> findAllByPeriodWithMostPopular(int period) {
+    public List<MemoListDto> findAllByPeriodWithMostPopular(Integer period) {
         String sql = "select * from memo.info where created_date >= current_date - CAST(? AS int) order by likes desc";
         return template.query(sql,MemoListDto.memoListRowMapper(), period);
     }
@@ -63,11 +66,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public MemoDto findById(int id) {
+    public Optional<MemoDto> findById(Integer id) {
         String sql = "select * from memo.info where memo_id = ? order by created_date desc";
-        List<MemoDto> memos = template.query(sql, MemoDto.memoRowMapper(), id);
-        if (memos.size() != 1) throw new NoSuchElementException("memo not found");
-        return memos.get(0);
+        return template.query(sql, MemoDto.memoRowMapper(), id).stream().findAny();
     }
 
     public String findByUserId(Integer userId) {
@@ -76,18 +77,14 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public MemoDto update(int id, MemoSaveDto form) {
-        String sql = "update memo.info set memo_title = ?, memo_text = ?, memo_color = ?, updated_date = ? where memo_id = ?";
-        if (template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), id) == 0)
-            throw new NoSuchElementException("memo not found");
-        return findById(id);
+    public Integer update(Integer id, MemoSaveDto form) {
+        String sql = "update memo.info set memo_title = ?, memo_text = to_json(?::text), memo_color = ?, updated_date = ? where memo_id = ?";
+        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), id);
     }
 
     @Override
-    public void delete(int id) {
+    public Integer delete(Integer id) {
         String sql = "delete from memo.info where memo_id = ?";
-        if (template.update(sql, id) == 0)
-            throw new NoSuchElementException("memo not found");
-
+        return template.update(sql, id);
     }
 }

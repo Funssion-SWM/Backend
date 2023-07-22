@@ -21,10 +21,14 @@ public class MyService {
     }
 
     public List<MyRecordNumDto> getHistory(int userId) {
-        return myRepository.findRecordNumByUserId(userId);
+        List<MyRecordNumDto> records = myRepository.findRecordNumByUserId(userId);
+        if(records.isEmpty()) throw new NoSuchElementException("user not found");
+        return records;
     }
 
     public List<MemoListDto> getMyMemos(int userId) {
-        return myRepository.findAllByUserId(userId);
+        List<MemoListDto> memos = myRepository.findAllByUserId(userId);
+        if(memos.isEmpty()) throw new NoSuchElementException("user not found");
+        return memos;
     }
 }
