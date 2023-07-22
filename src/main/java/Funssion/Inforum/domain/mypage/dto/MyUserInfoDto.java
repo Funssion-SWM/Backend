@@ -1,4 +1,4 @@
-package Funssion.Inforum.mypage.dto;
+package Funssion.Inforum.domain.mypage.dto;
 
 import lombok.Builder;
 import lombok.Data;

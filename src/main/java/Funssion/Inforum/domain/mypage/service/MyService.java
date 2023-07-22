@@ -1,9 +1,9 @@
-package Funssion.Inforum.mypage.service;
+package Funssion.Inforum.domain.mypage.service;
 
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.mypage.dto.MyUserInfoDto;
-import Funssion.Inforum.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

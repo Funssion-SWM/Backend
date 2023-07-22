@@ -1,4 +1,4 @@
-package Funssion.Inforum.mypage.controller;
+package Funssion.Inforum.domain.mypage.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,7 +10,7 @@ import java.security.InvalidParameterException;
 import java.util.NoSuchElementException;
 
 @Slf4j
-@RestControllerAdvice("Funssion.Inforum.mypage")
+@RestControllerAdvice("Funssion.Inforum.domain.mypage")
 public class MyExceptionController {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

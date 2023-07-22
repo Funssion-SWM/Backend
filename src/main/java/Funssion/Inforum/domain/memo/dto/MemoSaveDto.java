@@ -1,4 +1,4 @@
-package Funssion.Inforum.memo.dto;
+package Funssion.Inforum.domain.memo.dto;
 
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.validation.constraints.NotBlank;

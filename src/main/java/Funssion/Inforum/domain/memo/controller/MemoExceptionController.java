@@ -1,4 +1,4 @@
-package Funssion.Inforum.memo.controller;
+package Funssion.Inforum.domain.memo.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +11,7 @@ import java.security.InvalidParameterException;
 import java.util.NoSuchElementException;
 
 @Slf4j
-@RestControllerAdvice("Funssion.Inforum.memo")
+@RestControllerAdvice("Funssion.Inforum.domain.memo")
 public class MemoExceptionController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

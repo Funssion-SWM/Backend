@@ -1,4 +1,4 @@
-package Funssion.Inforum.memo.entity;
+package Funssion.Inforum.domain.memo.entity;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

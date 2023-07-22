@@ -1,11 +1,11 @@
-package Funssion.Inforum.memo.service;
+package Funssion.Inforum.domain.memo.service;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.memo.dto.MemoDto;
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.dto.MemoSaveDto;
-import Funssion.Inforum.memo.repository.MemoRepository;
-import Funssion.Inforum.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.memo.dto.MemoDto;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

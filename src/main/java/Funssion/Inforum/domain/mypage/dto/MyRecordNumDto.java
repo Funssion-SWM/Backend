@@ -1,6 +1,5 @@
-package Funssion.Inforum.mypage.dto;
+package Funssion.Inforum.domain.mypage.dto;
 
-import Funssion.Inforum.memo.dto.MemoListDto;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.jdbc.core.RowMapper;

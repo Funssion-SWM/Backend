@@ -1,9 +1,9 @@
-package Funssion.Inforum.mypage.controller;
+package Funssion.Inforum.domain.mypage.controller;
 
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.mypage.dto.MyUserInfoDto;
-import Funssion.Inforum.mypage.service.MyService;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.mypage.service.MyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

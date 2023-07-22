@@ -1,9 +1,9 @@
-package Funssion.Inforum.mypage.repository;
+package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +21,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public List<MemoListDto> findAllByUserId(int userId) {
-        String sql = "select * from memo where user_id = ?";
+        String sql = "select * from memo.info where user_id = ?";
         List<MemoListDto> memoList = template.query(sql, MemoListDto.memoListRowMapper(), userId);
         if (memoList.isEmpty()) throw new NoSuchElementException("memo not found");
         return memoList;
@@ -30,7 +30,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public List<MyRecordNumDto> findRecordNumByUserId(int userId) {
         String sql = "with rec as (select records as record\n" +
-                "from history\n" +
+                "from member.history\n" +
                 "where user_id = ?), dat as\n" +
                 "(select jsonb_array_elements(record) as dates\n" +
                 "from rec)\n" +
@@ -52,9 +52,9 @@ public class MyRepositoryJdbc implements MyRepository {
         String sql = "with dat as\n" +
                 "(select cast(daily_history->>'count' as int) as count, (daily_history->>'contents')::jsonb as contents, \n" +
                 "('{'||index-1||', \"count\"}')::text[] as count_path, ('{'||index-1||', \"contents\"}')::text[] as content_path\n" +
-                "from history, jsonb_array_elements(records) with ordinality dates(daily_history, index)\n" +
+                "from member.history, jsonb_array_elements(records) with ordinality dates(daily_history, index)\n" +
                 "where user_id = ? and daily_history->>'date' = current_date::text)\n" +
-                "update history\n" +
+                "update member.history\n" +
                 "set records =\n" +
                 "\tcase \n" +
                 "\t\twhen records is null \n" +

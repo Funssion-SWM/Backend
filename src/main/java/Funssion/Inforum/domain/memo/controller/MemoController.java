@@ -1,9 +1,9 @@
-package Funssion.Inforum.memo.controller;
+package Funssion.Inforum.domain.memo.controller;
 
-import Funssion.Inforum.memo.dto.MemoDto;
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.dto.MemoSaveDto;
-import Funssion.Inforum.memo.service.MemoService;
+import Funssion.Inforum.domain.memo.dto.MemoDto;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.memo.service.MemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

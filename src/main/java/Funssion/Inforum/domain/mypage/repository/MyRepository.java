@@ -1,10 +1,10 @@
-package Funssion.Inforum.mypage.repository;
+package Funssion.Inforum.domain.mypage.repository;
 
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 
 import java.util.List;
 import java.util.Optional;

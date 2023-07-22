@@ -1,9 +1,9 @@
-package Funssion.Inforum.memo.repository;
+package Funssion.Inforum.domain.memo.repository;
 
 
-import Funssion.Inforum.memo.dto.MemoDto;
-import Funssion.Inforum.memo.dto.MemoListDto;
-import Funssion.Inforum.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.memo.dto.MemoDto;
+import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
 
 import java.util.List;
 
