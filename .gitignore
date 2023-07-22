@@ -5,8 +5,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+/src/test/
+
 # 환경변수
-.src/main/resources/application-jwt.properties
+*.properties
 
 ### STS ###
 .apt_generated
