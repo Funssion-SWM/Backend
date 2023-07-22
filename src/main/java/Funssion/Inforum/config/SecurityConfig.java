@@ -44,6 +44,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
+                .cors(Customizer.withDefaults())
                 // token을 사용하는 방식이기 때문에 csrf를 disable합니다.
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling((exceptionHandling) -> //컨트롤러의 예외처리를 담당하는 exception handler와는 다름.
@@ -60,7 +61,6 @@ public class SecurityConfig {
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests((authorizeRequests)->
                         authorizeRequests
                                 //users 포함한 end point 보안 적용 X
