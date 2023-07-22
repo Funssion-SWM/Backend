@@ -3,9 +3,11 @@ package Funssion.Inforum.domain.memo.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor // cannot deserialize from object value (no delegate- or property-based creator) 오류 해결 위한 빈 생성자 생성
 public class MemoSaveDto {
     @NotBlank(message = "제목을 입력해주세요")
     private String memoTitle;
