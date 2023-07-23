@@ -33,6 +33,7 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
+        log.debug("동우 들어옴");
         return memoService.createMemo(memoSaveDto);
     }
 

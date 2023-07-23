@@ -30,7 +30,7 @@ public class MemoService {
 
         int days = getDays(period);
 
-        MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy);
+        MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
 
         switch (memoOrderType) {
             case NEW -> {
