@@ -65,7 +65,6 @@ public class MemoService {
     }
 
     private static Integer getUserId() {
-        log.debug("memoservice getUserId = {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
