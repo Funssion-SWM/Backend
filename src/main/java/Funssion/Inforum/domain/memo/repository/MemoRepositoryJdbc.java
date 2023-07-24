@@ -35,7 +35,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         log.debug("form = {}",form);
 
         String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
-                "VALUES (?, ?, ?, to_json(?::text), ?, ?, ?);";
+                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

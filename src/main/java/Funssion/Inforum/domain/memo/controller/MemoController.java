@@ -4,14 +4,12 @@ import Funssion.Inforum.domain.memo.dto.MemoDto;
 import Funssion.Inforum.domain.memo.dto.MemoListDto;
 import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
 import Funssion.Inforum.domain.memo.service.MemoService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -33,7 +31,6 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
-        log.debug("동우 들어옴");
         return memoService.createMemo(memoSaveDto);
     }
 
