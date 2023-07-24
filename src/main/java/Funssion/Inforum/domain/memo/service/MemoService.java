@@ -60,7 +60,7 @@ public class MemoService {
         Integer userId = getUserId();
         String userName = memoRepository.findByUserId(userId);
         Integer memoId = memoRepository.create(userId, userName, form);
-        myRepository.updateHistory(PostType.MEMO, memoId, userId);
+        myRepository.updateCreationToHistory(PostType.MEMO, memoId, userId);
         return memoRepository.findById(memoId).orElseThrow();
     }
 
@@ -82,8 +82,11 @@ public class MemoService {
         return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
     }
 
+    @Transactional
     public void deleteMemo(int memoId) {
+        Integer userId = getUserId();
         if (memoRepository.delete(memoId) == 0)
             throw new IllegalStateException("delete fail");
+        myRepository.updateDeletionToHistory(PostType.MEMO, memoId, userId);
     }
 }
