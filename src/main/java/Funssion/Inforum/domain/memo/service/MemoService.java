@@ -60,27 +60,37 @@ public class MemoService {
         Integer userId = getUserId();
         String userName = memoRepository.findByUserId(userId);
         Integer memoId = memoRepository.create(userId, userName, form);
-        myRepository.updateHistory(PostType.MEMO, memoId, userId);
+        myRepository.updateCreationToHistory(PostType.MEMO, memoId, userId);
         return memoRepository.findById(memoId).orElseThrow();
     }
 
     private static Integer getUserId() {
-        return Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (userId == "anonymousUser") {
+            return 0;
+        }
+        return Integer.valueOf(userId);
     }
 
     public MemoDto getMemoBy(int memoId) {
-        return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
+        MemoDto memo = memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
+        memo.setWriter(memo.getUserId() == getUserId());
+        return memo;
     }
 
     @Transactional
     public MemoDto updateMemo(int memoId, MemoSaveDto form) {
-        if (memoRepository.update(memoId, form) == 0)
+        Integer userId = getUserId();
+        if (memoRepository.update(memoId, userId, form) == 0)
             throw new IllegalStateException("update fail");
         return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
     }
 
+    @Transactional
     public void deleteMemo(int memoId) {
+        Integer userId = getUserId();
         if (memoRepository.delete(memoId) == 0)
             throw new IllegalStateException("delete fail");
+        myRepository.updateDeletionToHistory(PostType.MEMO, memoId, userId);
     }
 }

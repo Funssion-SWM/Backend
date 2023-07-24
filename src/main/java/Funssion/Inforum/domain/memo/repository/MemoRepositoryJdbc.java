@@ -35,7 +35,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         log.debug("form = {}",form);
 
         String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
-                "VALUES (?, ?, ?, to_json(?::text), ?, ?, ?);";
+                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -60,13 +60,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public List<MemoListDto> findAllWithNewest() {
-        String sql = "select * from memo.info order by created_date desc";
+        String sql = "select * from memo.info order by memo_id desc";
         return template.query(sql, MemoListDto.memoListRowMapper());
     }
 
     @Override
     public Optional<MemoDto> findById(Integer id) {
-        String sql = "select * from memo.info where memo_id = ? order by created_date desc";
+        String sql = "select * from memo.info where memo_id = ?";
         return template.query(sql, MemoDto.memoRowMapper(), id).stream().findAny();
     }
 
@@ -76,9 +76,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public Integer update(Integer id, MemoSaveDto form) {
-        String sql = "update memo.info set memo_title = ?, memo_text = to_json(?::text), memo_color = ?, updated_date = ? where memo_id = ?";
-        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), id);
+    public Integer update(Integer memoId, Integer userId, MemoSaveDto form) {
+        String sql = "update memo.info set memo_title = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ? and user_id = ?";
+        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), memoId, userId);
     }
 
     @Override

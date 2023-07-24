@@ -6,11 +6,16 @@ import Funssion.Inforum.domain.member.dto.MemberSaveForm;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+
+import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -42,10 +47,10 @@ public class MemberService implements UserDetailsService {
 
         //중복 처리 한번더 검증
         if(! isValidEmail(memberSaveForm.getUser_email(),loginType)){
-            throw new IllegalStateException("이미 존재하는 회원 닉네임입니다.");
+            throw new IllegalStateException("이미 가입된 회원 이메일입니다.");
         }
         if(! isValidName(memberSaveForm.getUser_name(),loginType)){
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+            throw new IllegalStateException("이미 가입된 닉네임입니다.");
         }
 
         memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
@@ -69,7 +74,6 @@ public class MemberService implements UserDetailsService {
 
     public boolean isValidName(String username, LoginType loginType) {
         memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
-
         // findByName 메서드를 호출하고 결과가 존재하는지 확인하여 중복 검사를 수행
         Optional<NonSocialMember> optionalMember = memberRepository.findByName(username);
         if (optionalMember.isPresent()) {

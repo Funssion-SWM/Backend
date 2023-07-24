@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.memo.dto.MemoListDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@Slf4j
 @Repository
 public class MyRepositoryJdbc implements MyRepository {
     private JdbcTemplate template;
@@ -46,24 +48,53 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     @Override
-    public void updateHistory(PostType type, int postId, int userId) {
+    public void createHistory(int userId) {
+        String sql = "INSERT INTO member.history (user_id) values (?)";
+        template.update(sql, userId);
+    }
+
+    @Override
+    public void updateCreationToHistory(PostType type, int postId, int userId) {
+        log.debug("updateCreationToHistory params = {} {} {}", type, postId, userId);
+
         String sql = "with dat as\n" +
                 "(select cast(daily_history->>'count' as int) as count, (daily_history->>'contents')::jsonb as contents, \n" +
                 "('{'||index-1||', \"count\"}')::text[] as count_path, ('{'||index-1||', \"contents\"}')::text[] as content_path\n" +
                 "from member.history, jsonb_array_elements(records) with ordinality dates(daily_history, index)\n" +
-                "where user_id = ? and daily_history->>'date' = current_date::text)\n" +
+                "where user_id = ?)\n" +
                 "update member.history\n" +
                 "set records =\n" +
                 "\tcase \n" +
-                "\t\twhen records is null \n" +
+                "\t\twhen records is null\n" +
                 "\t\tthen ('[{\"date\": \"'||current_date::text||'\", \"count\": 1, \"contents\" : [{ \"id\": '||?||', \"type\": \"'||?||'\" }] }]')::jsonb\n" +
                 "\t\twhen records @> ('[{\"date\": \"'||current_date::text||'\"}]')::jsonb \n" +
-                "\t\tthen jsonb_set(jsonb_set(records, count_path, (count + 1)::text::jsonb), content_path, contents||('[{ \"id\": '||?||', \"type\": \"'||?||'\" }]')::jsonb)\n" +
+                "\t\tthen (select jsonb_set(jsonb_set(records, count_path, (count + 1)::text::jsonb), content_path, contents||('[{ \"id\": '||?||', \"type\": \"'||?||'\" }]')::jsonb)\n" +
+                "\t\tfrom dat)\n" +
                 "\t\telse records||('[{\"date\": \"'||current_date::text||'\", \"count\": 1, \"contents\" : [{ \"id\": '||?||', \"type\": \"'||?||'\" }] }]')::jsonb\n" +
                 "\tend\n" +
-                "from dat\n" +
-                "where user_id = ?\n";
+                "where user_id = ?;";
 
-        template.update(sql, userId, postId, type.toString(), postId, type.toString(), postId, type.toString(), userId);
+        int updated = template.update(sql, userId, postId, type.toString(), postId, type.toString(), postId, type.toString(), userId);
+        log.debug("updateCreationToHistory rs = {}", updated);
+    }
+
+    @Override
+    public void updateDeletionToHistory(PostType type, int postId, int userId) {
+        log.debug("updateDeletionToHistory params = {} {} {}", type, postId, userId);
+
+        String sql = "with dat as\n" +
+                "(select count, count_path, contents, contents_path, cast((content.index-1) as int) as content_path from\n" +
+                "(select cast(daily_history->>'count' as int) as count, (daily_history->>'contents')::jsonb as contents, \n" +
+                "('{'||index-1||', \"contents\"}')::text[] as contents_path, ('{'||index-1||', \"count\"}')::text[] as count_path, index\n" +
+                "from member.history, jsonb_array_elements(records) with ordinality dates(daily_history, index)\n" +
+                "where user_id = ?) t, jsonb_array_elements(contents) with ordinality content(info, index)\n" +
+                "where info->>'id' = ?::text and info->>'type' = ?::text)\n" +
+                "update member.history\n" +
+                "set records =(\n" +
+                "\t\tselect jsonb_set(jsonb_set(records, count_path, (count - 1)::text::jsonb), contents_path, contents - content_path)\n" +
+                "\t\tfrom dat)\n" +
+                "where user_id = ? and exists (select 1 from dat)";
+
+        template.update(sql, userId, postId, type.toString(), userId);
     }
 }
