@@ -1,20 +1,14 @@
 package Funssion.Inforum.domain.member.controller;
 
-import Funssion.Inforum.domain.member.dto.NonSocialMemberSaveForm;
-import Funssion.Inforum.swagger.ErrorResponse;
-import Funssion.Inforum.swagger.SuccessResponse;
-import Funssion.Inforum.domain.member.service.NonSocialMemberService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+import Funssion.Inforum.domain.member.LoginType;
+import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,41 +17,31 @@ import java.security.NoSuchAlgorithmException;
 
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class MemberController {
 
-    private final NonSocialMemberService memberService;
+    private final MemberService memberService;
 
-    @Operation(summary = "회원가입 실행 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
-    @PostMapping()
-    @ResponseBody
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "회원가입 성공, redirection 필요", content = @Content(schema=@Schema(implementation= SuccessResponse.class),mediaType = "application/json")),
-            @ApiResponse(responseCode = "409", description = "이미 존재하는 회원 정보입니다.", content = @Content(schema=@Schema(implementation= ErrorResponse.class),mediaType = "application/json")),
-            @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema=@Schema(implementation= ErrorResponse.class),mediaType = "application/json")),
-    })
-    public ResponseEntity create(@RequestBody @Validated NonSocialMemberSaveForm nonSocialMemberSaveForm, BindingResult bindingResult) throws NoSuchAlgorithmException { //dto로 바꿔야함
+
+    @PostMapping("")
+    public ResponseEntity create(@RequestBody @Validated MemberSaveForm memberSaveForm, BindingResult bindingResult) throws NoSuchAlgorithmException { //dto로 바꿔야함
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(bindingResult.getAllErrors());
         }
-        log.info("create in controller, member = {}", nonSocialMemberSaveForm);
-        Long save_id = memberService.join(nonSocialMemberSaveForm);
+        Long save_id = memberService.join(memberSaveForm);
         return new ResponseEntity(HttpStatus.CREATED);
     }
-
-    @ResponseBody
-    public String validateDuplicateEmail(@RequestParam(value="email", required=true) String email){
-        memberService.validateDuplicateEmail(email);
-        return "ok";
+    @GetMapping("/non-social/email-valid/{email}")
+    public Boolean isValidateDuplicateEmail(@RequestParam(value="email", required=true) String email){
+        return memberService.isValidEmail(email,LoginType.NON_SOCIAL);
     }
+    @GetMapping("/non-social/name-valid/{name}")
+    public Boolean isValidName(@RequestParam(value="name", required=true) String name){
+        return memberService.isValidName(name,LoginType.NON_SOCIAL);
 
-    @ResponseBody
-    public String validateDuplicateName(@RequestParam(value="email", required=true) String username){
-        memberService.validateDuplicateName(username);
-        return "ok";
     }
     @ResponseBody
     @GetMapping("/check")

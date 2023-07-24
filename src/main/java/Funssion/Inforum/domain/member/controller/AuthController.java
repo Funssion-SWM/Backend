@@ -40,11 +40,11 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginForm nonSocialMemberLoginForm) {
-
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(nonSocialMemberLoginForm.getUser_email(), nonSocialMemberLoginForm.getUser_pw());
         log.info("authetntication manager builder get object = {}",authenticationManagerBuilder.getObject());
         // authenticate 메소드가 실행이 될 때 CustomUserDetailsService class의 loadUserByUsername 메소드가 실행 및 db와 대조하여 인증
+        log.info("credentials on token = {}",authenticationToken.getCredentials());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("authentication info = {}",authentication);
         // 해당 객체를 SecurityContextHolder에 저장하고
@@ -54,8 +54,7 @@ public class AuthController {
         HttpHeaders httpHeaders = new HttpHeaders();
         // response header에 jwt token에 넣어줌
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-
         // tokenDto를 이용해 response body에도 넣어서 리턴
-        return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(new TokenDto(jwt,Long.parseLong(authentication.getName())), httpHeaders, HttpStatus.OK);
     }
 }

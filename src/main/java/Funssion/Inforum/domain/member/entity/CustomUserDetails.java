@@ -21,7 +21,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
     private String nickname;	//닉네임
     private Collection<GrantedAuthority> authorities;	//권한 목록
 
-    public CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
+    public  CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
         this.id = String.valueOf(authId);
         this.email = userEmail;
         this.password = userPw;

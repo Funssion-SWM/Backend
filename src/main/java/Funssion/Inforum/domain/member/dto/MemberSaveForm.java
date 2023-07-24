@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.dto;
 
+import Funssion.Inforum.domain.member.LoginType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -9,14 +10,14 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 //DTO 정의
-public class NonSocialMemberSaveForm {
-    public NonSocialMemberSaveForm(){
+public class MemberSaveForm {
+    public MemberSaveForm(){
         
     }
     @NotBlank
     private String user_name;
 
-    private Integer login_type = 0; //default 값은 non-social 로그인 타입인 0 으로 설정
+    private LoginType login_type = LoginType.NON_SOCIAL; //회원가입은 논소셜만 가정
 
     @NotBlank
     @Email(message="이메일 주소 양식을 확인해주세요")
