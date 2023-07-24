@@ -27,8 +27,8 @@ import java.util.Optional;
 public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
-
     ObjectMapper objectMapper = new ObjectMapper();
+
     @Transactional
     @Override
     //DAO 의 Member 객체로 정의
@@ -45,7 +45,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         //----------------------------------------------------------//
 
         //---------------- member.auth 테이블 insert -------------//
-        //SHA256 sha256 = new SHA256(); JWT 에서 sha256 Encoder Standard~ deprecated되어 bcrypt로 변경
+        //  SHA256 sha256 = new SHA256(); JWT 에서 sha256 Encoder Standard~ deprecated되어 bcrypt로 변경
         SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
         jdbcInsertAuth.withSchemaName("MEMBER").withTableName("MEMBER_AUTH").usingGeneratedKeyColumns("auth_id");
         Map<String,Object> insertAuth = new HashMap<>(3);
@@ -54,24 +54,23 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         insertAuth.put("user_id",user_key);
         Number nonsocial_key = jdbcInsertAuth.executeAndReturnKey(new MapSqlParameterSource(insertAuth));
 
-        //---------------------------------------------------------//
+        //------------------------------------- --------------------//
         NonSocialMember authMember = objectMapper.convertValue(insertAuth, NonSocialMember.class);
         return authMember;
     }
 
     @Override
     public Optional<NonSocialMember> findByEmail(String Email) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberAuthRowMapper(),Email);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT AUTH_ID,USER_ID,USER_PW,USER_EMAIL FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberAuthRowMapper(),Email);
         return result.stream().findAny();
     }
 
     @Override
     public Optional<NonSocialMember> findByName(String Name) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT * FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberAuthRowMapper(),Name);
+        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberUserRowMapper(),Name);
         return result.stream().findAny();
     }
 
-    //Auth table mapper
     private RowMapper<NonSocialMember> memberAuthRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override
@@ -81,6 +80,18 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
                 member.setAuth_id(rs.getLong("auth_id"));
                 member.setUser_pw(rs.getString("user_pw"));
                 member.setUser_email(rs.getString("user_email"));
+                return member;
+            }
+        };
+    }
+
+    private RowMapper<NonSocialMember> memberUserRowMapper(){
+        return new RowMapper<NonSocialMember>() {
+            @Override
+            public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
+                NonSocialMember member = new NonSocialMember();
+                member.setUser_id(rs.getLong("user_id"));
+
                 return member;
             }
         };
