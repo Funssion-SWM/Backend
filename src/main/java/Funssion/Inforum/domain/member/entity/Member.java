@@ -1,7 +1,5 @@
 package Funssion.Inforum.domain.member.entity;
 
-import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,4 +11,5 @@ public class Member {
     private String user_name;
 
     private Integer login_type;
+
 }

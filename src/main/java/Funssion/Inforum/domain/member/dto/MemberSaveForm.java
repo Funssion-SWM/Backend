@@ -9,8 +9,8 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 //DTO 정의
-public class NonSocialMemberSaveForm {
-    public NonSocialMemberSaveForm(){
+public class MemberSaveForm {
+    public MemberSaveForm(){
         
     }
     @NotBlank

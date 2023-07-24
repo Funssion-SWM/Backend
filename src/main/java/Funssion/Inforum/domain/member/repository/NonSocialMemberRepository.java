@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-@Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
+@Repository() // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
 public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
