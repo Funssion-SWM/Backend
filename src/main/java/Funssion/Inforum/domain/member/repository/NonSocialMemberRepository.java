@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -18,15 +19,12 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
+@RequiredArgsConstructor
 @Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
 public class NonSocialMemberRepository extends MemberRepository<NonSocialMember> {
+    private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
 
-    // Constructor to initialize jdbcTemplate and passwordEncoder
-    public NonSocialMemberRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
-        super(jdbcTemplate);
-        this.passwordEncoder = passwordEncoder;
-    }
     ObjectMapper objectMapper = new ObjectMapper();
     @Transactional
     @Override

@@ -25,12 +25,13 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class MemberController {
 
     private final NonSocialMemberService memberService;
 
     @Operation(summary = "회원가입 실행 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
-    @PostMapping("/users")
+    @PostMapping()
     @ResponseBody
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "회원가입 성공, redirection 필요", content = @Content(schema=@Schema(implementation= SuccessResponse.class),mediaType = "application/json")),
@@ -49,9 +50,13 @@ public class MemberController {
 
     @ResponseBody
     public String validateDuplicateEmail(@RequestParam(value="email", required=true) String email){
-        NonSocialMemberSaveForm nonSocialMemberSaveForm = new NonSocialMemberSaveForm();
-        nonSocialMemberSaveForm.setUser_email(email);
-        memberService.validateDuplicateEmail(nonSocialMemberSaveForm, nonSocialMemberSaveForm.getLogin_type());
+        memberService.validateDuplicateEmail(email);
+        return "ok";
+    }
+
+    @ResponseBody
+    public String validateDuplicateName(@RequestParam(value="email", required=true) String username){
+        memberService.validateDuplicateName(username);
         return "ok";
     }
     @ResponseBody
