@@ -66,8 +66,8 @@ public class MemoService {
 
     private static Integer getUserId() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (userId == "anonymous") {
-            return -1;
+        if (userId == "anonymousUser") {
+            return 0;
         }
         return Integer.valueOf(userId);
     }
