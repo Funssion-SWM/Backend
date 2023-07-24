@@ -15,6 +15,6 @@ public interface MemoRepository {
     List<MemoListDto> findAllWithNewest();
     Optional<MemoDto> findById(Integer id);
     String findByUserId(Integer userId);
-    Integer update(Integer id, MemoSaveDto form);
+    Integer update(Integer memoId, Integer userId, MemoSaveDto form);
     Integer delete(Integer id);
 }

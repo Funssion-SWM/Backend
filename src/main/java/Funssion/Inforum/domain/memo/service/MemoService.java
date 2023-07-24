@@ -65,16 +65,20 @@ public class MemoService {
     }
 
     private static Integer getUserId() {
+        log.debug("memoservice getUserId = {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public MemoDto getMemoBy(int memoId) {
-        return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
+        MemoDto memo = memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
+        memo.setWriter(memo.getUserId() == getUserId());
+        return memo;
     }
 
     @Transactional
     public MemoDto updateMemo(int memoId, MemoSaveDto form) {
-        if (memoRepository.update(memoId, form) == 0)
+        Integer userId = getUserId();
+        if (memoRepository.update(memoId, userId, form) == 0)
             throw new IllegalStateException("update fail");
         return memoRepository.findById(memoId).orElseThrow(() -> new NoSuchElementException("memo not found"));
     }

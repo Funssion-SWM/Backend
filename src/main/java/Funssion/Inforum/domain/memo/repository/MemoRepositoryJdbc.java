@@ -76,9 +76,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public Integer update(Integer id, MemoSaveDto form) {
-        String sql = "update memo.info set memo_title = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ?";
-        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), id);
+    public Integer update(Integer memoId, Integer userId, MemoSaveDto form) {
+        String sql = "update memo.info set memo_title = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ? and user_id = ?";
+        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), memoId, userId);
     }
 
     @Override

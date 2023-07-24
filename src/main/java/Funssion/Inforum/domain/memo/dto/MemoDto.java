@@ -18,6 +18,7 @@ public class MemoDto {
     private String memoColor;
     private Date createdDate;
     private Date updatedDate;
+    private boolean isWriter;
 
     public static RowMapper<MemoDto> memoRowMapper() {
         return ((rs, rowNum) ->
@@ -31,6 +32,7 @@ public class MemoDto {
                         .memoColor(rs.getString("memo_color"))
                         .createdDate(rs.getDate("created_date"))
                         .updatedDate(rs.getDate("updated_date"))
+                        .isWriter(true)
                         .build()
         );
     }
