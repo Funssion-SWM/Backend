@@ -2,10 +2,10 @@ package Funssion.Inforum.domain.member.controller;
 
 import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginForm;
 import Funssion.Inforum.domain.member.dto.TokenDto;
+import Funssion.Inforum.domain.member.swagger.ErrorResponse;
+import Funssion.Inforum.domain.member.swagger.SuccessResponse;
 import Funssion.Inforum.jwt.JwtFilter;
 import Funssion.Inforum.jwt.TokenProvider;
-import Funssion.Inforum.swagger.ErrorResponse;
-import Funssion.Inforum.swagger.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,14 +21,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class AuthController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -40,7 +38,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 정보입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
             @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
     })
-    @PostMapping("/users/login")
+    @PostMapping("/login")
     public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginForm nonSocialMemberLoginForm) {
 
         UsernamePasswordAuthenticationToken authenticationToken =

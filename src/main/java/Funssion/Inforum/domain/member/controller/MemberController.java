@@ -1,9 +1,9 @@
 package Funssion.Inforum.domain.member.controller;
 
 import Funssion.Inforum.domain.member.dto.NonSocialMemberSaveForm;
-import Funssion.Inforum.domain.member.service.MemberService;
 import Funssion.Inforum.swagger.ErrorResponse;
 import Funssion.Inforum.swagger.SuccessResponse;
+import Funssion.Inforum.domain.member.service.NonSocialMemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +27,7 @@ import java.security.NoSuchAlgorithmException;
 @RequiredArgsConstructor
 public class MemberController {
 
-    private final MemberService memberService;
+    private final NonSocialMemberService memberService;
 
     @Operation(summary = "회원가입 실행 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
     @PostMapping("/users")

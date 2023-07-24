@@ -6,7 +6,7 @@ import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
-import Funssion.Inforum.domain.member.repository.SocialMemberRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,14 +19,9 @@ import java.util.Optional;
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
 @Service
-public class MemberService implements UserDetailsService {
+@RequiredArgsConstructor
+public class NonSocialMemberService implements UserDetailsService {
     private final NonSocialMemberRepository nonSocialmemberRepository;
-    private final SocialMemberRepository socialMemberRepository;
-
-    public MemberService(NonSocialMemberRepository nonSocialmemberRepository, SocialMemberRepository socialMemberRepository) {
-        this.nonSocialmemberRepository = nonSocialmemberRepository;
-        this.socialMemberRepository = socialMemberRepository;
-    }
 
     public Long join (NonSocialMemberSaveForm nonSocialMemberSaveForm) throws NoSuchAlgorithmException {
         int login_type = nonSocialMemberSaveForm.getLogin_type();
@@ -63,11 +58,10 @@ public class MemberService implements UserDetailsService {
                 break;
             }
             case 1: {
-                memberRepository = socialMemberRepository;
+//                memberRepository = socialMemberRepository;
                 break;
             }
         }
-        log.info("check = {}",memberRepository.findByName("hi"));
         memberRepository.findByName(memberForm.getUser_name()).ifPresent(m->{
             log.info("name check");
             throw new IllegalStateException("이미 존재하는 회원 닉네임입니다.");
@@ -82,7 +76,7 @@ public class MemberService implements UserDetailsService {
                 break;
             }
             case 1: {
-                memberRepository = socialMemberRepository;
+//                memberRepository = socialMemberRepository;
                 break;
             }
         }
@@ -90,7 +84,6 @@ public class MemberService implements UserDetailsService {
             throw new IllegalStateException("이미 존재하는 회원 이메일입니다.");
         });
     }
-
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         Optional<NonSocialMember> nonSocialMember = nonSocialmemberRepository.findByEmail(userEmail);
