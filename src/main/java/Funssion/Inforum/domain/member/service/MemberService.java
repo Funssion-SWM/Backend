@@ -7,11 +7,14 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.domain.member.repository.SocialMemberRepository;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -19,14 +22,11 @@ import java.util.Optional;
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
     private final NonSocialMemberRepository nonSocialmemberRepository;
     private final SocialMemberRepository socialMemberRepository;
-
-    public MemberService(NonSocialMemberRepository nonSocialmemberRepository, SocialMemberRepository socialMemberRepository) {
-        this.nonSocialmemberRepository = nonSocialmemberRepository;
-        this.socialMemberRepository = socialMemberRepository;
-    }
+    private final MyRepository myRepository;
 
     public Long join (NonSocialMemberSaveForm nonSocialMemberSaveForm) throws NoSuchAlgorithmException {
         int login_type = nonSocialMemberSaveForm.getLogin_type();
@@ -43,7 +43,7 @@ public class MemberService implements UserDetailsService {
                 member.setUser_name(nonSocialMemberSaveForm.getUser_name());
                 member.setUser_email(nonSocialMemberSaveForm.getUser_email());
                 member.setUser_pw(nonSocialMemberSaveForm.getUser_pw());
-                NonSocialMember saveMember = nonSocialmemberRepository.save(member);
+                NonSocialMember saveMember = getNonSocialMember(member);
                 user_id = saveMember.getUser_id();
                 return user_id;
             }
@@ -53,6 +53,13 @@ public class MemberService implements UserDetailsService {
             }
         }
         return user_id; // non valid request, return -1
+    }
+
+    @Transactional
+    public NonSocialMember getNonSocialMember(NonSocialMember member) throws NoSuchAlgorithmException {
+        NonSocialMember saveMember = nonSocialmemberRepository.save(member);
+        myRepository.createHistory(saveMember.getUser_id().intValue());
+        return saveMember;
     }
 
     public void validateDuplicateName(NonSocialMemberSaveForm memberForm, Integer login_type){
