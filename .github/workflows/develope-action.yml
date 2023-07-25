@@ -59,11 +59,10 @@ jobs:
         host: ${{ secrets.HOST_DEV }}
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
-        debug: true
         script: |
-            sudo docker rm spring-dev -f
+            sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/inforum-dev
-            sudo docker run --name spring-dev -dp 80:8080 ${{ secrets.DOCKER_REPO }}/inforum-dev
+            sudo docker run -dp 80:8080 ${{ secrets.DOCKER_REPO }}/inforum-dev
             
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
