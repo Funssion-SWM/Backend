@@ -25,7 +25,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-
     @PostMapping("")
     public ResponseEntity create(@RequestBody @Valid MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException { //dto로 바꿔야함
         Long save_id = memberService.join(memberSaveForm);
