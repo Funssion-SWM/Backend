@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.member;
+package Funssion.Inforum.domain.member.constant;
 
 public enum LoginType {
     NON_SOCIAL(0),

@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.entity;
 
-import Funssion.Inforum.domain.member.LoginType;
+import Funssion.Inforum.domain.member.constant.LoginType;
 import lombok.Getter;
 import lombok.Setter;
 

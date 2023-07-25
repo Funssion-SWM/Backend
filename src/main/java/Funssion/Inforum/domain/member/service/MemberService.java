@@ -1,21 +1,17 @@
 package Funssion.Inforum.domain.member.service;
 
-import Funssion.Inforum.domain.exception.NotYetImplementException;
-import Funssion.Inforum.domain.member.LoginType;
+import Funssion.Inforum.domain.member.exception.NotYetImplementException;
+import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.MemberSaveForm;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 
-import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
-import Funssion.Inforum.domain.mypage.repository.MyRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -44,6 +40,7 @@ public class MemberService implements UserDetailsService {
     public Long join (MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException {
         Long user_id = -1L;
         LoginType loginType = memberSaveForm.getLogin_type();
+        log.info("loginType = {}",loginType);
 
         //중복 처리 한번더 검증
         if(! isValidEmail(memberSaveForm.getUser_email(),loginType)){

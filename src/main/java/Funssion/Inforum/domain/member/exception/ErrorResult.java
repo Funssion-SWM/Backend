@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.exception;
+package Funssion.Inforum.domain.member.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

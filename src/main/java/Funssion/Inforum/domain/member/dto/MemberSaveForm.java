@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.dto;
 
-import Funssion.Inforum.domain.member.LoginType;
+import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.constant.EnumValid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -16,8 +17,8 @@ public class MemberSaveForm {
     }
     @NotBlank
     private String user_name;
-
-    private LoginType login_type = LoginType.NON_SOCIAL; //회원가입은 논소셜만 가정
+    @EnumValid(enumClass = LoginType.class)
+    private LoginType login_type; //회원가입은 논소셜만 가정
 
     @NotBlank
     @Email(message="이메일 주소 양식을 확인해주세요")
