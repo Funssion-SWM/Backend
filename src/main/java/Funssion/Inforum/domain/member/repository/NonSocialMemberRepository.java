@@ -37,18 +37,29 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     @Override
     //DAO 의 Member 객체로 정의
     public NonSocialMember save(NonSocialMember member) throws NoSuchAlgorithmException {
-        String sql = "insert into member.member_user(user_name,login_type,created_date) values(?,?,?)";
+        //----------------- member.user 테이블 insert -----------------//
+        String userSql = "insert into member.member_user(user_name,login_type,created_date) values(?,?,?)";
         int loginType = member.getLoginType().getValue();
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        int update = jdbcTemplate.update(con-> {
-            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"user_id"});
-            psmt.setString(1,member.getUserName());
-            psmt.setInt(2,loginType);
-            psmt.setDate(3, Date.valueOf(LocalDate.now()));
-            return psmt;
-        },keyHolder);
-        long key = keyHolder.getKey().longValue();
-        member.setUserId(key);
+        KeyHolder userKeyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(con-> {
+            PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"user_id"});
+            user_psmt.setString(1,member.getUserName());
+            user_psmt.setInt(2,loginType);
+            user_psmt.setDate(3, Date.valueOf(LocalDate.now()));
+            return user_psmt;
+        },userKeyHolder);
+        long key = userKeyHolder.getKey().longValue();
+
+        //----------------- member.auth 테이블 insert -----------------//
+        String authSql = "insert into member.member_auth(user_id,user_email,user_pw) values(?,?,?)";
+        KeyHolder authKeyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(con->{
+            PreparedStatement auth_psmt = con.prepareStatement(authSql,new String[]{"auth_id"});
+            auth_psmt.setLong(1,key);
+            auth_psmt.setString(2,member.getUserEmail());
+            auth_psmt.setString(3,passwordEncoder.encode(member.getUserPw()));
+            return auth_psmt;
+        },authKeyHolder);
         return member;
     }
 

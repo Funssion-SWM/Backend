@@ -91,7 +91,7 @@ public class MyRepositoryJdbc implements MyRepository {
                 "update member.history\n" +
                 "set records =(\n" +
                 "\t\tselect jsonb_set(jsonb_set(records, count_path, (count - 1)::text::jsonb), contents_path, contents - content_path)\n" +
-                "\t\tfrom dat)\n" +
+                "\t\tfrom dat LIMIT 1)\n" +
                 "where user_id = ? and exists (select 1 from dat)";
 
         template.update(sql, userId, postId, type.toString(), userId);
