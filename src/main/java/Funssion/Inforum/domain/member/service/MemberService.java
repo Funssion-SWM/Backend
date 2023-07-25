@@ -6,8 +6,10 @@ import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -20,10 +22,13 @@ import java.util.Optional;
 public class MemberService{
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
+    private MemberRepository memberRepository;
+    private final MyRepository myRepository;
 
-    public MemberService(Map<String, MemberRepository> repositoryMap) {
+    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository) {
         this.repositoryMap = repositoryMap;
-        log.info("Repository Implementation INFO = {} ", repositoryMap);
+        this.myRepository = myRepository;
+        log.info("Different LogintType Supported by Repositories m= {} ", repositoryMap);
     }
     HashMap<LoginType, String> loginTypeMap = new HashMap<>();
     {
@@ -31,8 +36,8 @@ public class MemberService{
         loginTypeMap.put(LoginType.SOCIAL, "socialMemberRepository");
     }
 
-    private MemberRepository memberRepository;
 
+    @Transactional
     public Long join (MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException {
         Long user_id = -1L;
         LoginType loginType = memberSaveForm.getLoginType();
@@ -57,6 +62,7 @@ public class MemberService{
                 member.setUserPw(memberSaveForm.getUserPw());
                 NonSocialMember saveMember = (NonSocialMember) memberRepository.save(member);
                 user_id = saveMember.getUserId();
+                myRepository.createHistory(user_id.intValue());
                 return user_id;
             case SOCIAL: //social 회원가입의 경우 -> 요청 필요
             {

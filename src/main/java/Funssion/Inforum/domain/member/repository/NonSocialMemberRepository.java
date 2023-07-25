@@ -49,6 +49,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             return user_psmt;
         },userKeyHolder);
         long key = userKeyHolder.getKey().longValue();
+        member.setUserId(key);
 
         //----------------- member.auth 테이블 insert -----------------//
         String authSql = "insert into member.member_auth(user_id,user_email,user_pw) values(?,?,?)";
