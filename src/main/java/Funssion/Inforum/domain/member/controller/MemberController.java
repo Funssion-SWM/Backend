@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.member.controller;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,12 @@ public class MemberController {
         return new ResponseEntity(HttpStatus.CREATED);
     }
     @GetMapping("/email-valid")
-    public Boolean isValidateDuplicateEmail(@RequestParam(value="email", required=true) String email){
+    public ValidDto isValidEmail(@RequestParam(value="email", required=true) String email){
         String docodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
         return memberService.isValidEmail(docodedEmail,LoginType.NON_SOCIAL);
     }
     @GetMapping("/name-valid")
-    public Boolean isValidName(@RequestParam(value="name", required=true) String name){
+    public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
     @ResponseBody

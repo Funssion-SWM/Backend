@@ -37,7 +37,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         //----------------- member.user 테이블 insert ----------------//
         jdbcInsertMember.withSchemaName("MEMBER").withTableName("MEMBER_USER").usingGeneratedKeyColumns("user_id");
         Map<String, Object> insertMember = new HashMap<>(3);
-        insertMember.put("user_name", member.getUser_name());
+        insertMember.put("user_name", member.getUserName());
         insertMember.put("login_type", 0);
         insertMember.put("created_date",LocalDateTime.now());
         Number user_key = jdbcInsertMember.executeAndReturnKey(new MapSqlParameterSource(insertMember));
@@ -49,8 +49,8 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
         jdbcInsertAuth.withSchemaName("MEMBER").withTableName("MEMBER_AUTH").usingGeneratedKeyColumns("auth_id");
         Map<String,Object> insertAuth = new HashMap<>(3);
-        insertAuth.put("user_email", member.getUser_email());
-        insertAuth.put("user_pw",passwordEncoder.encode(member.getUser_pw()));
+        insertAuth.put("user_email", member.getUserEmail());
+        insertAuth.put("user_pw",passwordEncoder.encode(member.getUserPw()));
         insertAuth.put("user_id",user_key);
         Number nonsocial_key = jdbcInsertAuth.executeAndReturnKey(new MapSqlParameterSource(insertAuth));
 
@@ -76,10 +76,10 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = new NonSocialMember();
-                member.setUser_id(rs.getLong("user_id"));
-                member.setAuth_id(rs.getLong("auth_id"));
-                member.setUser_pw(rs.getString("user_pw"));
-                member.setUser_email(rs.getString("user_email"));
+                member.setUserId(rs.getLong("user_id"));
+                member.setAuthId(rs.getLong("auth_id"));
+                member.setUserPw(rs.getString("user_pw"));
+                member.setUserEmail(rs.getString("user_email"));
                 return member;
             }
         };
@@ -90,7 +90,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = new NonSocialMember();
-                member.setUser_id(rs.getLong("user_id"));
+                member.setUserId(rs.getLong("user_id"));
 
                 return member;
             }

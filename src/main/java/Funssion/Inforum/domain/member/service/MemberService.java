@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
@@ -34,14 +35,14 @@ public class MemberService{
 
     public Long join (MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException {
         Long user_id = -1L;
-        LoginType loginType = memberSaveForm.getLogin_type();
+        LoginType loginType = memberSaveForm.getLoginType();
         log.info("loginType = {}",loginType);
 
         //중복 처리 한번더 검증
-        if(! isValidEmail(memberSaveForm.getUser_email(),loginType)){
+        if(!isValidEmail(memberSaveForm.getUserEmail(),loginType).isValid()){
             throw new IllegalStateException("이미 가입된 회원 이메일입니다.");
         }
-        if(! isValidName(memberSaveForm.getUser_name(),loginType)){
+        if(! isValidName(memberSaveForm.getUserName(),loginType).isValid()){
             throw new IllegalStateException("이미 가입된 닉네임입니다.");
         }
 
@@ -50,11 +51,11 @@ public class MemberService{
         switch (loginType) {
             case NON_SOCIAL:
                 NonSocialMember member = new NonSocialMember();
-                member.setUser_name(memberSaveForm.getUser_name());
-                member.setUser_email(memberSaveForm.getUser_email());
-                member.setUser_pw(memberSaveForm.getUser_pw());
+                member.setUserName(memberSaveForm.getUserName());
+                member.setUserEmail(memberSaveForm.getUserEmail());
+                member.setUserPw(memberSaveForm.getUserPw());
                 NonSocialMember saveMember = (NonSocialMember) memberRepository.save(member);
-                user_id = saveMember.getUser_id();
+                user_id = saveMember.getUserId();
                 return user_id;
             case SOCIAL: //social 회원가입의 경우 -> 요청 필요
             {
@@ -64,25 +65,25 @@ public class MemberService{
         return user_id; // non valid request, return -1
     }
 
-    public boolean isValidName(String username, LoginType loginType) {
+    public ValidDto isValidName(String username, LoginType loginType) {
         memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
         // findByName 메서드를 호출하고 결과가 존재하는지 확인하여 중복 검사를 수행
         Optional<NonSocialMember> optionalMember = memberRepository.findByName(username);
         if (optionalMember.isPresent()) {
-            return false;
+            return new ValidDto(false);
         }
-        return true;
+        return new ValidDto(true);
     }
-    public boolean isValidEmail(String email, LoginType loginType){
+    public ValidDto isValidEmail(String email, LoginType loginType){
         log.info("logintype in emailval= {}", loginType);
         MemberRepository memberRepository1 = repositoryMap.get(loginTypeMap.get(loginType));
         log.info("emailal repo = {}",memberRepository1);
         memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
         Optional<NonSocialMember> optionalMember = memberRepository.findByEmail(email);
         if (optionalMember.isPresent()) {
-            return false;
+            return new ValidDto(false);
         }
-        return true;
+        return new ValidDto(true);
     }
 
 }

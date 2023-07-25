@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Setter @Getter
 public class NonSocialMember extends Member {
-    private Long auth_id;
-    private String user_email;
-    private String user_pw;
+    private Long authId;
+    private String userEmail;
+    private String userPw;
 
 }

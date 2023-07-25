@@ -29,7 +29,7 @@ public class AuthService implements UserDetailsService {
 
     public TokenDto makeTokenInfo(NonSocialMemberLoginForm nonSocialMemberLoginForm){
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(nonSocialMemberLoginForm.getUser_email(), nonSocialMemberLoginForm.getUser_pw());
+                new UsernamePasswordAuthenticationToken(nonSocialMemberLoginForm.getUserEmail(), nonSocialMemberLoginForm.getUserPw());
         log.info("authetntication manager builder get object = {}",authenticationManagerBuilder.getObject());
         // authenticate 메소드가 실행이 될 때 CustomUserDetailsService class의 loadUserByUsername 메소드가 실행 및 db와 대조하여 인증
         log.info("credentials on token = {}",authenticationToken.getCredentials());
@@ -47,9 +47,9 @@ public class AuthService implements UserDetailsService {
         Optional<NonSocialMember> nonSocialMember = memberRepository.findByEmail(userEmail);
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
-            log.info("member info in loadByUsername method = {}", member.getAuth_id());
+            log.info("member info in loadByUsername method = {}", member.getAuthId());
             //non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. ->토큰의 getName의 user_id가 들어갑니다.
-            return new CustomUserDetails(member.getUser_id(),member.getUser_email(),member.getUser_pw(),true,false );
+            return new CustomUserDetails(member.getUserId(),member.getUserEmail(),member.getUserPw(),true,false );
         } else {
             throw new UsernameNotFoundException("User not found with userEmail: " + userEmail);
         }
