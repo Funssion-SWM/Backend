@@ -52,6 +52,7 @@ public class MemberService{
             case NON_SOCIAL:
                 NonSocialMember member = new NonSocialMember();
                 member.setUserName(memberSaveForm.getUserName());
+                member.setLoginType(loginType);
                 member.setUserEmail(memberSaveForm.getUserEmail());
                 member.setUserPw(memberSaveForm.getUserPw());
                 NonSocialMember saveMember = (NonSocialMember) memberRepository.save(member);

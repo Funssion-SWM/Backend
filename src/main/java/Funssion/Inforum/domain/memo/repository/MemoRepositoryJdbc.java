@@ -23,6 +23,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     private final JdbcTemplate template;
 
+
     public MemoRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
     }

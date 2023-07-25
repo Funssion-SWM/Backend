@@ -2,73 +2,76 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Slf4j
-@RequiredArgsConstructor
 @Repository // 인터페이스 구현체를 바꿀것 같지 않으므로 스프링 빈을 직접 등록하는 것이 아닌, 컴포넌트 스캔방식으로 자동의존관계설정
 public class NonSocialMemberRepository implements MemberRepository<NonSocialMember> {
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder passwordEncoder;
+
+    public NonSocialMemberRepository(DataSource dataSource, PasswordEncoder passwordEncoder){
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.passwordEncoder = passwordEncoder;
+    }
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     @Override
     //DAO 의 Member 객체로 정의
     public NonSocialMember save(NonSocialMember member) throws NoSuchAlgorithmException {
-        SimpleJdbcInsert jdbcInsertMember = new SimpleJdbcInsert(this.jdbcTemplate);
-        //----------------- member.user 테이블 insert ----------------//
-        jdbcInsertMember.withSchemaName("MEMBER").withTableName("MEMBER_USER").usingGeneratedKeyColumns("user_id");
-        Map<String, Object> insertMember = new HashMap<>(3);
-        insertMember.put("user_name", member.getUserName());
-        insertMember.put("login_type", 0);
-        insertMember.put("created_date",LocalDateTime.now());
-        Number user_key = jdbcInsertMember.executeAndReturnKey(new MapSqlParameterSource(insertMember));
-        log.info("user_key = {}",user_key);
-        //----------------------------------------------------------//
-
-        //---------------- member.auth 테이블 insert -------------//
-        //  SHA256 sha256 = new SHA256(); JWT 에서 sha256 Encoder Standard~ deprecated되어 bcrypt로 변경
-        SimpleJdbcInsert jdbcInsertAuth = new SimpleJdbcInsert(this.jdbcTemplate);
-        jdbcInsertAuth.withSchemaName("MEMBER").withTableName("MEMBER_AUTH").usingGeneratedKeyColumns("auth_id");
-        Map<String,Object> insertAuth = new HashMap<>(3);
-        insertAuth.put("user_email", member.getUserEmail());
-        insertAuth.put("user_pw",passwordEncoder.encode(member.getUserPw()));
-        insertAuth.put("user_id",user_key);
-        Number nonsocial_key = jdbcInsertAuth.executeAndReturnKey(new MapSqlParameterSource(insertAuth));
-
-        //------------------------------------- --------------------//
-        NonSocialMember authMember = objectMapper.convertValue(insertAuth, NonSocialMember.class);
-        return authMember;
+        String sql = "insert into member.member_user(user_name,login_type,created_date) values(?,?,?)";
+        int loginType = member.getLoginType().getValue();
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        int update = jdbcTemplate.update(con-> {
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"user_id"});
+            psmt.setString(1,member.getUserName());
+            psmt.setInt(2,loginType);
+            psmt.setDate(3, Date.valueOf(LocalDate.now()));
+            return psmt;
+        },keyHolder);
+        long key = keyHolder.getKey().longValue();
+        member.setUserId(key);
+        return member;
     }
 
     @Override
-    public Optional<NonSocialMember> findByEmail(String Email) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT AUTH_ID,USER_ID,USER_PW,USER_EMAIL FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?",memberAuthRowMapper(),Email);
-        return result.stream().findAny();
+    public Optional<NonSocialMember> findByEmail(String email) {
+        String sql ="SELECT AUTH_ID,USER_ID,USER_PW,USER_EMAIL FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?";
+        try{
+            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberAuthRowMapper(),email);
+            return Optional.of(nonSocialMember);
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
     }
 
     @Override
-    public Optional<NonSocialMember> findByName(String Name) {
-        List<NonSocialMember> result = this.jdbcTemplate.query("SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?",memberUserRowMapper(),Name);
-        return result.stream().findAny();
+    public Optional<NonSocialMember> findByName(String name) {
+        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?";
+        try{
+            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberUserRowMapper(),name);
+            return Optional.of(nonSocialMember);
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
     }
 
     private RowMapper<NonSocialMember> memberAuthRowMapper(){
