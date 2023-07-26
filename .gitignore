@@ -6,14 +6,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-<<<<<<< HEAD
-/src/test
-=======
-/src/test/
->>>>>>> be-user-register
-
 # 환경변수
-*.properties
+/src/main/resources/*.yml
 
 ### STS ###
 .apt_generated

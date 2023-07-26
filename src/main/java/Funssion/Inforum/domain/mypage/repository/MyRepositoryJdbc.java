@@ -60,7 +60,7 @@ public class MyRepositoryJdbc implements MyRepository {
                 "(select cast(daily_history->>'count' as int) as count, (daily_history->>'contents')::jsonb as contents, \n" +
                 "('{'||index-1||', \"count\"}')::text[] as count_path, ('{'||index-1||', \"contents\"}')::text[] as content_path\n" +
                 "from member.history, jsonb_array_elements(records) with ordinality dates(daily_history, index)\n" +
-                "where user_id = ?)\n" +
+                "where user_id = ? and daily_history->>'date' = current_date::text)\n" +
                 "update member.history\n" +
                 "set records =\n" +
                 "\tcase \n" +
@@ -71,7 +71,7 @@ public class MyRepositoryJdbc implements MyRepository {
                 "\t\tfrom dat)\n" +
                 "\t\telse records||('[{\"date\": \"'||current_date::text||'\", \"count\": 1, \"contents\" : [{ \"id\": '||?||', \"type\": \"'||?||'\" }] }]')::jsonb\n" +
                 "\tend\n" +
-                "where user_id = ?;";
+                "where user_id = ?";
 
         int updated = template.update(sql, userId, postId, type.toString(), postId, type.toString(), postId, type.toString(), userId);
         log.debug("updateCreationToHistory rs = {}", updated);

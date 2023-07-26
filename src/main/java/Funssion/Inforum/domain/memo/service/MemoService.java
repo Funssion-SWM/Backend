@@ -70,6 +70,7 @@ public class MemoService {
         if (userId == "anonymousUser") {
             return 0;
         }
+        log.info("user id = {}", userId);
         return Integer.valueOf(userId);
     }
 

@@ -35,18 +35,19 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
         log.debug("form = {}",form);
 
-        String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_text, memo_color, created_date, updated_date)\n" +
-                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?);";
+        String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
+                "VALUES (?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             psmt.setInt(1,userId);
             psmt.setString(2,userName);
             psmt.setString(3,form.getMemoTitle());
-            psmt.setString(4,form.getMemoText());
-            psmt.setString(5,form.getMemoColor());
-            psmt.setDate(6,Date.valueOf(LocalDate.now()));
-            psmt.setDate(7,null);
+            psmt.setString(4,form.getMemoDescription());
+            psmt.setString(5,form.getMemoText());
+            psmt.setString(6,form.getMemoColor());
+            psmt.setDate(7,Date.valueOf(LocalDate.now()));
+            psmt.setDate(8,null);
             return psmt;
         }, keyHolder);
 
