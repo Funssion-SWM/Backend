@@ -1,31 +1,19 @@
 package Funssion.Inforum.domain.member.dto;
 
-import Funssion.Inforum.domain.member.constant.EnumValid;
-import Funssion.Inforum.domain.member.constant.LoginType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
-@AllArgsConstructor
-//DTO 정의
-public class MemberSaveForm {
-    public MemberSaveForm(){
-        
-    }
-    @NotBlank
-    @JsonProperty("user_name")
-    private String userName;
-    @EnumValid(enumClass = LoginType.class)
-    @JsonProperty("login_type")
-    private LoginType loginType; //회원가입은 논소셜만 가정
+@Getter
+@Setter
+public class NonSocialMemberLoginDto {
+
 
     @NotBlank
-    @JsonProperty("user_email")
     @Email(message="이메일 주소 양식을 확인해주세요")
+    @JsonProperty("user_email")
     private String userEmail; // 소셜 로그인 이메일, 개인 인증 이메일 둘다 user_email에 속함
     @NotBlank
     @JsonProperty("user_pw")

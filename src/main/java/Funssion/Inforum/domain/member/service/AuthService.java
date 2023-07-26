@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
-import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginForm;
+import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.TokenDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
@@ -27,9 +27,9 @@ public class AuthService implements UserDetailsService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final Map<String,MemberRepository> repositoryMap;
 
-    public TokenDto makeTokenInfo(NonSocialMemberLoginForm nonSocialMemberLoginForm){
+    public TokenDto makeTokenInfo(NonSocialMemberLoginDto nonSocialMemberLoginDto){
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(nonSocialMemberLoginForm.getUserEmail(), nonSocialMemberLoginForm.getUserPw());
+                new UsernamePasswordAuthenticationToken(nonSocialMemberLoginDto.getUserEmail(), nonSocialMemberLoginDto.getUserPw());
         log.info("authetntication manager builder get object = {}",authenticationManagerBuilder.getObject());
         // authenticate 메소드가 실행이 될 때 CustomUserDetailsService class의 loadUserByUsername 메소드가 실행 및 db와 대조하여 인증
         log.info("credentials on token = {}",authenticationToken.getCredentials());
