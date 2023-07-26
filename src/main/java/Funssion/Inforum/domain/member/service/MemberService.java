@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.dto.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
@@ -38,28 +38,28 @@ public class MemberService{
 
 
     @Transactional
-    public Long join (MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException {
+    public Long join (MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException {
         Long user_id = -1L;
-        LoginType loginType = memberSaveForm.getLoginType();
+        LoginType loginType = memberSaveDto.getLoginType();
         log.info("loginType = {}",loginType);
+        memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
 
         //중복 처리 한번더 검증
-        if(!isValidEmail(memberSaveForm.getUserEmail(),loginType).isValid()){
+        if(!isValidEmail(memberSaveDto.getUserEmail(),loginType).isValid()){
             throw new IllegalStateException("이미 가입된 회원 이메일입니다.");
         }
-        if(! isValidName(memberSaveForm.getUserName(),loginType).isValid()){
+        if(! isValidName(memberSaveDto.getUserName(),loginType).isValid()){
             throw new IllegalStateException("이미 가입된 닉네임입니다.");
         }
 
-        memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
 
         switch (loginType) {
             case NON_SOCIAL:
                 NonSocialMember member = new NonSocialMember();
-                member.setUserName(memberSaveForm.getUserName());
+                member.setUserName(memberSaveDto.getUserName());
                 member.setLoginType(loginType);
-                member.setUserEmail(memberSaveForm.getUserEmail());
-                member.setUserPw(memberSaveForm.getUserPw());
+                member.setUserEmail(memberSaveDto.getUserEmail());
+                member.setUserPw(memberSaveDto.getUserPw());
                 NonSocialMember saveMember = (NonSocialMember) memberRepository.save(member);
                 user_id = saveMember.getUserId();
                 myRepository.createHistory(user_id.intValue());

@@ -2,6 +2,7 @@ package Funssion.Inforum.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
     // Request Header 에서 토큰 정보를 꺼내오기 위한 메소드
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+//        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        String bearerToken = "";
+        Cookie[] list = request.getCookies();
+        if (list==null){
+            return "";
+        }
+        for(Cookie cookie:list) {
+            if(cookie.getName().equals("token")) {
+                logger.info(cookie.getValue());
+                bearerToken = cookie.getValue();
+            }
+        }
 
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        if (StringUtils.hasText(bearerToken)) {
+            return bearerToken;
         }
 
         return null;

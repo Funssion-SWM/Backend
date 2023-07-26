@@ -4,7 +4,7 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.EmailCheckDto;
 import Funssion.Inforum.domain.member.dto.EmailRequestDto;
-import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.dto.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -31,8 +31,8 @@ public class MemberController {
     private final MailService mailService;
 
     @PostMapping("")
-    public ResponseEntity create(@RequestBody @Valid MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long save_id = memberService.join(memberSaveForm);
+    public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
+        Long save_id = memberService.join(memberSaveDto);
         return new ResponseEntity(HttpStatus.CREATED);
     }
     @GetMapping("/email-valid")
