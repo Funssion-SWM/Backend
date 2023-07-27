@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String jwt = resolveToken(httpServletRequest);
         String requestURI = httpServletRequest.getRequestURI();
-        logger.info("jwt token in cookie check = {} , requexstURi ={}", jwt,requestURI);
+        logger.info("jwt token in cookie check = {}, requestURI ={}", jwt,requestURI);
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -44,21 +44,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
     // Request Header 에서 토큰 정보를 꺼내오기 위한 메소드
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = "";
-        Cookie[] list = request.getCookies();
-        if (list==null){
-            return "";
-        }
-        for(Cookie cookie:list) {
-            if(cookie.getName().equals("token")) {
-                logger.info(cookie.getValue());
-                bearerToken = cookie.getValue();
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("token".equals(cookie.getName())) {
+                    log.info("token value = {}", cookie.getValue());
+                    return cookie.getValue();
+                }
             }
         }
-
-        if (StringUtils.hasText(bearerToken)) {
-            return bearerToken;
-        }
-        return null;
+        return "";
     }
 }

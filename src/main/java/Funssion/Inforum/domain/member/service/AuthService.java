@@ -32,7 +32,6 @@ public class AuthService implements UserDetailsService {
                 new UsernamePasswordAuthenticationToken(nonSocialMemberLoginDto.getUserEmail(), nonSocialMemberLoginDto.getUserPw());
         log.info("authetntication manager builder get object = {}",authenticationManagerBuilder.getObject());
         // authenticate 메소드가 실행이 될 때 CustomUserDetailsService class의 loadUserByUsername 메소드가 실행 및 db와 대조하여 인증
-        log.info("credentials on token = {}",authenticationToken.getCredentials());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("authentication info = {}",authentication);
         // 해당 객체를 SecurityContextHolder에 저장하고

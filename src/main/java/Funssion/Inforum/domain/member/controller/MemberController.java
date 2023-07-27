@@ -2,10 +2,7 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.EmailCheckDto;
-import Funssion.Inforum.domain.member.dto.EmailRequestDto;
-import Funssion.Inforum.domain.member.dto.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.ValidDto;
+import Funssion.Inforum.domain.member.dto.*;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -15,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;
@@ -58,9 +56,16 @@ public class MemberController {
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
     @GetMapping("/check")
-    public String checkToken(){
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
+        String userId = context.getAuthentication().getName();
+        if (userId.equals("anonymousUser")){
+            return new ValidMemberDto(-1L,false);
+        }
+        else{
+            return new ValidMemberDto(Long.valueOf(userId),true);
+        }
     }
+
     @GetMapping("/logout")
     public void logout(HttpServletResponse response){
         Cookie cookie = new Cookie("token", null);
