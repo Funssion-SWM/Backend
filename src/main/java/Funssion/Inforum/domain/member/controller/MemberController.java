@@ -6,6 +6,7 @@ import Funssion.Inforum.domain.member.dto.*;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,7 @@ public class MemberController {
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
+
         if (userId.equals("anonymousUser")){
             return new ValidMemberDto(-1L,false);
         }
@@ -67,9 +69,21 @@ public class MemberController {
     }
 
     @GetMapping("/logout")
-    public void logout(HttpServletResponse response){
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                log.info("cookie val ={},",cookie.getValue());
+                if ("token".equals(cookie.getName())) {
+                    log.info("token val = {}", cookie.getValue());
+                }
+            }
+        }
         Cookie cookie = new Cookie("token", null);
         cookie.setMaxAge(0); // 유효시간을 0으로 설정
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
         response.addCookie(cookie); // 응답 헤더에 추가해서 없어지도록 함
     }
 }
