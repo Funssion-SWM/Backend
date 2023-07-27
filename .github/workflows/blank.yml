@@ -1,0 +1,24 @@
+name: docker build and push
+
+on:
+  push:
+    branches: [ "develope" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Remove before snapshot.jar 
+        run: rm -rf ./build/libs
+
+      - name: Build
+        run: ./gradlew build
+        
+      - name: Docker build
+        run: docker build -t comolove/swagger .
+        
+      - name: Docker push
+        run: docker push comolove/swagger
