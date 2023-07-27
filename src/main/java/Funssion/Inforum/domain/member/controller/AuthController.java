@@ -41,13 +41,11 @@ public class AuthController {
         HttpHeaders httpHeaders = new HttpHeaders();
 
         if (request.isSecure()) {
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain=13.124.105.57;  "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
         } else {
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain=13.124.105.57;  "+"Max-Age=1800; HttpOnly; SameSite=None");
+            //SSL 미설정으로 인한 Secure 옵션 미설정
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None");
         }
-        //SSL 미설정으로 인한 Secure 옵션 미설정
-        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
-        httpHeaders.add("Access-Control-Allow-Credentials","true");
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
 }
