@@ -46,7 +46,13 @@ public class AuthController {
 //            //SSL 미설정으로 인한 Secure 옵션 미설정
 //            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
 //        }
-        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+        if(request.getServerName().equals("localhost")){
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly");
+        }
+        else{
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+        }
+
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
 }

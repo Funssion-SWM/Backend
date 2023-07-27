@@ -2,10 +2,7 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.EmailCheckDto;
-import Funssion.Inforum.domain.member.dto.EmailRequestDto;
-import Funssion.Inforum.domain.member.dto.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.ValidDto;
+import Funssion.Inforum.domain.member.dto.*;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -55,9 +52,15 @@ public class MemberController {
     public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
-    @ResponseBody
     @GetMapping("/check")
-    public String checkToken(){
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    public ValidMemberDto checkToken(){
+        String userId =SecurityContextHolder.getContext().getAuthentication().getName();
+        log.debug("user id check ={}",userId );
+        if (userId.equals("anonymousUser")){
+            return new ValidMemberDto(-1L,false);
+        }
+        return new ValidMemberDto(Long.valueOf(userId),true);
     }
+//    @PostMapping("/logout")
+//    public
 }

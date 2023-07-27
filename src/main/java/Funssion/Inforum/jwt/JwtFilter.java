@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -28,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String jwt = resolveToken(httpServletRequest);
         String requestURI = httpServletRequest.getRequestURI();
-        logger.info("jwt token in cookie check = {} , requestURi ={}", jwt,requestURI);
+        logger.info("jwt token in cookie check = {} , requexstURi ={}", jwt,requestURI);
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -42,7 +44,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
     // Request Header 에서 토큰 정보를 꺼내오기 위한 메소드
     private String resolveToken(HttpServletRequest request) {
-//        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         String bearerToken = "";
         Cookie[] list = request.getCookies();
         if (list==null){
@@ -58,7 +59,6 @@ public class JwtFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken)) {
             return bearerToken;
         }
-
         return null;
     }
 }
