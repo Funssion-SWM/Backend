@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
@@ -80,10 +81,7 @@ public class MemberController {
                 }
             }
         }
-        Cookie cookie = new Cookie("token", null);
-        cookie.setMaxAge(0); // 유효시간을 0으로 설정
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        response.addCookie(cookie); // 응답 헤더에 추가해서 없어지도록 함
+        ResponseCookie nonCookie = ResponseCookie.from("none","none").path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        response.addHeader("Set-Cookie", nonCookie.toString());
     }
 }
