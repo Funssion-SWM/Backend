@@ -65,20 +65,20 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS,"/**/*" ).permitAll()
                                 //users 포함한 end point 보안 적용 X
-                                .requestMatchers("/api/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
+                                .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
                                 .requestMatchers("/error/**").permitAll()
-                                .requestMatchers(HttpMethod.GET ,"/api/memos/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"/api/mypage/**").permitAll()
-                                .requestMatchers("/api/swagger-ui/**","/api/v2/api-docs",
-                                        "/api/swagger-resources",
-                                        "/api/swagger-resources/**",
-                                        "/api/configuration/ui",
-                                        "/api/configuration/security",
-                                        "/api/swagger-ui.html",
-                                        "/api/webjars/**",
+                                .requestMatchers(HttpMethod.GET ,"/memos/**").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/mypage/**").permitAll()
+                                .requestMatchers("/swagger-ui/**","/v2/api-docs",
+                                        "/swagger-resources",
+                                        "/swagger-resources/**",
+                                        "/configuration/ui",
+                                        "/configuration/security",
+                                        "/swagger-ui.html",
+                                        "/webjars/**",
                                         /* swagger v3 */
-                                        "/api/v3/api-docs/**",
-                                        "/api/swagger-ui/**").permitAll()
+                                        "/v3/api-docs/**",
+                                        "/swagger-ui/**").permitAll()
                                 .requestMatchers("/favicon.ico").permitAll()
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
                 )
@@ -97,7 +97,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("* "));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/api/**", configuration);
         return source;
     }
 }
