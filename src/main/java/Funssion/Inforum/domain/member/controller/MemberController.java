@@ -4,10 +4,12 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.EmailCheckDto;
 import Funssion.Inforum.domain.member.dto.EmailRequestDto;
-import Funssion.Inforum.domain.member.dto.MemberSaveForm;
+import Funssion.Inforum.domain.member.dto.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +33,8 @@ public class MemberController {
     private final MailService mailService;
 
     @PostMapping("")
-    public ResponseEntity create(@RequestBody @Valid MemberSaveForm memberSaveForm) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long save_id = memberService.join(memberSaveForm);
+    public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
+        Long save_id = memberService.join(memberSaveDto);
         return new ResponseEntity(HttpStatus.CREATED);
     }
     @GetMapping("/email-valid")
@@ -55,9 +57,14 @@ public class MemberController {
     public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
-    @ResponseBody
     @GetMapping("/check")
     public String checkToken(){
         return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+    @GetMapping("/logout")
+    public void logout(HttpServletResponse response){
+        Cookie cookie = new Cookie("token", null);
+        cookie.setMaxAge(0); // 유효시간을 0으로 설정
+        response.addCookie(cookie); // 응답 헤더에 추가해서 없어지도록 함
     }
 }
