@@ -34,7 +34,7 @@ public class MemoExceptionController {
         return e.getMessage();
     }
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalStateException.class)
     public String handleDBFailEx(MethodArgumentNotValidException e) {
         log.error("error message={}", e.getMessage(), e);
