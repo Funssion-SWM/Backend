@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +36,17 @@ public class AuthController {
             @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
     })
     @PostMapping("/login")
-    public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto) {
+    public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto, HttpServletRequest request) {
         TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
         HttpHeaders httpHeaders = new HttpHeaders();
+
+        if (request.isSecure()) {
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain=13.124.105.57;  "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+        } else {
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain=13.124.105.57;  "+"Max-Age=1800; HttpOnly; SameSite=None");
+        }
         //SSL 미설정으로 인한 Secure 옵션 미설정
-        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure;");
+        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
         httpHeaders.add("Access-Control-Allow-Credentials","true");
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
