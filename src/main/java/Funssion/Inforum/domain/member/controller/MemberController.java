@@ -81,7 +81,7 @@ public class MemberController {
                 }
             }
         }
-        ResponseCookie nonCookie = ResponseCookie.from("none","none").path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie nonCookie = ResponseCookie.from("token","none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
         response.addHeader("Set-Cookie", nonCookie.toString());
     }
 }
