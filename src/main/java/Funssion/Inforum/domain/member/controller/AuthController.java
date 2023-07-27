@@ -40,12 +40,13 @@ public class AuthController {
         TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        if (request.isSecure()) {
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
-        } else {
-            //SSL 미설정으로 인한 Secure 옵션 미설정
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; ");
-        }
+//        if (request.isSecure()) {
+//            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+//        } else {
+//            //SSL 미설정으로 인한 Secure 옵션 미설정
+//            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+//        }
+        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
 }
