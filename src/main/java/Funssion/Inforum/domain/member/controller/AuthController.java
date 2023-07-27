@@ -39,7 +39,7 @@ public class AuthController {
         TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
         HttpHeaders httpHeaders = new HttpHeaders();
         //SSL 미설정으로 인한 Secure 옵션 미설정
-        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"HttpOnly; "+"Max-Age=1800; SameSite=None; ");
+        httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"HttpOnly; "+"Max-Age=1800; ");
         httpHeaders.add("Access-Control-Allow-Credentials","true");
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
