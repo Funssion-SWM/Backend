@@ -23,7 +23,7 @@ public class MemoExceptionController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NoSuchElementException.class)
     public String handleMemoNotFoundEx(NoSuchElementException e) {
-        log.warn("error message={}", e.getMessage(), e);
+        log.error("error message={}", e.getMessage(), e);
         return e.getMessage();
     }
 
