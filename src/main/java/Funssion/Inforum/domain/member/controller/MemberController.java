@@ -2,9 +2,14 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.*;
+import Funssion.Inforum.domain.member.dto.EmailCheckDto;
+import Funssion.Inforum.domain.member.dto.EmailRequestDto;
+import Funssion.Inforum.domain.member.dto.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.ValidDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,14 +58,13 @@ public class MemberController {
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
     @GetMapping("/check")
-    public ValidMemberDto checkToken(){
-        String userId =SecurityContextHolder.getContext().getAuthentication().getName();
-        log.debug("user id check ={}",userId );
-        if (userId.equals("anonymousUser")){
-            return new ValidMemberDto(-1L,false);
-        }
-        return new ValidMemberDto(Long.valueOf(userId),true);
+    public String checkToken(){
+        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
-//    @PostMapping("/logout")
-//    public
+    @GetMapping("/logout")
+    public void logout(HttpServletResponse response){
+        Cookie cookie = new Cookie("token", null);
+        cookie.setMaxAge(0); // 유효시간을 0으로 설정
+        response.addCookie(cookie); // 응답 헤더에 추가해서 없어지도록 함
+    }
 }
