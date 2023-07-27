@@ -28,7 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String jwt = resolveToken(httpServletRequest);
         String requestURI = httpServletRequest.getRequestURI();
-        logger.info("jwt token in cookie check = {}", jwt);
+        logger.info("jwt token in cookie check = {} , requestURi ={}", jwt,requestURI);
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);

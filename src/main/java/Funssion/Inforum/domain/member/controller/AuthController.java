@@ -44,7 +44,7 @@ public class AuthController {
             httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
         } else {
             //SSL 미설정으로 인한 Secure 옵션 미설정
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly;");
+            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; ");
         }
         return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
