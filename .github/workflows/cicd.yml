@@ -62,7 +62,7 @@ jobs:
         script: |
             ssh spring sudo docker rm -f $(ssh spring sudo docker ps -qa)
             ssh spring sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
-            ssh spring sudo docker run -dp 80:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
+            ssh spring sudo docker run -dp 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
             
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
