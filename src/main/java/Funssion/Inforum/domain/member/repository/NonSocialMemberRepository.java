@@ -1,7 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +30,6 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.passwordEncoder = passwordEncoder;
     }
-    ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     @Override
