@@ -23,7 +23,7 @@ public class MemoExceptionController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NoSuchElementException.class)
     public String handleMemoNotFoundEx(NoSuchElementException e) {
-        log.warn("error message={}", e.getMessage(), e);
+        log.error("error message={}", e.getMessage(), e);
         return e.getMessage();
     }
 
@@ -34,7 +34,7 @@ public class MemoExceptionController {
         return e.getMessage();
     }
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IllegalStateException.class)
     public String handleDBFailEx(MethodArgumentNotValidException e) {
         log.error("error message={}", e.getMessage(), e);

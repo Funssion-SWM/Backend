@@ -62,7 +62,7 @@ public class MemoService {
         log.info("check = {}",userName);
         Integer memoId = memoRepository.create(userId, userName, form);
         myRepository.updateCreationToHistory(PostType.MEMO, memoId, userId);
-        return memoRepository.findById(memoId).orElseThrow();
+        return memoRepository.findById(memoId).orElseThrow(() -> new IllegalStateException("creation fail"));
     }
 
     private static Integer getUserId() {

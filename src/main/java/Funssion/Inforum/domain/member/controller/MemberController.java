@@ -5,12 +5,17 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.*;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;
@@ -53,14 +58,30 @@ public class MemberController {
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
     @GetMapping("/check")
-    public ValidMemberDto checkToken(){
-        String userId =SecurityContextHolder.getContext().getAuthentication().getName();
-        log.debug("user id check ={}",userId );
+    public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
+        String userId = context.getAuthentication().getName();
+
         if (userId.equals("anonymousUser")){
             return new ValidMemberDto(-1L,false);
         }
-        return new ValidMemberDto(Long.valueOf(userId),true);
+        else{
+            return new ValidMemberDto(Long.valueOf(userId),true);
+        }
     }
-//    @PostMapping("/logout")
-//    public
+
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                log.info("cookie val ={},",cookie.getValue());
+                if ("token".equals(cookie.getName())) {
+                    log.info("token val = {}", cookie.getValue());
+                }
+            }
+        }
+        ResponseCookie nonCookie = ResponseCookie.from("token","none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        response.addHeader("Set-Cookie", nonCookie.toString());
+    }
 }
