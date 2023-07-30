@@ -34,7 +34,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     @Transactional
     @Override
     //DAO 의 Member 객체로 정의
-    public NonSocialMember save(NonSocialMember member) throws NoSuchAlgorithmException {
+    public Long save(NonSocialMember member) throws NoSuchAlgorithmException {
         //----------------- member.user 테이블 insert -----------------//
         String userSql = "insert into member.member_user(user_name,login_type,created_date) values(?,?,?)";
         int loginType = member.getLoginType().getValue();
@@ -47,7 +47,6 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             return user_psmt;
         },userKeyHolder);
         long key = userKeyHolder.getKey().longValue();
-        member.setUserId(key);
 
         //----------------- member.auth 테이블 insert -----------------//
         String authSql = "insert into member.member_auth(user_id,user_email,user_pw) values(?,?,?)";
@@ -59,7 +58,9 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             auth_psmt.setString(3,passwordEncoder.encode(member.getUserPw()));
             return auth_psmt;
         },authKeyHolder);
-        return member;
+
+
+        return key;
     }
 
     @Override
@@ -88,11 +89,12 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         return new RowMapper<NonSocialMember>() {
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
-                NonSocialMember member = new NonSocialMember();
-                member.setUserId(rs.getLong("user_id"));
-                member.setAuthId(rs.getLong("auth_id"));
-                member.setUserPw(rs.getString("user_pw"));
-                member.setUserEmail(rs.getString("user_email"));
+                NonSocialMember member = NonSocialMember.builder()
+                                .userId(rs.getLong("user_id"))
+                                .authId(rs.getLong("auth_id"))
+                                .userPw(rs.getString("user_pw"))
+                                .userEmail(rs.getString("user_email"))
+                        .build();
                 return member;
             }
         };
@@ -102,9 +104,9 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         return new RowMapper<NonSocialMember>() {
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
-                NonSocialMember member = new NonSocialMember();
-                member.setUserId(rs.getLong("user_id"));
-
+                NonSocialMember member = NonSocialMember.builder()
+                        .userId(rs.getLong("user_id"))
+                                .build();
                 return member;
             }
         };

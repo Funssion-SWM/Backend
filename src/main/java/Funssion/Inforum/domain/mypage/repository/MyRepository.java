@@ -14,7 +14,7 @@ public interface MyRepository {
     List<MemoListDto> findAllByUserId(int userId);
     List<MyRecordNumDto> findRecordNumByUserId(int userId);
     Optional<MyUserInfoDto> findUserInfoByUserId(int userId);
-    void createHistory(int userId);
+    void createHistory(long userId);
     void updateCreationToHistory(PostType type, int postId, int userId);
     void updateDeletionToHistory(PostType type, int postId, int userId);
 

@@ -8,7 +8,7 @@ import java.util.Optional;
 @Repository
 public class SocialMemberRepository implements MemberRepository<SocialMember> {
     @Override
-    public SocialMember save(SocialMember member) {
+    public Long save(SocialMember member) {
         return null;
     }
 

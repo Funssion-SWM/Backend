@@ -39,7 +39,6 @@ public class MemberService{
 
     @Transactional
     public Long join (MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException {
-        Long user_id = -1L;
         LoginType loginType = memberSaveDto.getLoginType();
         log.info("loginType = {}",loginType);
         memberRepository = repositoryMap.get(loginTypeMap.get(loginType));
@@ -52,24 +51,23 @@ public class MemberService{
             throw new IllegalStateException("이미 가입된 닉네임입니다.");
         }
 
-
         switch (loginType) {
             case NON_SOCIAL:
-                NonSocialMember member = new NonSocialMember();
-                member.setUserName(memberSaveDto.getUserName());
-                member.setLoginType(loginType);
-                member.setUserEmail(memberSaveDto.getUserEmail());
-                member.setUserPw(memberSaveDto.getUserPw());
-                NonSocialMember saveMember = (NonSocialMember) memberRepository.save(member);
-                user_id = saveMember.getUserId();
-                myRepository.createHistory(user_id.intValue());
-                return user_id;
+                NonSocialMember member = NonSocialMember.builder().
+                        userName(memberSaveDto.getUserName())
+                        .loginType(memberSaveDto.getLoginType())
+                        .userEmail(memberSaveDto.getUserEmail())
+                        .userPw(memberSaveDto.getUserPw())
+                        .build();
+                Long saveMemberId = memberRepository.save(member);
+                myRepository.createHistory(saveMemberId);
+                return saveMemberId;
             case SOCIAL: //social 회원가입의 경우 -> 요청 필요
             {
                 throw new NotYetImplementException("해당 요청은 아직 구현되지 않았습니다.");
             }
         }
-        return user_id; // non valid request, return -1
+        return -1L; // non valid request, return -1
     }
 
     public ValidDto isValidName(String username, LoginType loginType) {

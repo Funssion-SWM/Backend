@@ -47,7 +47,7 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     @Override
-    public void createHistory(int userId) {
+    public void createHistory(long userId) {
         String sql = "INSERT INTO member.history (user_id) values (?)";
         template.update(sql, userId);
     }

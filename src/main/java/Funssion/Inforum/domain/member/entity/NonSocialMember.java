@@ -1,12 +1,13 @@
 package Funssion.Inforum.domain.member.entity;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-@Setter @Getter
+@Getter
+@SuperBuilder
 public class NonSocialMember extends Member {
-    private Long authId;
-    private String userEmail;
-    private String userPw;
+    private final Long authId;
+    private final String userEmail;
+    private final String userPw;
 
 }
