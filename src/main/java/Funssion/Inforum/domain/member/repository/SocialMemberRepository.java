@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -8,7 +9,7 @@ import java.util.Optional;
 @Repository
 public class SocialMemberRepository implements MemberRepository<SocialMember> {
     @Override
-    public Long save(SocialMember member) {
+    public SaveMemberResponseDto save(SocialMember member) {
         return null;
     }
 

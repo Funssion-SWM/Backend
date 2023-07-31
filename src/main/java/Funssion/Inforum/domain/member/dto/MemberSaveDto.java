@@ -5,16 +5,13 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
+@Builder
 //DTO 정의
 public class MemberSaveDto {
-    public MemberSaveDto(){
-        
-    }
     @NotBlank
     @JsonProperty("user_name")
     private String userName;

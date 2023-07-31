@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,38 +34,67 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     @Transactional
     @Override
     //DAO 의 Member 객체로 정의
-    public Long save(NonSocialMember member) throws NoSuchAlgorithmException {
-        //----------------- member.user 테이블 insert -----------------//
-        String userSql = "insert into member.member_user(user_name,login_type,created_date) values(?,?,?)";
+    public SaveMemberResponseDto save(NonSocialMember member) {
+        Date createdDate = Date.valueOf(LocalDate.now());
         int loginType = member.getLoginType().getValue();
+        //----------------- member.user 테이블 insert -----------------//
+        String userSql = "insert into member.member_user(user_name,user_email,login_type,created_date) values(?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"user_id"});
             user_psmt.setString(1,member.getUserName());
-            user_psmt.setInt(2,loginType);
-            user_psmt.setDate(3, Date.valueOf(LocalDate.now()));
+            user_psmt.setString(2,member.getUserEmail());
+            user_psmt.setInt(3,loginType);
+            user_psmt.setDate(4, createdDate);
             return user_psmt;
         },userKeyHolder);
-        long key = userKeyHolder.getKey().longValue();
+        long savedUserId = userKeyHolder.getKey().longValue();
 
         //----------------- member.auth 테이블 insert -----------------//
-        String authSql = "insert into member.member_auth(user_id,user_email,user_pw) values(?,?,?)";
+        String authSql = "insert into member.member_auth(user_id,user_pw) values(?,?)";
         KeyHolder authKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con->{
             PreparedStatement auth_psmt = con.prepareStatement(authSql,new String[]{"auth_id"});
-            auth_psmt.setLong(1,key);
-            auth_psmt.setString(2,member.getUserEmail());
-            auth_psmt.setString(3,passwordEncoder.encode(member.getUserPw()));
+            auth_psmt.setLong(1,savedUserId);
+            auth_psmt.setString(2,passwordEncoder.encode(member.getUserPw()));
             return auth_psmt;
         },authKeyHolder);
 
+        return SaveMemberResponseDto.builder()
+                .id(savedUserId)
+                .name(member.getUserName())
+                .createdDate(createdDate)
+                .email(member.getUserEmail())
+                .loginType(member.getLoginType())
+                .build();
 
-        return key;
     }
 
     @Override
     public Optional<NonSocialMember> findByEmail(String email) {
-        String sql ="SELECT AUTH_ID,USER_ID,USER_PW,USER_EMAIL FROM MEMBER.MEMBER_AUTH WHERE USER_EMAIL = ?";
+        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_EMAIL = ?";
+        try{
+            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),email);
+            return Optional.of(nonSocialMember);
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
+
+    @Override
+    public Optional<NonSocialMember> findByName(String name) {
+        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?";
+        try{
+            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),name);
+            return Optional.of(nonSocialMember);
+        }catch (EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
+    public Optional<NonSocialMember> findByEmailToVerifyInSecurity(String email) {
+        String sql ="SELECT A.AUTH_ID,U.USER_ID,A.USER_PW,U.USER_EMAIL FROM MEMBER.MEMBER_USER U JOIN MEMBER.MEMBER_AUTH A ON U.USER_ID = A.USER_ID WHERE USER_EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberAuthRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -74,33 +103,22 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         }
     }
 
-    @Override
-    public Optional<NonSocialMember> findByName(String name) {
-        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?";
-        try{
-            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberUserRowMapper(),name);
-            return Optional.of(nonSocialMember);
-        }catch (EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
-    }
 
     private RowMapper<NonSocialMember> memberAuthRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = NonSocialMember.builder()
-                                .userId(rs.getLong("user_id"))
-                                .authId(rs.getLong("auth_id"))
-                                .userPw(rs.getString("user_pw"))
-                                .userEmail(rs.getString("user_email"))
+                        .userId(rs.getLong("user_id"))
+                        .authId(rs.getLong("auth_id"))
+                        .userPw(rs.getString("user_pw"))
+                        .userEmail(rs.getString("user_email"))
                         .build();
                 return member;
             }
         };
     }
-
-    private RowMapper<NonSocialMember> memberUserRowMapper(){
+    private RowMapper<NonSocialMember> memberRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {

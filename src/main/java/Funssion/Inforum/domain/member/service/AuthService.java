@@ -4,7 +4,7 @@ import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.TokenDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
-import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Optional;
 @Slf4j
 @Service
@@ -25,7 +24,7 @@ import java.util.Optional;
 public class AuthService implements UserDetailsService {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final Map<String,MemberRepository> repositoryMap;
+    private final NonSocialMemberRepository nonSocialMemberRepository;
 
     public TokenDto makeTokenInfo(NonSocialMemberLoginDto nonSocialMemberLoginDto){
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -42,8 +41,7 @@ public class AuthService implements UserDetailsService {
     }
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        MemberRepository memberRepository = repositoryMap.get("nonSocialMemberRepository");
-        Optional<NonSocialMember> nonSocialMember = memberRepository.findByEmail(userEmail);
+        Optional<NonSocialMember> nonSocialMember = nonSocialMemberRepository.findByEmailToVerifyInSecurity(userEmail);
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
             log.info("member info in loadByUsername method = {}", member.getAuthId());
