@@ -20,7 +20,7 @@ import java.util.Optional;
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
 @Service
-public class MemberService{
+public class MemberService {
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
     private final MyRepository myRepository;
@@ -67,13 +67,13 @@ public class MemberService{
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
         Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByName(username);
-        return new ValidDto(!optionalMember.isEmpty());
+        return new ValidDto(optionalMember.isEmpty());
     }
     public ValidDto isValidEmail(String email, LoginType loginType){
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
         Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByEmail(email);
-        return new ValidDto(!optionalMember.isEmpty());
+        return new ValidDto(optionalMember.isEmpty());
     }
 
 

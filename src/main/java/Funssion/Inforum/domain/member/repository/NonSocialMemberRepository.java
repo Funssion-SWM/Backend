@@ -38,10 +38,10 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         Date createdDate = Date.valueOf(LocalDate.now());
         int loginType = member.getLoginType().getValue();
         //----------------- member.user 테이블 insert -----------------//
-        String userSql = "insert into member.member_user(user_name,user_email,login_type,created_date) values(?,?,?,?)";
+        String userSql = "insert into member.user(name,email,login_type,created_date) values(?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
-            PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"user_id"});
+            PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
             user_psmt.setString(1,member.getUserName());
             user_psmt.setString(2,member.getUserEmail());
             user_psmt.setInt(3,loginType);
@@ -51,10 +51,10 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         long savedUserId = userKeyHolder.getKey().longValue();
 
         //----------------- member.auth 테이블 insert -----------------//
-        String authSql = "insert into member.member_auth(user_id,user_pw) values(?,?)";
+        String authSql = "insert into member.auth(user_id,password) values(?,?)";
         KeyHolder authKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con->{
-            PreparedStatement auth_psmt = con.prepareStatement(authSql,new String[]{"auth_id"});
+            PreparedStatement auth_psmt = con.prepareStatement(authSql,new String[]{"id"});
             auth_psmt.setLong(1,savedUserId);
             auth_psmt.setString(2,passwordEncoder.encode(member.getUserPw()));
             return auth_psmt;
@@ -72,7 +72,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByEmail(String email) {
-        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_EMAIL = ?";
+        String sql ="SELECT ID FROM MEMBER.USER WHERE EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -84,7 +84,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByName(String name) {
-        String sql ="SELECT USER_ID FROM MEMBER.MEMBER_USER WHERE USER_NAME = ?";
+        String sql ="SELECT ID FROM MEMBER.USER WHERE NAME = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),name);
             return Optional.of(nonSocialMember);
@@ -94,7 +94,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     }
 
     public Optional<NonSocialMember> findByEmailToVerifyInSecurity(String email) {
-        String sql ="SELECT A.AUTH_ID,U.USER_ID,A.USER_PW,U.USER_EMAIL FROM MEMBER.MEMBER_USER U JOIN MEMBER.MEMBER_AUTH A ON U.USER_ID = A.USER_ID WHERE USER_EMAIL = ?";
+        String sql ="SELECT A.ID,U.ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER U JOIN MEMBER.AUTH A ON U.ID = A.USER_ID WHERE USER_EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberAuthRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -109,10 +109,10 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = NonSocialMember.builder()
-                        .userId(rs.getLong("user_id"))
-                        .authId(rs.getLong("auth_id"))
-                        .userPw(rs.getString("user_pw"))
-                        .userEmail(rs.getString("user_email"))
+                        .userId(rs.getLong("id"))
+                        .authId(rs.getLong("id"))
+                        .userPw(rs.getString("password"))
+                        .userEmail(rs.getString("email"))
                         .build();
                 return member;
             }
@@ -123,7 +123,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = NonSocialMember.builder()
-                        .userId(rs.getLong("user_id"))
+                        .userId(rs.getLong("id"))
                                 .build();
                 return member;
             }
