@@ -39,13 +39,6 @@ public class AuthController {
     public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto, HttpServletRequest request) {
         TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
         HttpHeaders httpHeaders = new HttpHeaders();
-
-//        if (request.isSecure()) {
-//            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
-//        } else {
-//            //SSL 미설정으로 인한 Secure 옵션 미설정
-//            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
-//        }
         if(request.getServerName().equals("localhost")){
             httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly");
         }
