@@ -73,7 +73,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     public String findByUserId(Integer userId) {
-        String sql = "select user_name from member.member_user where user_id = ?";
+        String sql = "select name from member.user where id = ?";
         return template.queryForObject(sql, String.class, userId);
     }
 
