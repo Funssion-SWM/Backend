@@ -94,7 +94,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     }
 
     public Optional<NonSocialMember> findByEmailToVerifyInSecurity(String email) {
-        String sql ="SELECT A.ID,U.ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER U JOIN MEMBER.AUTH A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
+        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberAuthRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -109,8 +109,8 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = NonSocialMember.builder()
-                        .userId(rs.getLong("id"))
-                        .authId(rs.getLong("id"))
+                        .userId(rs.getLong("u_id"))
+                        .authId(rs.getLong("a_id"))
                         .userPw(rs.getString("password"))
                         .userEmail(rs.getString("email"))
                         .build();
