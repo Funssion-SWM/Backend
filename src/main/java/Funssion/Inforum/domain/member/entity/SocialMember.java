@@ -1,9 +1,10 @@
 package Funssion.Inforum.domain.member.entity;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-@Setter @Getter
+@Getter
+@SuperBuilder
 public class SocialMember extends Member {
-/* 추가 필요 */
+    private final Long id;
 }

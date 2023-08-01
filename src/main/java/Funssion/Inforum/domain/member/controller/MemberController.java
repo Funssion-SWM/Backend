@@ -34,8 +34,8 @@ public class MemberController {
 
     @PostMapping("")
     public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long save_id = memberService.join(memberSaveDto);
-        return new ResponseEntity(HttpStatus.CREATED);
+        Long save_id = memberService.requestMemberRegistration(memberSaveDto).getId();
+        return new ResponseEntity(save_id,HttpStatus.CREATED);
     }
     @GetMapping("/email-valid")
     public ValidDto isValidEmail(@RequestParam(value="email", required=true) String email){
