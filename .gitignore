@@ -8,6 +8,9 @@ build/
 # 환경변수
 /src/main/resources/*.yml
 
+# 로컬 log
+/src/main/resources/logs/
+
 ### STS ###
 .apt_generated
 .classpath
