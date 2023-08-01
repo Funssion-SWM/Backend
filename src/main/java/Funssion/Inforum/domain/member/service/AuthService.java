@@ -42,6 +42,7 @@ public class AuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         Optional<NonSocialMember> nonSocialMember = nonSocialMemberRepository.findByEmailToVerifyInSecurity(userEmail);
+        log.info("check={}",nonSocialMember);
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
             log.info("member info in loadByUsername method = {}", member.getAuthId());

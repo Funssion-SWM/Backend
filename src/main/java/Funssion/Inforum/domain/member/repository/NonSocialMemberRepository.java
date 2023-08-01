@@ -94,7 +94,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     }
 
     public Optional<NonSocialMember> findByEmailToVerifyInSecurity(String email) {
-        String sql ="SELECT A.ID,U.ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER U JOIN MEMBER.AUTH A ON U.ID = A.USER_ID WHERE USER_EMAIL = ?";
+        String sql ="SELECT A.ID,U.ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER U JOIN MEMBER.AUTH A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberAuthRowMapper(),email);
             return Optional.of(nonSocialMember);
