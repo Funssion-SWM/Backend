@@ -28,7 +28,7 @@ jobs:
       run: rm -rf ./build/libs
       
     - name: Add properties
-      run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+      run: echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application.yml
       
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
@@ -42,7 +42,7 @@ jobs:
         arguments: build
         
     - name: Docker build
-      run: docker build -t ${{ secrets.DOCKER_REPO }}/inforum-dev .
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_DEV }} .
       
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -51,7 +51,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         
     - name: Docker push
-      run: docker push ${{ secrets.DOCKER_REPO }}/inforum-dev
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_DEV }}
       
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
@@ -60,9 +60,9 @@ jobs:
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
-            sudo docker rm -f $(docker ps -qa)
-            sudo docker pull ${{ secrets.DOCKER_REPO }}/inforum-dev
-            sudo docker run -dp 80:8080 ${{ secrets.DOCKER_REPO }}/inforum-dev
+            ssh spring sudo docker rm -f $(ssh spring sudo docker ps -qa)
+            ssh spring sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_DEV }}
+            ssh spring sudo docker run -dp 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_DEV }}
             
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
