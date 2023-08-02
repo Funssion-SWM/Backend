@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <springProperty name="SLACK_WEBHOOK_URI" source="logging.slack.webhook-uri"/>
-    <springProfile name="prod">
+    <springProfile name="dev">
         <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
