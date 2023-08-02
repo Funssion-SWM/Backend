@@ -5,6 +5,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+/src/main/resources/logback-local.properties
+/src/main/resources/logback-local.xml
+
 # 환경변수
 /src/main/resources/*.yml
 
