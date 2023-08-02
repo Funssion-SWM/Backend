@@ -59,7 +59,6 @@ public class MemoService {
     public MemoDto createMemo(MemoSaveDto form) {
         Integer userId = getUserId();
         String userName = memoRepository.findByUserId(userId);
-        log.info("check = {}",userName);
         Integer memoId = memoRepository.create(userId, userName, form);
         myRepository.updateCreationToHistory(PostType.MEMO, memoId, userId);
         return memoRepository.findById(memoId).orElseThrow(() -> new IllegalStateException("creation fail"));
