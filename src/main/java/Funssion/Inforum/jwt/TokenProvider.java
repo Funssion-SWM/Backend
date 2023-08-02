@@ -51,11 +51,7 @@ public class TokenProvider implements InitializingBean {
         // 토큰의 expire 시간을 설정
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
-        log.info("authentication credentials= {}",authentication.getCredentials());
-        log.info("authentication name= {}",authentication.getName());
-        log.info("authentication principal= {}",authentication.getPrincipal());
-        log.info("authentication authorities= {}",authentication.getAuthorities());
-
+        log.info("[Login] User Id = {}",authentication.getName());
         return Jwts.builder()
                 .setSubject(authentication.getName()) // user_id가 반환됨
                 .claim(AUTHORITIES_KEY, authorities) // 정보 저장
@@ -72,7 +68,6 @@ public class TokenProvider implements InitializingBean {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        log.info("authorites = {}", claims.get(AUTHORITIES_KEY).toString().split(","));
         Collection<? extends GrantedAuthority> authorities = Collections.emptyList(); //authorities를 빈 리스트로 설정했으므로, 그대로 대입.
 //                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
 //                        .map(SimpleGrantedAuthority::new)

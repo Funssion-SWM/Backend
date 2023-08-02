@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="30 seconds">
+<configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}[%-5level] : %msg%n</pattern>
-        </encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}%highlight([%-5level]) ${PID:-} : %msg%n</pattern>
+        </layout>
     </appender>
-    <root level="INFO">
+    <logger name="Funssion.Inforum" level="DEBUG">
         <appender-ref ref="STDOUT"/>
-    </root>
+    </logger>
     <!-- 개발 환경별 log profile 설정 -->
     <springProfile name="local">
         <property resource="logback-local.properties"/>
