@@ -5,12 +5,12 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Java CI/CD with Gradle In Main Branch
+
+name: Java CI/CD with Gradle In Develope Branch
 
 on:
   push:
-    branches: [ "main" ]
-
+    branches: [ "develope" ]
 jobs:
   build:
 
@@ -28,7 +28,7 @@ jobs:
       run: rm -rf ./build/libs
       
     - name: Add properties
-      run: echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application.yml
+      run: echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application.yml
       
     - name: init with Gradle
       uses: gradle/gradle-build-action@v2
@@ -42,7 +42,7 @@ jobs:
         arguments: build
         
     - name: Docker build
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }} .
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} .
       
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -51,19 +51,18 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         
     - name: Docker push
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
       
     - name: Deploy to dev
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.HOST_PROD }}
+        host: ${{ secrets.HOST_DEV }}
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
             ssh spring sudo docker rm -f $(ssh spring sudo docker ps -qa)
-            ssh spring sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
-            ssh spring sudo docker run -dp 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_REPO_PROD }}
-            
+            ssh spring sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
+            ssh spring sudo docker run -dp 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
       env:
