@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.exception.NotFoundException;
-import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;

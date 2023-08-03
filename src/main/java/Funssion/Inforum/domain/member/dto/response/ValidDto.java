@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.member.dto;
+package Funssion.Inforum.domain.member.dto.response;
 
 import lombok.Getter;
 

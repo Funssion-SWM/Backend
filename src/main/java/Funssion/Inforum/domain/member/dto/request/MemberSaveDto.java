@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.member.dto;
+package Funssion.Inforum.domain.member.dto.request;
 
 import Funssion.Inforum.domain.member.constant.EnumValid;
 import Funssion.Inforum.domain.member.constant.LoginType;

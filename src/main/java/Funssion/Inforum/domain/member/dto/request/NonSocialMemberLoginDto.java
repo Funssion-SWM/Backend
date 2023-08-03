@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.member.dto;
+package Funssion.Inforum.domain.member.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;

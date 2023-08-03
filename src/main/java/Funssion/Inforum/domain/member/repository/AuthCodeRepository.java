@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.domain.member.dto.CodeCheckDto;
+import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;

@@ -1,12 +1,12 @@
 package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.ValidDto;
+import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.response.ValidDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
-import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

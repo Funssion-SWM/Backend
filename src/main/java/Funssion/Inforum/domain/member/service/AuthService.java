@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.service;
 
-import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginDto;
-import Funssion.Inforum.domain.member.dto.TokenDto;
+import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
+import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;

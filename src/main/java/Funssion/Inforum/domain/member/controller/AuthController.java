@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.controller;
 
-import Funssion.Inforum.domain.member.dto.NonSocialMemberLoginDto;
-import Funssion.Inforum.domain.member.dto.TokenDto;
+import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
+import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.member.swagger.ErrorResponse;
 import Funssion.Inforum.domain.member.swagger.SuccessResponse;
