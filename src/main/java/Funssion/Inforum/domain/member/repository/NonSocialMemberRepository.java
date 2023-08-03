@@ -68,7 +68,6 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
                 .email(member.getUserEmail())
                 .loginType(member.getLoginType())
                 .build();
-
     }
 
     @Override
@@ -140,4 +139,6 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             }
         };
     }
+
+
 }

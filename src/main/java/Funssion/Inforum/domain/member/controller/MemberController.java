@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +32,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MailService mailService;
+    private final DataSource dataSource;
 
     @PostMapping("")
     public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
@@ -44,19 +46,23 @@ public class MemberController {
     }
 
     @PostMapping ("/mailAuth")
-    public String mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
-        System.out.println("이메일 인증 이메일 :" + emailDto.getEmail());
-        return mailService.joinEmail(emailDto.getEmail()); //인증번호 String으로 return
+    public SuccessEmailSendDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
+        return mailService.sendEmailCode(emailDto.getEmail());
     }
     @PostMapping("/mailAuthCheck")
-    public ValidDto AuthCheck(@RequestBody @Valid EmailCheckDto emailCheckDto){
-        Boolean Checked=mailService.CheckAuthNum(emailCheckDto.getEmail(),emailCheckDto.getAuthNum());
-        return new ValidDto(Checked);
+    public ValidDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto){
+        return new ValidDto(mailService.isAuthorizedEmail(codeCheckDto));
     }
     @GetMapping("/name-valid")
     public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
+
+//    @GetMapping("/erase")
+//    public void check(){
+//        AuthCodeRepository authService = new AuthCodeRepository(new JdbcTemplate(dataSource));
+//        authService.removeExpiredEmailCode();
+//    }
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
