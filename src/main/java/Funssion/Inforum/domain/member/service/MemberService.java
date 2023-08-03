@@ -36,6 +36,7 @@ public class MemberService {
     }
 
 
+
     @Transactional
     public SaveMemberResponseDto requestMemberRegistration (MemberSaveDto memberSaveDto){
         LoginType loginType = memberSaveDto.getLoginType();
