@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.ValidDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -43,10 +44,10 @@ public class MemberService {
         log.debug("Save Member Email = {}, loginType = {}",memberSaveDto.getUserEmail(), loginType);
         //중복 처리 한번더 검증
         if(!isValidEmail(memberSaveDto.getUserEmail(),loginType).isValid()){
-            throw new IllegalStateException("이미 가입된 회원 이메일입니다.");
+            throw new DuplicateMemberException("이미 가입된 회원 이메일입니다.");
         }
         if(!isValidName(memberSaveDto.getUserName(),loginType).isValid()){
-            throw new IllegalStateException("이미 가입된 닉네임입니다.");
+            throw new DuplicateMemberException("이미 가입된 닉네임입니다.");
         }
 
         switch (loginType) {
