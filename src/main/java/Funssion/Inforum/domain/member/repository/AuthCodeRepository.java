@@ -60,12 +60,24 @@ public class AuthCodeRepository {
     }
 
     public boolean checkRequestCode(CodeCheckDto requestCodeDto) {
-        String sql = "SELECT email, code FROM member.auth_code WHERE email = ? AND NOT expiration AND date_part('minute', now() - due_date) < 5";
+        String sql = "SELECT email, code FROM member.auth_code WHERE email = ? AND NOT expiration AND extract('EPOCH' from (due_date - now())) between 0 and 300";
         try {
             CodeCheckDto rightCodeDto = jdbcTemplate.queryForObject(sql, codeCheckDtoRowMapper(), requestCodeDto.getEmail());
             return requestCodeDto.equals(rightCodeDto);
         } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
             return false; //조건에 부합하는 어떠한 row 도 존재하지 않음
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public void removeExpiredEmailCode(){
+        String sql = "delete from member.auth_code where expiration or extract('EPOCH' from (now() - due_date)) > 300";
+        try{
+            jdbcTemplate.update(sql);
+        }catch(DataAccessException e){
+            log.info("removeExpiredEmailCode 스케쥴링 실패 = {}",e.getMessage());
         }
     }
 

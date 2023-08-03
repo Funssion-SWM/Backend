@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +32,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MailService mailService;
+    private final DataSource dataSource;
 
     @PostMapping("")
     public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
@@ -55,6 +57,12 @@ public class MemberController {
     public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
+
+//    @GetMapping("/erase")
+//    public void check(){
+//        AuthCodeRepository authService = new AuthCodeRepository(new JdbcTemplate(dataSource));
+//        authService.removeExpiredEmailCode();
+//    }
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();

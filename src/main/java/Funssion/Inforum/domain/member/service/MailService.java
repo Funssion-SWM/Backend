@@ -3,7 +3,6 @@ package Funssion.Inforum.domain.member.service;
 import Funssion.Inforum.domain.member.dto.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.SuccessEmailSendDto;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
-import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class MailService {
     private final JavaMailSender mailSender;
     private final AuthCodeRepository authCodeRepository;
@@ -43,7 +45,7 @@ public class MailService {
     public boolean isAuthorizedEmail(CodeCheckDto requestCodeDto){
         return authCodeRepository.checkRequestCode(requestCodeDto);
     }
-    public String makeRandomString() {
+    private String makeRandomString() {
         Random r = new Random();
         String randomNumberString = "";
         for(int i = 0; i < 6; i++) {
@@ -54,7 +56,7 @@ public class MailService {
 
 
     //mail을 어디서 보내는지, 어디로 보내는지 , 인증 번호를 html 형식으로 어떻게 보내는지 작성합니다.
-    public String sendEmail(String receiverEmail,String code) {
+    private String sendEmail(String receiverEmail,String code) {
         String title = "회원 가입 인증 이메일 입니다."; // 이메일 제목
         String content =
                 " 반갑습니다!" + "<br>" + "Inforum 회원가입을 위한 인증번호입니다." +    //html 형식으로 작성 !
@@ -66,7 +68,7 @@ public class MailService {
         return code;
     }
     //이메일을 전송합니다.
-    public void mailSendFromAdminToUser(String senderEmail, String receiverEmail, String title, String content) {
+    private void mailSendFromAdminToUser(String senderEmail, String receiverEmail, String title, String content) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();//JavaMailSender 객체를 사용하여 MimeMessage 객체를 생성
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true,"utf-8");//이메일 메시지와 관련된 설정을 수행합니다.
@@ -80,7 +82,9 @@ public class MailService {
             // 이러한 경우 MessagingException이 발생
             e.printStackTrace();
         }
-
     }
-
+    @Scheduled(cron = "0 03 00 * * ?")
+    public void scheduledForRemovingExpirationEmailCode(){
+        authCodeRepository.removeExpiredEmailCode();
+    }
 }
