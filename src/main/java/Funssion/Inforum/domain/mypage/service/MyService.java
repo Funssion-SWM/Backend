@@ -1,6 +1,8 @@
 package Funssion.Inforum.domain.mypage.service;
 
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.memo.repository.MemoRepositoryJdbc;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
@@ -15,6 +17,7 @@ import java.util.NoSuchElementException;
 public class MyService {
 
     private final MyRepository myRepository;
+    private final MemoRepository memoRepository;
 
     public MyUserInfoDto getUserInfo(int userId) {
         return myRepository.findUserInfoByUserId(userId).orElseThrow(() -> new NoSuchElementException("user not found"));
@@ -27,8 +30,6 @@ public class MyService {
     }
 
     public List<MemoListDto> getMyMemos(int userId) {
-        List<MemoListDto> memos = myRepository.findAllByUserId(userId);
-        if(memos.isEmpty()) throw new NoSuchElementException("user not found");
-        return memos;
+        return memoRepository.findAllByUserIdOrderById(userId).stream().map(memo -> new MemoListDto(memo)).toList();
     }
 }

@@ -1,20 +1,17 @@
 package Funssion.Inforum.domain.memo.repository;
 
 
-import Funssion.Inforum.domain.memo.dto.MemoDto;
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
-import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.memo.entity.Memo;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MemoRepository {
 
-    Integer create(Integer userId, String userName, MemoSaveDto form);
-    List<MemoListDto> findAllByPeriodWithMostPopular(Integer period);
-    List<MemoListDto> findAllWithNewest();
-    Optional<MemoDto> findById(Integer id);
-    String findByUserId(Integer userId);
-    Integer update(Integer memoId, Integer userId, MemoSaveDto form);
-    Integer delete(Integer id);
+    Memo create(Memo memo);
+    List<Memo> findAllByDaysOrderByLikes(Integer days);
+    List<Memo> findAllOrderById();
+    List<Memo> findAllByUserIdOrderById(Integer userId);
+    Memo findById(Integer id);
+    Memo update(Memo memo, Integer memoId);
+    void delete(Integer id);
 }

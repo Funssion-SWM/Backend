@@ -1,19 +1,16 @@
 package Funssion.Inforum.domain.memo.controller;
 
-import Funssion.Inforum.domain.memo.dto.MemoDto;
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
-import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.memo.service.MemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,8 +24,8 @@ public class MemoController {
     public List<MemoListDto> getMemoList(
             @RequestParam(required = false, defaultValue = "DAY") String period,
             @RequestParam(required = false, defaultValue = "NEW") String orderBy) {
-        List<MemoListDto> memos = memoService.getMemosInMainPage(period, orderBy);
-        return memos;
+
+        return memoService.getMemosForMainPage(period, orderBy);
     }
 
     @ResponseStatus(HttpStatus.CREATED)

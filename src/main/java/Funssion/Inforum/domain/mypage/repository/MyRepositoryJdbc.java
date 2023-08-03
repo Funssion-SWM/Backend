@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +18,6 @@ public class MyRepositoryJdbc implements MyRepository {
     private JdbcTemplate template;
     public MyRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
-    }
-
-    @Override
-    public List<MemoListDto> findAllByUserId(int userId) {
-        String sql = "select * from memo.info where user_id = ?";
-        return template.query(sql, MemoListDto.memoListRowMapper(), userId);
     }
 
     @Override

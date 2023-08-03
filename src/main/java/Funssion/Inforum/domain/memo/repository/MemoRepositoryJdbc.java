@@ -1,21 +1,18 @@
 package Funssion.Inforum.domain.memo.repository;
 
-import Funssion.Inforum.domain.memo.dto.MemoDto;
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
-import Funssion.Inforum.domain.memo.dto.MemoSaveDto;
+import Funssion.Inforum.domain.memo.entity.Memo;
+import Funssion.Inforum.domain.memo.exception.MemoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @Slf4j
@@ -30,62 +27,87 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     // insert and return PK
     @Override
-    public Integer create(Integer userId, String userName, MemoSaveDto form) {
+    public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        log.debug("form = {}",form);
-
-        String sql = "INSERT INTO memo.info (user_id, user_name, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
+        String sql = "INSERT INTO memo.info (author_id, author_name, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
                 "VALUES (?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            psmt.setInt(1,userId);
-            psmt.setString(2,userName);
-            psmt.setString(3,form.getMemoTitle());
-            psmt.setString(4,form.getMemoDescription());
-            psmt.setString(5,form.getMemoText());
-            psmt.setString(6,form.getMemoColor());
-            psmt.setDate(7,Date.valueOf(LocalDate.now()));
-            psmt.setDate(8,null);
+            psmt.setInt(1, memo.getAuthorId());
+            psmt.setString(2, memo.getAuthorName());
+            psmt.setString(3, memo.getMemoTitle());
+            psmt.setString(4, memo.getMemoDescription());
+            psmt.setString(5, memo.getMemoText());
+            psmt.setString(6, memo.getMemoColor());
+            psmt.setDate(7, memo.getCreatedDate());
+            psmt.setDate(8,memo.getUpdatedDate());
             return psmt;
         }, keyHolder);
 
-        return (Integer) keyHolder.getKeys().get("memo_id");
+        Integer memoId = (Integer) keyHolder.getKeys().get("memo_id");
+
+        return findById(memoId);
     }
 
     @Override
-    public List<MemoListDto> findAllByPeriodWithMostPopular(Integer period) {
-        String sql = "select * from memo.info where created_date >= current_date - CAST(? AS int) order by likes desc";
-        return template.query(sql,MemoListDto.memoListRowMapper(), period);
+    public List<Memo> findAllByDaysOrderByLikes(Integer days) {
+        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes desc";
+        return getMemos(new Object[]{days}, sql);
     }
 
     @Override
-    public List<MemoListDto> findAllWithNewest() {
+    public List<Memo> findAllOrderById() {
         String sql = "select * from memo.info order by memo_id desc";
-        return template.query(sql, MemoListDto.memoListRowMapper());
+        return getMemos(new Object[]{}, sql);
     }
 
     @Override
-    public Optional<MemoDto> findById(Integer id) {
+    public List<Memo> findAllByUserIdOrderById(Integer userId) {
+        String sql = "select * from memo.info where author_id = ? order by memo_id desc";
+        return getMemos(new Object[]{userId}, sql);
+    }
+
+    private List<Memo> getMemos(Object[] param, String sql) {
+        List<Memo> memoList = template.query(sql, memoRowMapper(), param);
+        if (memoList.isEmpty()) throw new MemoNotFoundException();
+        return memoList;
+    }
+
+    @Override
+    public Memo findById(Integer id) {
         String sql = "select * from memo.info where memo_id = ?";
-        return template.query(sql, MemoDto.memoRowMapper(), id).stream().findAny();
+        return template.query(sql, memoRowMapper(), id).stream().findAny().orElseThrow(() -> new MemoNotFoundException());
     }
 
-    public String findByUserId(Integer userId) {
-        String sql = "select name from member.user where id = ?";
-        return template.queryForObject(sql, String.class, userId);
+    private RowMapper<Memo> memoRowMapper() {
+        return ((rs, rowNum) ->
+                Memo.builder()
+                        .memoId(rs.getInt("memo_id"))
+                        .memoTitle(rs.getString("memo_title"))
+                        .memoDescription(rs.getString("memo_description"))
+                        .memoText(rs.getString("memo_text"))
+                        .memoColor(rs.getString("memo_color"))
+                        .createdDate(rs.getDate("created_date"))
+                        .authorId(rs.getInt("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .build());
     }
 
     @Override
-    public Integer update(Integer memoId, Integer userId, MemoSaveDto form) {
-        String sql = "update memo.info set memo_title = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ? and user_id = ?";
-        return template.update(sql, form.getMemoTitle(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), memoId, userId);
+    public Memo update(Memo memo, Integer memoId) {
+        log.info("me {}", memo);
+        String sql = "update memo.info set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ? and author_id = ?";
+        if (template.update(sql, memo.getMemoTitle(), memo.getMemoDescription(), memo.getMemoText(), memo.getMemoColor(), memo.getUpdatedDate(), memoId, memo.getAuthorId())
+                == 0)
+            throw new MemoNotFoundException("update fail");
+        return findById(memoId);
     }
 
     @Override
-    public Integer delete(Integer id) {
+    public void delete(Integer id) {
         String sql = "delete from memo.info where memo_id = ?";
-        return template.update(sql, id);
+        if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
     }
 }
