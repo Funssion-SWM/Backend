@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.dto.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.SuccessEmailSendDto;
+import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -19,7 +20,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class MailService {
     private final JavaMailSender mailSender;
-    private final NonSocialMemberRepository nonSocialMemberRepository;
+    private final AuthCodeRepository authCodeRepository;
 
 
     @Value("${naver.id}")
@@ -31,8 +32,8 @@ public class MailService {
     public SuccessEmailSendDto sendEmailCode(String beVerifiedEmail){
         try {
             String generatedCode = makeRandomString();
-            nonSocialMemberRepository.invalidateExistedEmailCode(beVerifiedEmail);
-            nonSocialMemberRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
+            authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
+            authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
             sendEmail(beVerifiedEmail,generatedCode);
         }catch(DataAccessException e){
             return new SuccessEmailSendDto(false);
@@ -40,7 +41,7 @@ public class MailService {
         return new SuccessEmailSendDto(true);
     }
     public boolean isAuthorizedEmail(CodeCheckDto requestCodeDto){
-        return nonSocialMemberRepository.checkRequestCode(requestCodeDto);
+        return authCodeRepository.checkRequestCode(requestCodeDto);
     }
     public String makeRandomString() {
         Random r = new Random();
@@ -77,7 +78,7 @@ public class MailService {
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {//이메일 서버에 연결할 수 없거나, 잘못된 이메일 주소를 사용하거나, 인증 오류가 발생하는 등 오류
             // 이러한 경우 MessagingException이 발생
-            System.out.println("e eeeeeeee= " + e);
+            e.printStackTrace();
         }
 
     }
