@@ -35,7 +35,7 @@ public class AuthCodeRepository {
         try {
             jdbcTemplate.update(sql, beVerifiedEmail);
         }catch(DataAccessException e){
-            System.out.println("error = "+e.getMessage());
+            log.error("error in invalidateExistedEmailCode = "+e.getMessage());
         }
 
     }
@@ -55,7 +55,7 @@ public class AuthCodeRepository {
                 return psmt;
             }, userKeyHolder);
         }catch(DataAccessException e){
-            System.out.println("error in insert= "+e.getMessage());
+            log.error("error in insert= {}"+e.getMessage());
         }
     }
 
@@ -68,7 +68,7 @@ public class AuthCodeRepository {
             e.printStackTrace();
             return false; //조건에 부합하는 어떠한 row 도 존재하지 않음
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("error in checkRequestCode");
             return false;
         }
     }
@@ -77,7 +77,7 @@ public class AuthCodeRepository {
         try{
             jdbcTemplate.update(sql);
         }catch(DataAccessException e){
-            log.info("removeExpiredEmailCode 스케쥴링 실패 = {}",e.getMessage());
+            log.error("removeExpiredEmailCode 스케쥴링 실패 = {}",e.getMessage());
         }
     }
 
