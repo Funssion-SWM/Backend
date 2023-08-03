@@ -75,9 +75,8 @@ public class MemberController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                log.info("cookie val ={},",cookie.getValue());
                 if ("token".equals(cookie.getName())) {
-                    log.info("token val = {}", cookie.getValue());
+                    log.info("[Logout] User Id ={},",cookie.getValue());
                 }
             }
         }

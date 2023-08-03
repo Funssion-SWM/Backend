@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.memo.dto;
+package Funssion.Inforum.domain.memo.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class MemoSaveDto {
     @NotBlank(message = "제목을 입력해주세요")
     private String memoTitle;
+    @NotBlank(message = "요약 내용을 입력해주세요")
     private String memoDescription;
     @NotBlank(message = "내용을 입력해주세요")
     private String memoText;

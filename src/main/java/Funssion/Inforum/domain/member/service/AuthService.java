@@ -29,10 +29,8 @@ public class AuthService implements UserDetailsService {
     public TokenDto makeTokenInfo(NonSocialMemberLoginDto nonSocialMemberLoginDto){
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(nonSocialMemberLoginDto.getUserEmail(), nonSocialMemberLoginDto.getUserPw());
-        log.info("authetntication manager builder get object = {}",authenticationManagerBuilder.getObject());
         // authenticate 메소드가 실행이 될 때 CustomUserDetailsService class의 loadUserByUsername 메소드가 실행 및 db와 대조하여 인증
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        log.info("authentication info = {}",authentication);
         // 해당 객체를 SecurityContextHolder에 저장하고
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 인증받은 새로운 authentication 객체를 createToken 메소드를 통해서 JWT Token을 생성
@@ -42,7 +40,6 @@ public class AuthService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         Optional<NonSocialMember> nonSocialMember = nonSocialMemberRepository.findByEmailToVerifyInSecurity(userEmail);
-        log.info("check={}",nonSocialMember);
         if (nonSocialMember.isPresent()) {
             NonSocialMember member = nonSocialMember.get();
             //non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. ->토큰의 getName의 user_id가 들어갑니다.
