@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.exception.NotFoundException;
 import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;
@@ -90,6 +91,16 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             return Optional.of(nonSocialMember);
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
+        }
+    }
+
+    public String findNameById(Integer id) {
+        String sql = "select name from member.user where id = ?";
+        try {
+            String name = jdbcTemplate.queryForObject(sql, String.class);
+            return name;
+        } catch (Exception e) {
+            throw new NotFoundException("user not found");
         }
     }
 

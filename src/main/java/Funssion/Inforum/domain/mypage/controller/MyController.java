@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.mypage.controller;
 
-import Funssion.Inforum.domain.memo.dto.MemoListDto;
+import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import Funssion.Inforum.domain.mypage.service.MyService;
