@@ -1,4 +1,4 @@
-create sequence email_code_seq;
+create sequence auth_code_seq;
 create table member.USER(
     id int8 primary key DEFAULT nextval('user_id_seq'::regclass),
     name VARCHAR(15) NOT NULL UNIQUE,
@@ -15,7 +15,7 @@ create table Member.auth(
 );
 
 create table member.auth_code(
-    id int8 primary key DEFAULT nextval('email_code_seq'::regclass),
+    id int8 primary key DEFAULT nextval('auth_code_seq'::regclass),
     email VARCHAR(60) not null,
     code CHAR(6) not null,
     expiration boolean default false,
