@@ -96,7 +96,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     public String findNameById(Integer id) {
         String sql = "select name from member.user where id = ?";
         try {
-            String name = jdbcTemplate.queryForObject(sql, String.class);
+            String name = jdbcTemplate.queryForObject(sql, String.class, id);
             return name;
         } catch (Exception e) {
             throw new NotFoundException("user not found");
