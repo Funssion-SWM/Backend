@@ -2,12 +2,12 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.ValidDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
@@ -65,17 +64,20 @@ public class MemberService {
         throw new InvalidParameterException("!~ 수정");
     }
 
-    public ValidDto isValidName(String username, LoginType loginType) {
+    public ValidatedDto isValidName(String username, LoginType loginType) {
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
-        log.debug("selected repository = {}",selectedMemberRepository);
-        Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByName(username);
-        return new ValidDto(optionalMember.isEmpty());
+        log.debug("selected repository = {}", selectedMemberRepository);
+
+        boolean isNameAvailable = selectedMemberRepository.findByName(username).isEmpty();
+        String message = isNameAvailable ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
+        return new ValidatedDto(isNameAvailable, message);
     }
-    public ValidDto isValidEmail(String email, LoginType loginType){
+    public ValidatedDto isValidEmail(String email, LoginType loginType){
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
-        Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByEmail(email);
-        return new ValidDto(optionalMember.isEmpty());
+        boolean isEmailAvailable = selectedMemberRepository.findByEmail(email).isEmpty();
+        String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
+        return new ValidatedDto(isEmailAvailable,message);
     }
 
 

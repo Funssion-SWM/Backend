@@ -5,8 +5,8 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.SuccessEmailSendDto;
-import Funssion.Inforum.domain.member.dto.response.ValidDto;
+import Funssion.Inforum.domain.member.dto.response.isSuccessSendingEmailDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -39,38 +39,35 @@ public class MemberController {
 
     @PostMapping("")
     public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long save_id = memberService.requestMemberRegistration(memberSaveDto).getId();
-        return new ResponseEntity(save_id,HttpStatus.CREATED);
-    }
-    @GetMapping("/email-valid")
-    public ValidDto isValidEmail(@RequestParam(value="email", required=true) String email){
-        String docodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        return memberService.isValidEmail(docodedEmail,LoginType.NON_SOCIAL);
+        Long savedId = memberService.requestMemberRegistration(memberSaveDto).getId();
+        return new ResponseEntity(savedId,HttpStatus.CREATED);
     }
 
-    @PostMapping ("/mailAuth")
-    public SuccessEmailSendDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
-        return mailService.sendEmailCode(emailDto.getEmail());
+    @PostMapping ("/authenticate-email")
+    public isSuccessSendingEmailDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
+        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
+        if (memberService.isValidEmail(decodedEmail, LoginType.NON_SOCIAL).isValid()){
+            return mailService.sendEmailCode(emailDto.getEmail());
+        }else{
+            return new isSuccessSendingEmailDto(false,"이미 등록된 이메일입니다.");
+        }
     }
-    @PostMapping("/mailAuthCheck")
-    public ValidDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto){
-        return new ValidDto(mailService.isAuthorizedEmail(codeCheckDto));
+    @PostMapping("/authenticate-code")
+    public ValidatedDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto){
+        return mailService.isAuthorizedEmail(codeCheckDto);
     }
-    @GetMapping("/name-valid")
-    public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
+
+    @GetMapping("/check-duplication")
+    public ValidatedDto isValidName(@RequestParam(value="name", required=true) String name){
         return memberService.isValidName(name,LoginType.NON_SOCIAL);
     }
 
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
-
-        if (userId.equals("anonymousUser")){
-            return new ValidMemberDto(-1L,false);
-        }
-        else{
-            return new ValidMemberDto(Long.valueOf(userId),true);
-        }
+        Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
+        boolean isLogin = !userId.equals("anonymousUser");
+        return new ValidMemberDto(loginId, isLogin);
     }
 
     @GetMapping("/logout")
@@ -84,7 +81,7 @@ public class MemberController {
                 }
             }
         }
-        ResponseCookie nonCookie = ResponseCookie.from("token","none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        response.addHeader("Set-Cookie", nonCookie.toString());
+        ResponseCookie invalidateCookie = ResponseCookie.from("token","none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        response.addHeader("Set-Cookie", invalidateCookie.toString());
     }
 }
