@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class AuthController {
     private final AuthService authService;
-    @Value("${jwt.domain}") String domain;
+    @Value("${jwt.domain}") private String domain;
 
     @Operation(summary = "로그인 API",description = "소셜로그인/일반로그인 구분 필수", tags = {"Member"})
     @ResponseBody
