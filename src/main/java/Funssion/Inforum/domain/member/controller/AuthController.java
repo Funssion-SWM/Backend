@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.controller;
 
 import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.member.swagger.ErrorResponse;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.AuthenticationException;
 
 @Slf4j
 @RestController
@@ -36,16 +38,20 @@ public class AuthController {
             @ApiResponse(responseCode = "503", description = "해당 요청은 아직 구현되지 않았습니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")),
     })
     @PostMapping("/login")
-    public ResponseEntity<TokenDto> login(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto, HttpServletRequest request) {
-        TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        if(request.getServerName().equals("localhost")){
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly");
-        }
-        else{
-            httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+    public ResponseEntity<IsSuccessResponseDto> login(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto, HttpServletRequest request) {
+        try {
+            TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            if(request.getServerName().equals("localhost")){
+                httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly");
+            }
+            else{
+                httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
+            }
+            return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인 성공"), httpHeaders, HttpStatus.OK);
+        }catch(AuthenticationException e){
+            return new ResponseEntity<>(new IsSuccessResponseDto(false,"로그인 실패"),HttpStatus.UNAUTHORIZED);
         }
 
-        return new ResponseEntity<>(tokenDto, httpHeaders, HttpStatus.OK);
     }
 }

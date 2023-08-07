@@ -5,7 +5,7 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.isSuccessSendingEmailDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
 import Funssion.Inforum.domain.member.service.MailService;
@@ -44,12 +44,12 @@ public class MemberController {
     }
 
     @PostMapping ("/authenticate-email")
-    public isSuccessSendingEmailDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
+    public IsSuccessResponseDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
         String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
         if (memberService.isValidEmail(decodedEmail, LoginType.NON_SOCIAL).isValid()){
             return mailService.sendEmailCode(emailDto.getEmail());
         }else{
-            return new isSuccessSendingEmailDto(false,"이미 등록된 이메일입니다.");
+            return new IsSuccessResponseDto(false,"이미 등록된 이메일입니다.");
         }
     }
     @PostMapping("/authenticate-code")
