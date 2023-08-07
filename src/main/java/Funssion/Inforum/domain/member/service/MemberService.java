@@ -55,7 +55,6 @@ public class MemberService {
                 MemberRepository selectedMemberRepository = repositoryMap.get(loginTypeMap.get(loginType));
                 NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
                 SaveMemberResponseDto savedMember = selectedMemberRepository.save(member);
-                myRepository.createHistory(savedMember.getId());
                 return savedMember;
             case SOCIAL: //social 회원가입의 경우 -> 요청 필요
             {

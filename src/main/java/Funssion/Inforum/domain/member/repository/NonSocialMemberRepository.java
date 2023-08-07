@@ -93,7 +93,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         }
     }
 
-    public String findNameById(Integer id) {
+    public String findNameById(Long id) {
         String sql = "select name from member.user where id = ?";
         try {
             String name = jdbcTemplate.queryForObject(sql, String.class, id);
