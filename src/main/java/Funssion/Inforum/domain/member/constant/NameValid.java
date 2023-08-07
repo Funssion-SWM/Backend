@@ -15,7 +15,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Constraint(validatedBy = {NameValidator.class})
 public @interface NameValid {
-    String message() default "닉네임은 한글 2글자 이상 10글자 미만, 영어,숫자 4글자 이상, 20글자 이하 가능합니다. \n 혼용시, 한글은 가중치 2, 영어,숫자는 가중치1 로써, 합이 20 이하여야합니다.";
+    String message() default "닉네임은 한글 2글자 이상 7글자 이하, 영어,숫자 4글자 이상, 14글자 이하 가능합니다. \n 혼용시, 한글은 가중치 2, 영어,숫자는 가중치1 로써, 합이 14 이하여야합니다.";
 
     Class<?>[] groups() default { };
 

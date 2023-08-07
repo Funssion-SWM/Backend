@@ -23,7 +23,7 @@ public class NameValidator implements ConstraintValidator<NameValid,String> {
                 return false;
             }
         }
-        return totalWeight >= 4 && totalWeight <= 20;
+        return totalWeight >= 4 && totalWeight <= 14;
     }
     private static boolean isHangul(char c) {
         return Character.UnicodeBlock.of(c) == Character.UnicodeBlock.HANGUL_SYLLABLES;
