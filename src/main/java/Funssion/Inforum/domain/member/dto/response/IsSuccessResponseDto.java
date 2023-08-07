@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public class isSuccessSendingEmailDto {
+public class IsSuccessResponseDto {
     private final Boolean isSuccess;
     private final String message;
 }
