@@ -1,9 +1,12 @@
 package Funssion.Inforum.domain.mypage.service;
 
+import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.memo.repository.MemoRepositoryJdbc;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
+import Funssion.Inforum.domain.mypage.entity.History;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import lombok.RequiredArgsConstructor;
@@ -18,18 +21,19 @@ public class MyService {
 
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
+    private final NonSocialMemberRepository memberRepository;
 
-    public MyUserInfoDto getUserInfo(int userId) {
-        return myRepository.findUserInfoByUserId(userId).orElseThrow(() -> new NoSuchElementException("user not found"));
+    public MyUserInfoDto getUserInfo(Long userId) {
+        return MyUserInfoDto.builder()
+                .userName(memberRepository.findNameById(userId))
+                .build();
     }
 
-    public List<MyRecordNumDto> getHistory(int userId) {
-        List<MyRecordNumDto> records = myRepository.findRecordNumByUserId(userId);
-        if(records.isEmpty()) throw new NoSuchElementException("user not found");
-        return records;
+    public List<MyRecordNumDto> getHistory(Long userId) {
+        return myRepository.findAllByUserId(userId).stream().map(history -> new MyRecordNumDto(history)).toList();
     }
 
-    public List<MemoListDto> getMyMemos(int userId) {
+    public List<MemoListDto> getMyMemos(Long userId) {
         return memoRepository.findAllByUserIdOrderById(userId).stream().map(memo -> new MemoListDto(memo)).toList();
     }
 }

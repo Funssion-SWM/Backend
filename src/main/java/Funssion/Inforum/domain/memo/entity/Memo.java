@@ -12,11 +12,10 @@ import java.sql.Date;
 @Builder
 @ToString
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @EqualsAndHashCode
 public class Memo {
-    private int memoId;
-    private int authorId;
+    private Long memoId;
+    private Long authorId;
     private String authorName;
     private String memoTitle;
     private String memoDescription;
@@ -25,7 +24,7 @@ public class Memo {
     private Date createdDate;
     private Date updatedDate;
 
-    public Memo(MemoSaveDto form, Integer authorId, String authorName, Date createdDate, Date updatedDate) {
+    public Memo(MemoSaveDto form, Long authorId, String authorName, Date createdDate, Date updatedDate) {
         this.authorId = authorId;
         this.authorName = authorName;
         this.memoTitle = form.getMemoTitle();
@@ -36,7 +35,7 @@ public class Memo {
         this.updatedDate = updatedDate;
     }
 
-    public Memo(MemoSaveDto form, Integer memoId, Date updatedDate) {
+    public Memo(MemoSaveDto form, Long memoId, Date updatedDate) {
         this.memoId = memoId;
         this.memoTitle = form.getMemoTitle();
         this.memoDescription = form.getMemoDescription();
@@ -45,7 +44,7 @@ public class Memo {
         this.updatedDate = updatedDate;
     }
 
-    public void setMemoIdForTest(Integer memoId) {
+    public void setMemoIdForTest(Long memoId) {
         this.memoId = memoId;
     }
 }

@@ -7,13 +7,17 @@ import org.springframework.http.HttpStatus;
 public class NotFoundException extends RuntimeException{
 
     private ErrorResult errorResult;
+    private String message;
 
     public NotFoundException(String message) {
-        errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
+        this.message = message;
+        this.errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
     }
 
     public NotFoundException(String message, Throwable cause) {
         super(cause);
-        errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
+        this.message = message;
+        this.errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
     }
+
 }

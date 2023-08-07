@@ -7,8 +7,8 @@ import java.sql.Date;
 
 @Getter
 public class MemoDto {
-    private int memoId;
-    private int authorId;
+    private Long memoId;
+    private Long authorId;
     private String authorName;
     private String memoTitle;
     private String memoDescription;

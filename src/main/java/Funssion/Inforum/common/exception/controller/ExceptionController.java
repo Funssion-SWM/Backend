@@ -35,23 +35,24 @@ public class ExceptionController {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public ErrorResult handleNotFoundEx(NotFoundException e) {
-        log.warn("error message={}", e.getErrorResult().getMessage(), e);
+        log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, List<String>> handleValidationErrors(MethodArgumentNotValidException ex) {
-
+    public Map<String, List<String>> handleValidationErrors(MethodArgumentNotValidException e) {
+        log.warn("error message={}", e.getMessage(), e);
         return getErrorsMap(
-                ex.getBindingResult().getFieldErrors().stream()
-                        .map(FieldError::getDefaultMessage).collect(Collectors.toList())
+                e.getBindingResult().getFieldErrors().stream()
+                        .map(FieldError::getDefaultMessage)
+                        .collect(Collectors.toList())
         );
     }
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicateException.class)
     public ErrorResult handleDuplicateEx(DuplicateException e){
-        log.warn("error message = {}",e.getErrorResult().getMessage());
+        log.warn("error message = {}",e.getMessage());
         return e.getErrorResult();
     }
 
