@@ -1,23 +1,20 @@
 package Funssion.Inforum.domain.mypage.dto;
 
+import Funssion.Inforum.domain.mypage.entity.History;
 import lombok.Builder;
-import lombok.Data;
-import org.springframework.jdbc.core.RowMapper;
+import lombok.Getter;
 
 import java.util.Date;
 
-@Data
-@Builder
+@Getter
 public class MyRecordNumDto {
-
+    private Long historyId;
     private Date date;
-    private int postCnt;
+    private Long postCnt;
 
-    public static RowMapper<MyRecordNumDto> myRecordNumRowMapper() {
-        return ((rs, rowNum) ->
-                MyRecordNumDto.builder()
-                        .date(rs.getDate("date"))
-                        .postCnt(rs.getInt("post_cnt"))
-                        .build());
+    public MyRecordNumDto(History history) {
+        this.historyId = history.getId();
+        this.date = history.getDate();
+        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQnaCnt();
     }
 }

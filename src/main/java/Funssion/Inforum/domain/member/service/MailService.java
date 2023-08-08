@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
-import Funssion.Inforum.domain.member.dto.response.isSuccessSendingEmailDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -32,16 +32,16 @@ public class MailService {
     String  adminEmail;
 
     @Transactional
-    public isSuccessSendingEmailDto sendEmailCode(String beVerifiedEmail){
+    public IsSuccessResponseDto sendEmailCode(String beVerifiedEmail){
         try {
             String generatedCode = makeRandomString();
             authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
             authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
             sendEmail(beVerifiedEmail,generatedCode);
         }catch(DataAccessException e){
-            return new isSuccessSendingEmailDto(false,"오류 발생");
+            return new IsSuccessResponseDto(false,"오류 발생");
         }
-        return new isSuccessSendingEmailDto(true,"성공적으로 해당 이메일로 코드를 전송하였습니다!");
+        return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 코드를 전송하였습니다!");
     }
     public ValidatedDto isAuthorizedEmail(CodeCheckDto requestCodeDto){
         boolean isAuthorized = authCodeRepository.checkRequestCode(requestCodeDto);

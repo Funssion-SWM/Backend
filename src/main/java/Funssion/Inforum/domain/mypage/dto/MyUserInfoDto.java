@@ -2,9 +2,10 @@ package Funssion.Inforum.domain.mypage.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.jdbc.core.RowMapper;
 
-@Data
+@Getter
 @Builder
 public class MyUserInfoDto {
     private String userName;
