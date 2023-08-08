@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface MyRepository {
 
-    List<History> findAllByUserId(Long userId);
+    List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month);
     void updateHistory(Long userId, PostType postType, Sign sign);
     void createHistory(Long userId, PostType postType);
 
