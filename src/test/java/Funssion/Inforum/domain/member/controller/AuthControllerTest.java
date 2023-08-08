@@ -36,7 +36,7 @@ class AuthControllerTest {
     @DisplayName("NonSocial 회원 로그인 성공후 cookie 값 확인")
     public void nonSocalMemberLoginSucceed(){
         //given
-        NonSocialMemberLoginDto nonSocialMemberLoginDto = new NonSocialMemberLoginDto("test@gmail.com","testpassword1");
+        NonSocialMemberLoginDto nonSocialMemberLoginDto = new NonSocialMemberLoginDto("test@gmail.com","a1234567!");
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setServerName("server-example");
         TokenDto expectedTokenDto = new TokenDto("token-value-example",1L);
@@ -53,6 +53,11 @@ class AuthControllerTest {
         String tokenValue = cookieHeader.substring(6).split(";")[0];
         Assertions.assertThat(tokenValue).isEqualTo(expectedTokenDto.getToken());
     }
+
+
+
+
+
 
     /*
         순수 service로 테스트 코드를 짜기에는 필요한 인자가 너무 많다 -> mocking을 하자.
