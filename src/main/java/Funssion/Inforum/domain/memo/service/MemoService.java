@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.memo.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
@@ -13,6 +14,7 @@ import Funssion.Inforum.domain.memo.entity.Memo;
 import Funssion.Inforum.domain.memo.exception.NeedAuthenticationException;
 import Funssion.Inforum.domain.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.memo.dto.request.MemoSaveDto;
+import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+
+import static Funssion.Inforum.common.constant.CRUDType.*;
+import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.common.constant.Sign.*;
 
 @Service
 @Slf4j
@@ -34,23 +40,23 @@ public class MemoService {
 
     public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
 
-        int days = getDays(period);
+        Long days = getDays(period);
 
         MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
 
         return getMemos(memoOrderType);
     }
 
-    private static int getDays(String period) {
+    private static Long getDays(String period) {
 
         DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
-        int days = 0;
+        Long days = 0L;
 
         switch (dateType) {
-            case DAY -> days = 1;
-            case WEEK -> days = 7;
-            case MONTH -> days = 31;
-            case YEAR -> days = 365;
+            case DAY -> days = 1L;
+            case WEEK -> days = 7L;
+            case MONTH -> days = 31L;
+            case YEAR -> days = 365L;
         }
 
         return days;
@@ -70,44 +76,55 @@ public class MemoService {
     @Transactional
     public MemoDto createMemo(MemoSaveDto form) {
 
-        Integer userId = getUserId(CRUDType.CREATE);
+        Long userId = getUserId(CREATE);
         String userName = memberRepository.findNameById(userId);
 
         MemoDto createdMemo = new MemoDto(
                 memoRepository.create(new Memo(form, userId, userName, Date.valueOf(LocalDate.now()), null))
         );
 
-        myRepository.updateCreationToHistory(PostType.MEMO, createdMemo.getMemoId(), userId);
+        createOrUpdateHistory(userId);
+
         return createdMemo;
     }
 
-    public MemoDto getMemoBy(int memoId) {
-        return new MemoDto(memoRepository.findById(memoId));
+    private void createOrUpdateHistory(Long userId) {
+        try {
+            myRepository.updateHistory(userId, MEMO, PLUS);
+        } catch (HistoryNotFoundException e) {
+            myRepository.createHistory(userId, MEMO);
+        }
+    }
+
+    public MemoDto getMemoBy(Long memoId) {
+        MemoDto memoDto = new MemoDto(memoRepository.findById(memoId));
+        log.info("{}",memoDto);
+        return memoDto;
     }
 
     @Transactional
-    public MemoDto updateMemo(int memoId, MemoSaveDto form) {
+    public MemoDto updateMemo(Long memoId, MemoSaveDto form) {
 
-        Integer userId = getUserId(CRUDType.UPDATE);
+        Long userId = getUserId(UPDATE);
 
         MemoDto updatedMemo = new MemoDto(
-                memoRepository.update(new Memo(form, memoId, Date.valueOf(LocalDate.now())), memoId)
+                memoRepository.update(new Memo(form, memoId, Date.valueOf(LocalDate.now())), memoId, userId)
         );
 
         return updatedMemo;
     }
 
     @Transactional
-    public void deleteMemo(int memoId) {
+    public void deleteMemo(Long memoId) {
 
-        Integer userId = getUserId(CRUDType.DELETE);
+        Long userId = getUserId(DELETE);
 
         memoRepository.delete(memoId);
-        myRepository.updateDeletionToHistory(PostType.MEMO, memoId, userId);
+        myRepository.updateHistory(userId, MEMO, MINUS);
     }
 
-    private static Integer getUserId(CRUDType type) {
-        Integer userId = SecurityContextUtils.getUserId();
+    private static Long getUserId(CRUDType type) {
+        Long userId = SecurityContextUtils.getUserId();
 
         if (userId != 0) return userId;
 

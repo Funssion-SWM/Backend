@@ -35,17 +35,17 @@ public class MemoController {
     }
 
     @GetMapping("/{id}")
-    public MemoDto getMemoDetails(@PathVariable int id) {
+    public MemoDto getMemoDetails(@PathVariable Long id) {
         return memoService.getMemoBy(id);
     }
 
     @PostMapping("/{id}")
-    public MemoDto modifyMemo(@PathVariable int id, @Validated @RequestBody MemoSaveDto memoSaveDto) {
+    public MemoDto modifyMemo(@PathVariable Long id, @Validated @RequestBody MemoSaveDto memoSaveDto) {
         return memoService.updateMemo(id, memoSaveDto);
     }
 
     @DeleteMapping("/{id}")
-    public void removeMemo(@PathVariable int id) {
+    public void removeMemo(@PathVariable Long id) {
         memoService.deleteMemo(id);
     }
 

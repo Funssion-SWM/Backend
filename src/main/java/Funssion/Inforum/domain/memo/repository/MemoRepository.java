@@ -8,10 +8,10 @@ import java.util.List;
 public interface MemoRepository {
 
     Memo create(Memo memo);
-    List<Memo> findAllByDaysOrderByLikes(Integer days);
+    List<Memo> findAllByDaysOrderByLikes(Long days);
     List<Memo> findAllOrderById();
-    List<Memo> findAllByUserIdOrderById(Integer userId);
-    Memo findById(Integer id);
-    Memo update(Memo memo, Integer memoId);
-    void delete(Integer id);
+    List<Memo> findAllByUserIdOrderById(Long userId);
+    Memo findById(Long id);
+    Memo update(Memo memo, Long memoId, Long authorId);
+    void delete(Long id);
 }

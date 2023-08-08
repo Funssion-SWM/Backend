@@ -1,3 +1,4 @@
+create sequence auth_code_seq;
 create table member.USER(
     id int8 primary key DEFAULT nextval('user_id_seq'::regclass),
     name VARCHAR(15) NOT NULL UNIQUE,
@@ -7,10 +8,18 @@ create table member.USER(
 );
 
 create table Member.auth(
-    id int8 primary key default nextval('auth_id_seq'::regclass),
+    id int8 primary key default nextval('auth_id_seq'::regclass)
     user_id INT NOT NULL,
     password VARCHAR(100) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES member.user(id)
+);
+
+create table member.auth_code(
+    id int8 primary key DEFAULT nextval('auth_code_seq'::regclass),
+    email VARCHAR(60) not null,
+    code CHAR(6) not null,
+    expiration boolean default false,
+    due_date timestamp
 );
 -- db migration sql sequence<nextval>(auto_increment) 설정으로 인한 pk insert 생략--
 -- insert into member.user(id,name,email,login_type,created_date)

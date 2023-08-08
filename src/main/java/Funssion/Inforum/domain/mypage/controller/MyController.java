@@ -20,17 +20,17 @@ public class MyController {
     private final MyService myService;
 
     @GetMapping
-    public MyUserInfoDto getUserInfo(@PathVariable int userId) {
+    public MyUserInfoDto getUserInfo(@PathVariable Long userId) {
         return myService.getUserInfo(userId);
     }
 
     @GetMapping("/memos")
-    public List<MemoListDto> getMyMemos(@PathVariable int userId) {
+    public List<MemoListDto> getMyMemos(@PathVariable Long userId) {
         return myService.getMyMemos(userId);
     }
 
     @GetMapping("/history")
-    public List<MyRecordNumDto> getHistory(@PathVariable int userId) {
+    public List<MyRecordNumDto> getHistory(@PathVariable Long userId) {
         return myService.getHistory(userId);
     }
 }
