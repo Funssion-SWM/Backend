@@ -2,34 +2,29 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import Funssion.Inforum.domain.mypage.entity.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Repository
 public class MyRepositoryJdbc implements MyRepository {
-    private JdbcTemplate template;
+    private final JdbcTemplate template;
     public MyRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
     }
 
     @Override
-    public List<History> findAllByUserId(Long userId) {
-        String sql = "select * from member.history where user_id = ? order by date";
+    public List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month) {
+        String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
 
-        List<History> histories = template.query(sql, historyRowMapper(), userId);
+        List<History> histories = template.query(sql, historyRowMapper(), userId, year, month);
         if (histories.isEmpty()) throw new HistoryNotFoundException();
         return histories;
     }
