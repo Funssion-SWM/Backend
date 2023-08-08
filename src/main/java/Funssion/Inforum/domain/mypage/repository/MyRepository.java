@@ -2,19 +2,15 @@ package Funssion.Inforum.domain.mypage.repository;
 
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.domain.mypage.entity.History;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MyRepository {
 
-    List<MyRecordNumDto> findRecordNumByUserId(int userId);
-    Optional<MyUserInfoDto> findUserInfoByUserId(int userId);
-    void createHistory(long userId);
-    void updateCreationToHistory(PostType type, int postId, int userId);
-    void updateDeletionToHistory(PostType type, int postId, int userId);
+    List<History> findAllByUserId(Long userId);
+    void updateHistory(Long userId, PostType postType, Sign sign);
+    void createHistory(Long userId, PostType postType);
 
 }

@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

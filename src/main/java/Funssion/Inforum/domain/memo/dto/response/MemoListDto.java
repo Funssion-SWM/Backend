@@ -9,13 +9,13 @@ import java.sql.Date;
 
 @Getter
 public class MemoListDto {
-    private int memoId;
+    private Long memoId;
     private String memoTitle;
     private String memoText;
     private String memoDescription;
     private String memoColor;
     private Date createdDate;
-    private int authorId;
+    private Long authorId;
     private String authorName;
 
     public MemoListDto(Memo memo) {

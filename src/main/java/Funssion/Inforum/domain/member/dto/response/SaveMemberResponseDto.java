@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.member.response;
+package Funssion.Inforum.domain.member.dto.response;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
 import lombok.AllArgsConstructor;

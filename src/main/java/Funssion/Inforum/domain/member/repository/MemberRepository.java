@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.entity.Member;
-import Funssion.Inforum.domain.member.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 
 import java.util.Optional;
 

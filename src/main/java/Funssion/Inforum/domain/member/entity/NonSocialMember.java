@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.entity;
 
-import Funssion.Inforum.domain.member.dto.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
