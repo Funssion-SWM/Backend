@@ -48,9 +48,9 @@ public class AuthController {
             else{
                 httpHeaders.add("Set-Cookie", "token="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure");
             }
-            return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인 성공"), httpHeaders, HttpStatus.OK);
+            return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인에 성공하였습니다."), httpHeaders, HttpStatus.OK);
         }catch(AuthenticationException e){
-            return new ResponseEntity<>(new IsSuccessResponseDto(false,"로그인 실패"),HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new IsSuccessResponseDto(false,"로그인에 실패하였습니다."),HttpStatus.UNAUTHORIZED);
         }
 
     }
