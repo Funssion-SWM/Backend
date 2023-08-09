@@ -38,7 +38,7 @@ public class MemberService {
     private final AmazonS3 S3client;
 
     @Value("${aws.s3.profile-dir}")
-    private String bucketDir;
+    private String profileDir;
 
     public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, AmazonS3 S3client) {
         this.repositoryMap = repositoryMap;
@@ -118,7 +118,7 @@ public class MemberService {
     }
 
     private void uploadImageToS3(MultipartFile memberProfileImage, String imageName) throws IOException {
-        S3client.putObject(bucketDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
+        S3client.putObject(profileDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
     }
 
     public MemberProfileEntity getMemberProfile(String userId){
@@ -138,7 +138,7 @@ public class MemberService {
     }
 
     private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
-        URL imagePath = S3client.getUrl(bucketDir, "profiles/" + imageName);
+        URL imagePath = S3client.getUrl(profileDir, imageName);
         return MemberProfileEntity.builder()
                 .profileImageFilePath(imagePath.toString())
                 .tags(memberInfoDto.getTags())
