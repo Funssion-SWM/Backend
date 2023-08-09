@@ -15,5 +15,4 @@ public class Member {
     private final LoginType loginType;
 
     private final String userEmail;
-
 }
