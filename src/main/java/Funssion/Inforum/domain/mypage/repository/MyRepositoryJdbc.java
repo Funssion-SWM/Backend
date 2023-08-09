@@ -2,20 +2,18 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
-import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.common.exception.NotFoundException;
+import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.entity.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -23,6 +21,12 @@ public class MyRepositoryJdbc implements MyRepository {
     private JdbcTemplate template;
     public MyRepositoryJdbc(DataSource dataSource) {
         this.template = new JdbcTemplate(dataSource);
+    }
+
+    @Override
+    public MemberProfileEntity findProfileByUserId(Long userId) {
+        String sql = "select name,introduce,tags,image_path from member.user where id = ?";
+        return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
     }
 
     @Override
@@ -75,6 +79,14 @@ public class MyRepositoryJdbc implements MyRepository {
         String sql = "insert into member.history (user_id, "+fieldName+") values (?, 1)";
 
         template.update(sql, userId);
+    }
+
+    @Override
+    public IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
+        String sql = "update member.user set introduce = ?, tags = ?, image_path = ? where id = ?";
+        int updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), MemberProfileEntity.getTags(), MemberProfileEntity.getProfileImageFilePath(),userId);
+        if (updatedRow ==0) throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
+        return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getTags(),MemberProfileEntity.getIntroduce());
     }
 
     private static String getFieldName(PostType postType) {
