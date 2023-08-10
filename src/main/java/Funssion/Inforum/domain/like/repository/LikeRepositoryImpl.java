@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.util.List;
 
 @Repository
 public class LikeRepositoryImpl implements LikeRepository {
@@ -51,6 +52,13 @@ public class LikeRepositoryImpl implements LikeRepository {
 
         return template.query(sql, likeRowMapper(), userId, postType.toString(), postId).stream().findAny()
                 .orElseThrow(() -> new NotFoundException("like not found"));
+    }
+
+    @Override
+    public List<Like> findAllByUserIdAndPostType(Long userId, PostType postType) {
+        String sql = "select * from member.like where user_id = ? and post_type = ?";
+
+        return template.query(sql, likeRowMapper(), userId, postType.toString());
     }
 
     @Override

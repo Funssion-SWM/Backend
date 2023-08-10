@@ -1,5 +1,8 @@
 package Funssion.Inforum.domain.mypage.service;
 
+import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.domain.like.domain.Like;
+import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
@@ -18,6 +21,7 @@ public class MyService {
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final NonSocialMemberRepository memberRepository;
+    private final LikeRepository likeRepository;
 
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()
@@ -30,6 +34,7 @@ public class MyService {
     }
 
     public List<MemoListDto> getMyMemos(Long userId) {
+        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
         return memoRepository.findAllByUserIdOrderById(userId).stream().map(MemoListDto::new).toList();
     }
 }

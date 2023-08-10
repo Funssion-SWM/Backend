@@ -24,9 +24,7 @@ public class MyRepositoryJdbc implements MyRepository {
     public List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month) {
         String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
 
-        List<History> histories = template.query(sql, historyRowMapper(), userId, year, month);
-        if (histories.isEmpty()) throw new HistoryNotFoundException();
-        return histories;
+        return template.query(sql, historyRowMapper(), userId, year, month);
     }
 
     private RowMapper<History> historyRowMapper() {

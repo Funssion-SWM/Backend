@@ -16,6 +16,7 @@ public class MemoListDto {
     private Long authorId;
     private String authorName;
     private Long likes;
+    private Boolean isLike;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -27,5 +28,9 @@ public class MemoListDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.likes = memo.getLikes();
+    }
+
+    public void setLike(Boolean like) {
+        isLike = like;
     }
 }

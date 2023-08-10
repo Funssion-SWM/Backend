@@ -32,11 +32,7 @@ public class MyController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<MyRecordNumDto>> getHistory(@PathVariable Long userId,@RequestParam Integer year, @RequestParam Integer month) {
-        try {
-            return new ResponseEntity<>(myService.getHistory(userId, year, month), HttpStatus.OK);
-        } catch (HistoryNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+    public List<MyRecordNumDto> getHistory(@PathVariable Long userId,@RequestParam Integer year, @RequestParam Integer month) {
+        return myService.getHistory(userId, year, month);
     }
 }

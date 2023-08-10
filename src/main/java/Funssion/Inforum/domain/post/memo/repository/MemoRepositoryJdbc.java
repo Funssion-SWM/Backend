@@ -52,25 +52,19 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes, memo_id desc";
-        return getMemos(new Object[]{days}, sql);
+        return template.query(sql, memoRowMapper(), days);
     }
 
     @Override
     public List<Memo> findAllOrderById() {
         String sql = "select * from memo.info order by memo_id desc";
-        return getMemos(new Object[]{}, sql);
+        return template.query(sql, memoRowMapper());
     }
 
     @Override
     public List<Memo> findAllByUserIdOrderById(Long userId) {
         String sql = "select * from memo.info where author_id = ? order by memo_id desc";
-        return getMemos(new Object[]{userId}, sql);
-    }
-
-    private List<Memo> getMemos(Object[] param, String sql) {
-        List<Memo> memoList = template.query(sql, memoRowMapper(), param);
-        if (memoList.isEmpty()) throw new MemoNotFoundException();
-        return memoList;
+        return template.query(sql, memoRowMapper(), userId);
     }
 
     @Override
