@@ -95,9 +95,9 @@ public class MemberController {
 
     @PostMapping("/profile/{id}")
     public IsProfileSavedDto saveProfileImage(@PathVariable("id") String userId,
-                                              @RequestPart("image") MultipartFile image,
-                                              @RequestPart("introduce")String introduce,
-                                              @RequestPart("tags") String tags){
+                                              @RequestPart(value = "image", required = false) MultipartFile image,
+                                              @RequestPart(value = "introduce", required = false)String introduce,
+                                              @RequestPart(value = "tags", required = false) String tags){
         MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
         return memberService.saveMemberProfile(userId,memberInfoDto);
     }

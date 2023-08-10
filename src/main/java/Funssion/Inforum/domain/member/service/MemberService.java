@@ -94,7 +94,7 @@ public class MemberService {
     }
 
     public IsProfileSavedDto saveMemberProfile(String userId,MemberInfoDto memberInfoDto) {
-        if (!memberInfoDto.getImage().isEmpty()) {
+        if (memberInfoDto.getImage() != null) {
             return updateMemberProfileWithImage(userId, memberInfoDto);
         }
         else{
