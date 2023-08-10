@@ -1,6 +1,6 @@
-package Funssion.Inforum.domain.memo.exception;
+package Funssion.Inforum.domain.post.memo.exception;
 
-import Funssion.Inforum.common.exception.NotFoundException;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 
 public class MemoNotFoundException extends NotFoundException {
     public MemoNotFoundException(String message) {

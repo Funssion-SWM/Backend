@@ -1,6 +1,6 @@
-package Funssion.Inforum.domain.memo.dto.response;
+package Funssion.Inforum.domain.post.memo.dto.response;
 
-import Funssion.Inforum.domain.memo.entity.Memo;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.Getter;
 
 import java.sql.Date;
@@ -16,16 +16,18 @@ public class MemoDto {
     private String memoColor;
     private Date createdDate;
     private Date updatedDate;
+    private Long likes;
 
     public MemoDto(Memo memo) {
-        this.memoId = memo.getMemoId();
+        this.memoId = memo.getId();
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
-        this.memoTitle = memo.getMemoTitle();
-        this.memoDescription = memo.getMemoDescription();
-        this.memoText = memo.getMemoText();
-        this.memoColor = memo.getMemoColor();
+        this.memoTitle = memo.getTitle();
+        this.memoDescription = memo.getDescription();
+        this.memoText = memo.getText();
+        this.memoColor = memo.getColor();
         this.createdDate = memo.getCreatedDate();
         this.updatedDate = memo.getUpdatedDate();
+        this.likes = memo.getLikes();
     }
 }

@@ -1,6 +1,7 @@
 package Funssion.Inforum.common.exception.controller;
 
 import Funssion.Inforum.common.exception.*;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;

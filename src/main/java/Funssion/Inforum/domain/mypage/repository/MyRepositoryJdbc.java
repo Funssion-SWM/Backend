@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.domain.mypage.entity.History;
+import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;

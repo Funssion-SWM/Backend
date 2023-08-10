@@ -1,9 +1,9 @@
-package Funssion.Inforum.domain.memo.controller;
+package Funssion.Inforum.domain.post.memo.controller;
 
-import Funssion.Inforum.domain.memo.dto.response.MemoDto;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.memo.dto.request.MemoSaveDto;
-import Funssion.Inforum.domain.memo.service.MemoService;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
+import Funssion.Inforum.domain.post.memo.service.MemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ public class MemoController {
 
     @GetMapping
     public List<MemoListDto> getMemoList(
-            @RequestParam(required = false, defaultValue = "DAY") String period,
-            @RequestParam(required = false, defaultValue = "NEW") String orderBy) {
+            @RequestParam(required = false, defaultValue = "MONTH") String period,
+            @RequestParam(required = false, defaultValue = "HOT") String orderBy) {
 
         return memoService.getMemosForMainPage(period, orderBy);
     }

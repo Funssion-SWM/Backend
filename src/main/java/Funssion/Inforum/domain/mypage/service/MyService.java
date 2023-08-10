@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.mypage.service;
 
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;

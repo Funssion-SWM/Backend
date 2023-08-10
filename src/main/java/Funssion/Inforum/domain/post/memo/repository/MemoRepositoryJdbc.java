@@ -1,7 +1,8 @@
-package Funssion.Inforum.domain.memo.repository;
+package Funssion.Inforum.domain.post.memo.repository;
 
-import Funssion.Inforum.domain.memo.entity.Memo;
-import Funssion.Inforum.domain.memo.exception.MemoNotFoundException;
+import Funssion.Inforum.domain.post.domain.Post;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 
 @Repository
@@ -34,26 +34,24 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "VALUES (?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
-            PreparedStatement psmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
             psmt.setLong(1, memo.getAuthorId());
             psmt.setString(2, memo.getAuthorName());
-            psmt.setString(3, memo.getMemoTitle());
-            psmt.setString(4, memo.getMemoDescription());
-            psmt.setString(5, memo.getMemoText());
-            psmt.setString(6, memo.getMemoColor());
+            psmt.setString(3, memo.getTitle());
+            psmt.setString(4, memo.getDescription());
+            psmt.setString(5, memo.getText());
+            psmt.setString(6, memo.getColor());
             psmt.setDate(7, memo.getCreatedDate());
             psmt.setDate(8,memo.getUpdatedDate());
             return psmt;
         }, keyHolder);
 
-        Long memoId = Integer.toUnsignedLong((Integer) keyHolder.getKeys().get("memo_id"));
-
-        return findById(memoId);
+        return findById(keyHolder.getKey().longValue());
     }
 
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
-        String sql = "select * from memo.info where created_date > current_date - CAST(? AS Long) order by likes desc";
+        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes, memo_id desc";
         return getMemos(new Object[]{days}, sql);
     }
 
@@ -84,22 +82,27 @@ public class MemoRepositoryJdbc implements MemoRepository{
     private RowMapper<Memo> memoRowMapper() {
         return ((rs, rowNum) ->
                 Memo.builder()
-                        .memoId(rs.getLong("memo_id"))
-                        .memoTitle(rs.getString("memo_title"))
-                        .memoDescription(rs.getString("memo_description"))
-                        .memoText(rs.getString("memo_text"))
-                        .memoColor(rs.getString("memo_color"))
+                        .id(rs.getLong("memo_id"))
+                        .title(rs.getString("memo_title"))
+                        .description(rs.getString("memo_description"))
+                        .text(rs.getString("memo_text"))
+                        .color(rs.getString("memo_color"))
                         .createdDate(rs.getDate("created_date"))
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
+                        .likes(rs.getLong("likes"))
                         .build());
     }
 
     @Override
-    public Memo update(Memo memo, Long memoId, Long authorId) {
+    public Memo update(Memo memo, Long memoId) {
         log.info("me {}", memo);
-        String sql = "update memo.info set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? where memo_id = ? and author_id = ?";
-        if (template.update(sql, memo.getMemoTitle(), memo.getMemoDescription(), memo.getMemoText(), memo.getMemoColor(), memo.getUpdatedDate(), memoId, authorId)
+        String sql = "update memo.info " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, likes = ?" +
+                "where memo_id = ? and author_id = ?";
+        if (template.update(sql,
+                memo.getTitle(), memo.getDescription(), memo.getText(), memo.getColor(), memo.getUpdatedDate(), memo.getLikes(),
+                memoId, memo.getAuthorId())
                 == 0)
             throw new MemoNotFoundException("update fail");
         return findById(memoId);

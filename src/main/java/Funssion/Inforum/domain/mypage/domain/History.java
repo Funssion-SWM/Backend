@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.mypage.entity;
+package Funssion.Inforum.domain.mypage.domain;
 
 import lombok.Builder;
 import lombok.Getter;
