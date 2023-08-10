@@ -85,6 +85,12 @@ public class MyRepositoryJdbc implements MyRepository {
         return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getTags(),MemberProfileEntity.getIntroduce());
     }
 
+    @Override
+    public String findProfileImageNameById(Long userId) {
+        String sql = "select image_path from member.user where id =?";
+        return template.queryForObject(sql, (rs, rowNum) -> rs.getString("image_path"), userId);
+    }
+
     private static String getFieldName(PostType postType) {
         return postType.toString().toLowerCase() + "_cnt";
     }

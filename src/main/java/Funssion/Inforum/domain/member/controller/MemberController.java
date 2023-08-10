@@ -94,12 +94,12 @@ public class MemberController {
     }
 
     @PostMapping("/profile/{id}")
-    public IsProfileSavedDto saveProfileImage(@PathVariable("id") String userId,
+    public IsProfileSavedDto createProfileImage(@PathVariable("id") String userId,
                                               @RequestPart(value = "image", required = false) MultipartFile image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
                                               @RequestPart(value = "tags", required = false) String tags){
         MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
-        return memberService.saveMemberProfile(userId,memberInfoDto);
+        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
     }
     @GetMapping("/profile/{id}")
     public MemberProfileEntity getProfile(@PathVariable("id") String userId){
@@ -108,7 +108,15 @@ public class MemberController {
         }catch (EmptyResultDataAccessException e){
             throw new NotFoundException("요청 ID:"+userId+" 정보를 찾을 수 없습니다.");
         }
+    }
 
+    @PutMapping("/profile/{id}")
+    public IsProfileSavedDto updateProfileImage(@PathVariable("id") String userId,
+                                                @RequestPart(value = "image", required = false) MultipartFile image,
+                                                @RequestPart(value = "introduce", required = false)String introduce,
+                                                @RequestPart(value = "tags", required = false) String tags){
+        MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
+        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
     }
 
 }

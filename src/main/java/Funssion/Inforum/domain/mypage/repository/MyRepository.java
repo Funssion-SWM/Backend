@@ -18,5 +18,6 @@ public interface MyRepository {
 
     IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity MemberProfileEntity);
 
+    String findProfileImageNameById(Long userId);
 
 }

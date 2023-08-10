@@ -37,6 +37,7 @@ dependencies {
 	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 	implementation group: 'org.springframework.security', name: 'spring-security-test', version: '6.1.2'
 
+	implementation 'javax.xml.bind:jaxb-api:2.3.0'
 	implementation platform('com.amazonaws:aws-java-sdk-bom:1.11.1000')
 	implementation 'com.amazonaws:aws-java-sdk-s3'
 }

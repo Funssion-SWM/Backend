@@ -26,6 +26,7 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
@@ -93,23 +94,32 @@ public class MemberService {
         return new ValidatedDto(isEmailAvailable,message);
     }
 
-    public IsProfileSavedDto saveMemberProfile(String userId,MemberInfoDto memberInfoDto) {
+    public IsProfileSavedDto createOrUpdateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
         if (memberInfoDto.getImage() != null) {
-            return updateMemberProfileWithImage(userId, memberInfoDto);
+            return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
         }
         else{
-            return updateMemberProfileWithoutImage(userId, memberInfoDto);
+            return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
         }
     }
 
-    private IsProfileSavedDto updateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
+    @Transactional
+    private IsProfileSavedDto createOrUpdateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
+        Optional<String> imageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+        if (imageName.isPresent()) {
+            deleteImageFromS3(imageName.get());
+        }
         return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
-    private IsProfileSavedDto updateMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
+    private IsProfileSavedDto createOrUpdateMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
         MultipartFile memberProfileImage = memberInfoDto.getImage();
         String imageName = generateImageNameOfS3(memberInfoDto, userId);
         try {
+            Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+            if (priorImageName.isPresent()) {
+                deleteImageFromS3(priorImageName.get());
+            }
             uploadImageToS3(memberProfileImage, imageName);
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
@@ -121,6 +131,10 @@ public class MemberService {
         S3client.putObject(profileDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
     }
 
+    private void deleteImageFromS3(String imageName){
+        String imageNameInS3 = parseImageNameOfS3(imageName);
+        S3client.deleteObject(profileDir,imageNameInS3);
+    }
     public MemberProfileEntity getMemberProfile(String userId){
         return myRepository.findProfileByUserId(Long.valueOf(userId));
     }
@@ -130,7 +144,10 @@ public class MemberService {
         return selectedMemberRepository;
     }
 
-
+    private String parseImageNameOfS3(String imagePathS3){
+        int startIndexOfParsing = imagePathS3.lastIndexOf("/");
+        return imagePathS3.substring(startIndexOfParsing+1);
+    }
     private String generateImageNameOfS3(MemberInfoDto memberInfoDto,String userId) {
         if(memberInfoDto.getImage().isEmpty()) return "";
         String fileName = UUID.randomUUID()+ "-" + userId;
