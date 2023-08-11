@@ -1,19 +1,21 @@
-package Funssion.Inforum.domain.memo.service;
+package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
-import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.utils.LikeUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.like.domain.Like;
+import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
-import Funssion.Inforum.domain.memo.dto.response.MemoDto;
-import Funssion.Inforum.domain.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.memo.entity.Memo;
-import Funssion.Inforum.domain.memo.exception.NeedAuthenticationException;
-import Funssion.Inforum.domain.memo.repository.MemoRepository;
-import Funssion.Inforum.domain.memo.dto.request.MemoSaveDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.exception.NeedAuthenticationException;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class MemoService {
     private final MemoRepository memoRepository;
     private final MyRepository myRepository;
     private final NonSocialMemberRepository memberRepository;
+    private final LikeRepository likeRepository;
 
     public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
 
@@ -44,13 +47,13 @@ public class MemoService {
 
         MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
 
-        return getMemos(memoOrderType);
+        return getMemos(memoOrderType, days);
     }
 
     private static Long getDays(String period) {
 
         DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
-        Long days = 0L;
+        long days = 0L;
 
         switch (dateType) {
             case DAY -> days = 1L;
@@ -62,13 +65,32 @@ public class MemoService {
         return days;
     }
 
-    private List<MemoListDto> getMemos(MemoOrderType memoOrderType) {
+    private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Long days) {
+        Long userId = SecurityContextUtils.getUserId();
+
+        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
+
         switch (memoOrderType) {
             case NEW -> {
-                return memoRepository.findAllOrderById().stream().map(memo -> new MemoListDto(memo)).toList();
+                return memoRepository.findAllOrderById()
+                        .stream()
+                        .map(memo -> {
+                            MemoListDto memoListDto = new MemoListDto(memo);
+                            memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
+                            return memoListDto;
+                        })
+                        .toList();
             }
-            //TODO : v2 에서 좋아요 순 정렬 메서드 추가
-            case HOT -> throw new BadRequestException("orderBy is undefined value");
+            case HOT -> {
+                return memoRepository.findAllByDaysOrderByLikes(days)
+                        .stream()
+                        .map(memo -> {
+                            MemoListDto memoListDto = new MemoListDto(memo);
+                            memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
+                            return memoListDto;
+                        })
+                        .toList();
+            }
             default -> throw new BadRequestException("orderBy is undefined value");
         }
     }
@@ -80,8 +102,11 @@ public class MemoService {
         String userName = memberRepository.findNameById(userId);
 
         MemoDto createdMemo = new MemoDto(
-                memoRepository.create(new Memo(form, userId, userName, Date.valueOf(LocalDate.now()), null))
+                memoRepository.create(new Memo(form, userId, Date.valueOf(LocalDate.now()), null)), userName
         );
+
+        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
+        createdMemo.setIsLike(LikeUtils.isLikeMatched(likeList, createdMemo.getMemoId()));
 
         createOrUpdateHistory(userId);
 
@@ -96,9 +121,18 @@ public class MemoService {
         }
     }
 
+    @Transactional(readOnly = true)
     public MemoDto getMemoBy(Long memoId) {
-        MemoDto memoDto = new MemoDto(memoRepository.findById(memoId));
-        log.info("{}",memoDto);
+        Long userId = SecurityContextUtils.getUserId();
+
+        Memo memo = memoRepository.findById(memoId);
+        String authorName = memberRepository.findNameById(memo.getAuthorId());
+
+        MemoDto memoDto = new MemoDto(memo, authorName);
+        memoDto.setIsLike(LikeUtils.isLikeMatched(
+                likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO), memoId
+        ));
+
         return memoDto;
     }
 
@@ -107,11 +141,15 @@ public class MemoService {
 
         Long userId = getUserId(UPDATE);
 
-        MemoDto updatedMemo = new MemoDto(
-                memoRepository.update(new Memo(form, memoId, Date.valueOf(LocalDate.now())), memoId, userId)
-        );
+        Memo memo = memoRepository.update(new Memo(form, memoId, userId, Date.valueOf(LocalDate.now())), memoId);
+        String authorName = memberRepository.findNameById(memo.getAuthorId());
 
-        return updatedMemo;
+        MemoDto memoDto = new MemoDto(memo, authorName);
+        memoDto.setIsLike(LikeUtils.isLikeMatched(
+                likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO), memoId
+        ));
+
+        return memoDto;
     }
 
     @Transactional

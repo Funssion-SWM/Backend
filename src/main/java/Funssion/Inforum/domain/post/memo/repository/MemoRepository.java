@@ -1,7 +1,7 @@
-package Funssion.Inforum.domain.memo.repository;
+package Funssion.Inforum.domain.post.memo.repository;
 
 
-import Funssion.Inforum.domain.memo.entity.Memo;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 
 import java.util.List;
 
@@ -12,6 +12,6 @@ public interface MemoRepository {
     List<Memo> findAllOrderById();
     List<Memo> findAllByUserIdOrderById(Long userId);
     Memo findById(Long id);
-    Memo update(Memo memo, Long memoId, Long authorId);
+    Memo update(Memo memo, Long memoId);
     void delete(Long id);
 }

@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.memo.dto.request;
+package Funssion.Inforum.domain.post.memo.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;

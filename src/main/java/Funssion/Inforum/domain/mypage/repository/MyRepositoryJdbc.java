@@ -2,10 +2,11 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.exception.NotFoundException;
+
+import Funssion.Inforum.domain.mypage.domain.History;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.mypage.entity.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,9 +27,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month) {
         String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
-        List<History> histories = template.query(sql, historyRowMapper(), userId, year, month);
-        if (histories.isEmpty()) throw new HistoryNotFoundException();
-        return histories;
+        return template.query(sql, historyRowMapper(), userId, year, month);
     }
     public MemberProfileEntity findProfileByUserId(Long userId) {
         String sql = "select name,introduce,tags,image_path from member.user where id = ?";

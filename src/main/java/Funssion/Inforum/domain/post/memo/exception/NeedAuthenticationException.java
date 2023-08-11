@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.memo.exception;
+package Funssion.Inforum.domain.post.memo.exception;
 
 import Funssion.Inforum.common.exception.UnAuthorizedException;
 

@@ -3,9 +3,10 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.domain.mypage.domain.History;
+
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.mypage.entity.History;
 
 import java.util.List;
 
