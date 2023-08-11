@@ -50,6 +50,13 @@ public class ExceptionController {
                         .collect(Collectors.toList())
         );
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(ImageIOException.class)
+    public ErrorResult handleImageIOException(ImageIOException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return e.getErrorResult();
+    }
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicateException.class)
     public ErrorResult handleDuplicateEx(DuplicateException e){

@@ -1,22 +1,33 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.exception.ImageIOException;
 import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.ValidDto;
+import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
@@ -25,18 +36,21 @@ public class MemberService {
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
     private final MyRepository myRepository;
+    private final AmazonS3 S3client;
 
-    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository) {
+    @Value("${aws.s3.profile-dir}")
+    private String profileDir;
+
+    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, AmazonS3 S3client) {
         this.repositoryMap = repositoryMap;
         this.myRepository = myRepository;
+        this.S3client = S3client;
     }
     HashMap<LoginType, String> loginTypeMap = new HashMap<>();
     {
         loginTypeMap.put(LoginType.NON_SOCIAL,"nonSocialMemberRepository");
         loginTypeMap.put(LoginType.SOCIAL, "socialMemberRepository");
     }
-
-
 
     @Transactional
     public SaveMemberResponseDto requestMemberRegistration (MemberSaveDto memberSaveDto){
@@ -64,22 +78,105 @@ public class MemberService {
         throw new InvalidParameterException("!~ 수정");
     }
 
-    public ValidDto isValidName(String username, LoginType loginType) {
+    public ValidatedDto isValidName(String username, LoginType loginType) {
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
-        log.debug("selected repository = {}",selectedMemberRepository);
-        Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByName(username);
-        return new ValidDto(optionalMember.isEmpty());
+        log.debug("selected repository = {}", selectedMemberRepository);
+
+        boolean isNameAvailable = selectedMemberRepository.findByName(username).isEmpty();
+        String message = isNameAvailable ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
+        return new ValidatedDto(isNameAvailable, message);
     }
-    public ValidDto isValidEmail(String email, LoginType loginType){
+    public ValidatedDto isValidEmail(String email, LoginType loginType){
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
-        Optional<NonSocialMember> optionalMember = selectedMemberRepository.findByEmail(email);
-        return new ValidDto(optionalMember.isEmpty());
+        boolean isEmailAvailable = selectedMemberRepository.findByEmail(email).isEmpty();
+        String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
+        return new ValidatedDto(isEmailAvailable,message);
     }
 
+    @Transactional
+    public IsProfileSavedDto createOrUpdateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
+        try {
+            if (memberInfoDto.getImage() != null) {
+                return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
+            } else {
+                return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
+            }
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private IsProfileSavedDto createOrUpdateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
+        Optional<String> imageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+        if (imageName.isPresent()) {
+            deleteImageFromS3(imageName.get());
+        }
+        return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
+    }
+
+    private IsProfileSavedDto createOrUpdateMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
+        MultipartFile memberProfileImage = memberInfoDto.getImage();
+        String imageName = generateImageNameOfS3(memberInfoDto, userId);
+        try {
+            Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+            if (priorImageName.isPresent()) {
+                deleteImageFromS3(priorImageName.get());
+            }
+            uploadImageToS3(memberProfileImage, imageName);
+            return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
+        } catch (IOException e) {
+            throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
+        }
+    }
+
+    private void uploadImageToS3(MultipartFile memberProfileImage, String imageName) throws IOException {
+        S3client.putObject(profileDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
+    }
+
+    private void deleteImageFromS3(String imageName){
+        String imageNameInS3 = parseImageNameOfS3(imageName);
+        S3client.deleteObject(profileDir,imageNameInS3);
+    }
+    public MemberProfileEntity getMemberProfile(String userId){
+        return myRepository.findProfileByUserId(Long.valueOf(userId));
+    }
 
     private MemberRepository getMemberRepository(LoginType loginType) {
         MemberRepository selectedMemberRepository = repositoryMap.get(loginTypeMap.get(loginType));
         return selectedMemberRepository;
+    }
+
+    private String parseImageNameOfS3(String imagePathS3){
+        int startIndexOfParsing = imagePathS3.lastIndexOf("/");
+        return imagePathS3.substring(startIndexOfParsing+1);
+    }
+    private String generateImageNameOfS3(MemberInfoDto memberInfoDto,String userId) {
+        if(memberInfoDto.getImage().isEmpty()) return "";
+        String fileName = UUID.randomUUID()+ "-" + userId;
+        return fileName;
+    }
+
+    private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
+        URL imagePath = S3client.getUrl(profileDir, imageName);
+        return MemberProfileEntity.builder()
+                .profileImageFilePath(imagePath.toString())
+                .tags(memberInfoDto.getTags())
+                .nickname(memberInfoDto.getNickname())
+                .introduce(memberInfoDto.getIntroduce())
+                .build();
+    }
+    private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto){
+        return MemberProfileEntity.builder()
+                .tags(memberInfoDto.getTags())
+                .nickname(memberInfoDto.getNickname())
+                .introduce(memberInfoDto.getIntroduce())
+                .build();
+    }
+    private ObjectMetadata getObjectMetaData(MultipartFile file){
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(file.getContentType());
+        objectMetadata.setContentLength(file.getSize());
+        return objectMetadata;
     }
 }

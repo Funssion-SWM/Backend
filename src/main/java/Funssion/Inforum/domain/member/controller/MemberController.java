@@ -1,13 +1,18 @@
 package Funssion.Inforum.domain.member.controller;
 
 
+import Funssion.Inforum.common.exception.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
+import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.SuccessEmailSendDto;
-import Funssion.Inforum.domain.member.dto.response.ValidDto;
+import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -16,14 +21,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import javax.sql.DataSource;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
@@ -37,61 +42,81 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MailService mailService;
-    private final DataSource dataSource;
+
 
     @PostMapping("")
-    public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long save_id = memberService.requestMemberRegistration(memberSaveDto).getId();
-        return new ResponseEntity(save_id,HttpStatus.CREATED);
-    }
-    @GetMapping("/email-valid")
-    public ValidDto isValidEmail(@RequestParam(value="email", required=true) String email){
-        String docodedEmail = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        return memberService.isValidEmail(docodedEmail,LoginType.NON_SOCIAL);
+    @ResponseStatus(HttpStatus.CREATED)
+    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
+        return memberService.requestMemberRegistration(memberSaveDto);
     }
 
-    @PostMapping ("/mailAuth")
-    public SuccessEmailSendDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
-        return mailService.sendEmailCode(emailDto.getEmail());
-    }
-    @PostMapping("/mailAuthCheck")
-    public ValidDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto){
-        return new ValidDto(mailService.isAuthorizedEmail(codeCheckDto));
-    }
-    @GetMapping("/name-valid")
-    public ValidDto isValidName(@RequestParam(value="name", required=true) String name){
-        return memberService.isValidName(name,LoginType.NON_SOCIAL);
+    @PostMapping("/authenticate-email")
+    public IsSuccessResponseDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
+        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
+        if (memberService.isValidEmail(decodedEmail, LoginType.NON_SOCIAL).isValid()) {
+            return mailService.sendEmailCode(emailDto.getEmail());
+        } else {
+            return new IsSuccessResponseDto(false, "이미 등록된 이메일입니다.");
+        }
     }
 
-//    @GetMapping("/erase")
-//    public void check(){
-//        AuthCodeRepository authService = new AuthCodeRepository(new JdbcTemplate(dataSource));
-//        authService.removeExpiredEmailCode();
-//    }
+    @PostMapping("/authenticate-code")
+    public ValidatedDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto) {
+        return mailService.isAuthorizedEmail(codeCheckDto);
+    }
+
+    @GetMapping("/check-duplication")
+    public ValidatedDto isValidName(@RequestParam(value = "name", required = true) String name) {
+        return memberService.isValidName(name, LoginType.NON_SOCIAL);
+    }
+
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
-
-        if (userId.equals("anonymousUser")){
-            return new ValidMemberDto(-1L,false);
-        }
-        else{
-            return new ValidMemberDto(Long.valueOf(userId),true);
-        }
+        Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
+        boolean isLogin = !userId.equals("anonymousUser");
+        return new ValidMemberDto(loginId, isLogin);
     }
 
     @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response){
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
 
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("token".equals(cookie.getName())) {
-                    log.info("[Logout] User Id ={},",cookie.getValue());
+                    log.info("[Logout] User Id ={},", cookie.getValue());
                 }
             }
         }
-        ResponseCookie nonCookie = ResponseCookie.from("token","none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        response.addHeader("Set-Cookie", nonCookie.toString());
+        ResponseCookie invalidateCookie = ResponseCookie.from("token", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        response.addHeader("Set-Cookie", invalidateCookie.toString());
     }
+
+    @PostMapping("/profile/{id}")
+    public IsProfileSavedDto createProfileImage(@PathVariable("id") String userId,
+                                              @RequestPart(value = "image", required = false) MultipartFile image,
+                                              @RequestPart(value = "introduce", required = false)String introduce,
+                                              @RequestPart(value = "tags", required = false) String tags){
+        MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
+        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
+    }
+    @GetMapping("/profile/{id}")
+    public MemberProfileEntity getProfile(@PathVariable("id") String userId){
+        try {
+            return memberService.getMemberProfile(userId);
+        }catch (EmptyResultDataAccessException e){
+            throw new NotFoundException("요청 ID:"+userId+" 정보를 찾을 수 없습니다.");
+        }
+    }
+
+    @PutMapping("/profile/{id}")
+    public IsProfileSavedDto updateProfileImage(@PathVariable("id") String userId,
+                                                @RequestPart(value = "image", required = false) MultipartFile image,
+                                                @RequestPart(value = "introduce", required = false)String introduce,
+                                                @RequestPart(value = "tags", required = false) String tags){
+        MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
+        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
+    }
+
 }

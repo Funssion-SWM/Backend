@@ -65,11 +65,7 @@ public class AuthCodeRepository {
             CodeCheckDto rightCodeDto = jdbcTemplate.queryForObject(sql, codeCheckDtoRowMapper(), requestCodeDto.getEmail());
             return requestCodeDto.equals(rightCodeDto);
         } catch (EmptyResultDataAccessException e) {
-            e.printStackTrace();
             return false; //조건에 부합하는 어떠한 row 도 존재하지 않음
-        }catch (Exception e){
-            log.error("error in checkRequestCode");
-            return false;
         }
     }
     public void removeExpiredEmailCode(){
