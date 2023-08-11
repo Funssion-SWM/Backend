@@ -12,6 +12,7 @@ import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -23,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
@@ -45,9 +45,9 @@ public class MemberController {
 
 
     @PostMapping("")
-    public ResponseEntity create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
-        Long savedId = memberService.requestMemberRegistration(memberSaveDto).getId();
-        return new ResponseEntity(savedId, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
+        return memberService.requestMemberRegistration(memberSaveDto);
     }
 
     @PostMapping("/authenticate-email")
