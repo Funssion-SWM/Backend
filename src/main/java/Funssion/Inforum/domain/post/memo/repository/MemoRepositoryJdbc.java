@@ -88,10 +88,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public Memo update(Memo memo, Long memoId) {
-        log.info("me {}", memo);
+
         String sql = "update memo.info " +
                 "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, likes = ?" +
                 "where memo_id = ? and author_id = ?";
+
         if (template.update(sql,
                 memo.getTitle(), memo.getDescription(), memo.getText(), memo.getColor(), memo.getUpdatedDate(), memo.getLikes(),
                 memoId, memo.getAuthorId())

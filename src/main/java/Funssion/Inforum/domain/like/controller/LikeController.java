@@ -36,7 +36,7 @@ public class LikeController {
     }
 
     @PostMapping("/{postType}/{postId}/unlike")
-    public void unlike(String postType, Long postId) {
+    public void unlike(@PathVariable String postType, @PathVariable Long postId) {
         likeService.unlikePost(parseToEnumType(postType), postId);
     }
 
