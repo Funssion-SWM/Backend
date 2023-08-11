@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class IsProfileSavedDto {
     private final Boolean isSuccess;
-    private final String image_path;
+    private final String imagePath;
     private final String tags;
     private final String introduce;
 }

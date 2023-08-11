@@ -94,16 +94,19 @@ public class MemberService {
         return new ValidatedDto(isEmailAvailable,message);
     }
 
+    @Transactional
     public IsProfileSavedDto createOrUpdateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
-        if (memberInfoDto.getImage() != null) {
-            return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
-        }
-        else{
-            return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
+        try {
+            if (memberInfoDto.getImage() != null) {
+                return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
+            } else {
+                return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
+            }
+        }catch(Exception e){
+            throw new RuntimeException(e);
         }
     }
 
-    @Transactional
     private IsProfileSavedDto createOrUpdateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
         Optional<String> imageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
         if (imageName.isPresent()) {
