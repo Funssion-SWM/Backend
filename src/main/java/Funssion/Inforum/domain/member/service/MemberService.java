@@ -80,6 +80,56 @@ public class MemberService {
         return new ValidatedDto(isEmailAvailable,message);
     }
 
+<<<<<<< Updated upstream
+=======
+    public IsProfileSavedDto createOrUpdateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
+        try {
+            if (memberInfoDto.getImage() != null) {
+                return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
+            } else {
+                return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
+            }
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional
+    private IsProfileSavedDto createOrUpdateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
+        Optional<String> imageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+        if (imageName.isPresent()) {
+            deleteImageFromS3(imageName.get());
+        }
+        return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
+    }
+
+    private IsProfileSavedDto createOrUpdateMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
+        MultipartFile memberProfileImage = memberInfoDto.getImage();
+        String imageName = generateImageNameOfS3(memberInfoDto, userId);
+        try {
+            Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+            if (priorImageName.isPresent()) {
+                deleteImageFromS3(priorImageName.get());
+            }
+            uploadImageToS3(memberProfileImage, imageName);
+            return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
+        } catch (IOException e) {
+            throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
+        }
+    }
+
+    private void uploadImageToS3(MultipartFile memberProfileImage, String imageName) throws IOException {
+        S3client.putObject(profileDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
+    }
+
+    private void deleteImageFromS3(String imageName){
+        String imageNameInS3 = parseImageNameOfS3(imageName);
+        S3client.deleteObject(profileDir,imageNameInS3);
+    }
+    public MemberProfileEntity getMemberProfile(String userId){
+        return myRepository.findProfileByUserId(Long.valueOf(userId));
+    }
+>>>>>>> Stashed changes
 
     private MemberRepository getMemberRepository(LoginType loginType) {
         MemberRepository selectedMemberRepository = repositoryMap.get(loginTypeMap.get(loginType));
