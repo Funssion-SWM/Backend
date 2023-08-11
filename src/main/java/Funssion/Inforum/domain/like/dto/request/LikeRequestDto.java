@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class LikeSaveDto {
+public class LikeRequestDto {
 
     @NotNull
     private Long userId;

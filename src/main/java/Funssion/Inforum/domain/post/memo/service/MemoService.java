@@ -39,7 +39,6 @@ public class MemoService {
     private final MemoRepository memoRepository;
     private final MyRepository myRepository;
     private final NonSocialMemberRepository memberRepository;
-    private final LikeRepository likeRepository;
 
     public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
 
@@ -66,29 +65,17 @@ public class MemoService {
     }
 
     private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Long days) {
-        Long userId = SecurityContextUtils.getUserId();
-
-        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
-
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById()
                         .stream()
-                        .map(memo -> {
-                            MemoListDto memoListDto = new MemoListDto(memo);
-                            memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
-                            return memoListDto;
-                        })
+                        .map(MemoListDto::new)
                         .toList();
             }
             case HOT -> {
                 return memoRepository.findAllByDaysOrderByLikes(days)
                         .stream()
-                        .map(memo -> {
-                            MemoListDto memoListDto = new MemoListDto(memo);
-                            memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
-                            return memoListDto;
-                        })
+                        .map(MemoListDto::new)
                         .toList();
             }
             default -> throw new BadRequestException("orderBy is undefined value");
@@ -104,9 +91,6 @@ public class MemoService {
         MemoDto createdMemo = new MemoDto(
                 memoRepository.create(new Memo(form, userId, Date.valueOf(LocalDate.now()), null)), userName
         );
-
-        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
-        createdMemo.setIsLike(LikeUtils.isLikeMatched(likeList, createdMemo.getMemoId()));
 
         createOrUpdateHistory(userId);
 
@@ -128,12 +112,7 @@ public class MemoService {
         Memo memo = memoRepository.findById(memoId);
         String authorName = memberRepository.findNameById(memo.getAuthorId());
 
-        MemoDto memoDto = new MemoDto(memo, authorName);
-        memoDto.setIsLike(LikeUtils.isLikeMatched(
-                likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO), memoId
-        ));
-
-        return memoDto;
+        return new MemoDto(memo, authorName);
     }
 
     @Transactional
@@ -144,12 +123,7 @@ public class MemoService {
         Memo memo = memoRepository.update(new Memo(form, memoId, userId, Date.valueOf(LocalDate.now())), memoId);
         String authorName = memberRepository.findNameById(memo.getAuthorId());
 
-        MemoDto memoDto = new MemoDto(memo, authorName);
-        memoDto.setIsLike(LikeUtils.isLikeMatched(
-                likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO), memoId
-        ));
-
-        return memoDto;
+        return new MemoDto(memo, authorName);
     }
 
     @Transactional

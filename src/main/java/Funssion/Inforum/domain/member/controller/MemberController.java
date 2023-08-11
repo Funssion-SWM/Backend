@@ -78,6 +78,7 @@ public class MemberController {
         return new ValidMemberDto(loginId, isLogin);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) {
 

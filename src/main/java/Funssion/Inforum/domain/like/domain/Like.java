@@ -1,7 +1,6 @@
 package Funssion.Inforum.domain.like.domain;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.like.dto.request.LikeSaveDto;
 import lombok.*;
 
 import java.sql.Timestamp;

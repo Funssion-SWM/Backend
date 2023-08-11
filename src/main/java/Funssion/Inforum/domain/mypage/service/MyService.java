@@ -42,10 +42,7 @@ public class MyService {
         List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
         return memoRepository.findAllByUserIdOrderById(userId)
                 .stream()
-                .map(memo -> {
-                    MemoListDto memoListDto = new MemoListDto(memo);
-                    memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
-                    return memoListDto;
-                }).toList();
+                .map(MemoListDto::new)
+                .toList();
     }
 }

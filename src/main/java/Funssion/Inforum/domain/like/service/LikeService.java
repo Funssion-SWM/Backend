@@ -5,9 +5,8 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.like.domain.Like;
-import Funssion.Inforum.domain.like.dto.request.LikeSaveDto;
+import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.like.repository.LikeRepository;
-import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +19,11 @@ public class LikeService {
 
     private final LikeRepository likeRepository;
     private final MemoRepository memoRepository;
+
+    public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
+        Long userId = SecurityContextUtils.getUserId();
+        return new LikeResponseDto(likeRepository.findByUserIdAndPostInfo(userId, postType, postId));
+    }
 
     @Transactional
     public void likePost(PostType postType, Long postId) {

@@ -15,7 +15,6 @@ public class MemoListDto {
     private Date createdDate;
     private Long authorId;
     private Long likes;
-    private Boolean isLike;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -26,9 +25,5 @@ public class MemoListDto {
         this.createdDate = memo.getCreatedDate();
         this.authorId = memo.getAuthorId();
         this.likes = memo.getLikes();
-    }
-
-    public void setIsLike(Boolean isLike) {
-        this.isLike = isLike;
     }
 }
