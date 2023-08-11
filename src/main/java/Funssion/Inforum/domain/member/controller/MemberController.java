@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.controller;
 
 
-import Funssion.Inforum.common.exception.NotFoundException;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;

@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;

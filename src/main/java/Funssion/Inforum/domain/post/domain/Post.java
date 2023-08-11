@@ -14,7 +14,7 @@ import java.sql.Date;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Post {
-    private Long id = 0L;
+    private Long id;
     private long authorId;
     private Date createdDate;
     private Date updatedDate;
