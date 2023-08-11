@@ -93,21 +93,17 @@ public class MemberService {
         String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return new ValidatedDto(isEmailAvailable,message);
     }
-
+    @Transactional
     public IsProfileSavedDto createOrUpdateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
-        if (memberInfoDto.getImage() != null) {
-            return createOrUpdateMemberProfileWithImage(userId, memberInfoDto);
-        }
-        else{
-            return createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
-        }
+        return memberInfoDto.getImage() != null
+                ? createOrUpdateMemberProfileWithImage(userId, memberInfoDto)
+                : createOrUpdateMemberProfileWithoutImage(userId, memberInfoDto);
     }
 
-    @Transactional
     private IsProfileSavedDto createOrUpdateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
-        Optional<String> imageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
-        if (imageName.isPresent()) {
-            deleteImageFromS3(imageName.get());
+        Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+        if (priorImageName.isPresent()) {
+            deleteImageFromS3(priorImageName.get());
         }
         return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
