@@ -10,6 +10,7 @@ public class MemoDto {
     private Long memoId;
     private Long authorId;
     private String authorName;
+    private String authorImage;
     private String memoTitle;
     private String memoDescription;
     private String memoText;
@@ -17,11 +18,12 @@ public class MemoDto {
     private Date createdDate;
     private Date updatedDate;
     private Long likes;
+    private Boolean isLike;
 
-    public MemoDto(Memo memo) {
+    public MemoDto(Memo memo, String authorName) {
         this.memoId = memo.getId();
         this.authorId = memo.getAuthorId();
-        this.authorName = memo.getAuthorName();
+        this.authorName = authorName;
         this.memoTitle = memo.getTitle();
         this.memoDescription = memo.getDescription();
         this.memoText = memo.getText();
@@ -29,5 +31,9 @@ public class MemoDto {
         this.createdDate = memo.getCreatedDate();
         this.updatedDate = memo.getUpdatedDate();
         this.likes = memo.getLikes();
+    }
+
+    public void setIsLike(Boolean isLike) {
+        this.isLike = isLike;
     }
 }

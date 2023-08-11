@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.mypage.service;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.utils.LikeUtils;
 import Funssion.Inforum.domain.like.domain.Like;
 import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +32,20 @@ public class MyService {
     }
 
     public List<MyRecordNumDto> getHistory(Long userId, Integer year, Integer month) {
-        return myRepository.findMonthlyHistoryByUserId(userId, year, month).stream().map(MyRecordNumDto::new).toList();
+        return myRepository.findMonthlyHistoryByUserId(userId, year, month)
+                .stream()
+                .map(MyRecordNumDto::new)
+                .toList();
     }
 
     public List<MemoListDto> getMyMemos(Long userId) {
         List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
-        return memoRepository.findAllByUserIdOrderById(userId).stream().map(MemoListDto::new).toList();
+        return memoRepository.findAllByUserIdOrderById(userId)
+                .stream()
+                .map(memo -> {
+                    MemoListDto memoListDto = new MemoListDto(memo);
+                    memoListDto.setIsLike(LikeUtils.isLikeMatched(likeList, memo.getId()));
+                    return memoListDto;
+                }).toList();
     }
 }

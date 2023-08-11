@@ -14,16 +14,14 @@ import java.sql.Date;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Post {
-    private long id;
-    private String authorName;
+    private Long id = 0L;
     private long authorId;
     private Date createdDate;
     private Date updatedDate;
     private long likes;
 
-    public Post(Long authorId, String authorName, Date createdDate, Date updatedDate) {
+    public Post(Long authorId, Date createdDate, Date updatedDate) {
         this.authorId = authorId;
-        this.authorName = authorName;
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
     }

@@ -14,7 +14,6 @@ public class MemoListDto {
     private String memoColor;
     private Date createdDate;
     private Long authorId;
-    private String authorName;
     private Long likes;
     private Boolean isLike;
 
@@ -26,11 +25,10 @@ public class MemoListDto {
         this.memoColor = memo.getColor();
         this.createdDate = memo.getCreatedDate();
         this.authorId = memo.getAuthorId();
-        this.authorName = memo.getAuthorName();
         this.likes = memo.getLikes();
     }
 
-    public void setLike(Boolean like) {
-        isLike = like;
+    public void setIsLike(Boolean isLike) {
+        this.isLike = isLike;
     }
 }

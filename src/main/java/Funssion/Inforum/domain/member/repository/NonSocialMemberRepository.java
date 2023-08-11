@@ -98,7 +98,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         try {
             String name = jdbcTemplate.queryForObject(sql, String.class, id);
             return name;
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("user not found");
         }
     }
