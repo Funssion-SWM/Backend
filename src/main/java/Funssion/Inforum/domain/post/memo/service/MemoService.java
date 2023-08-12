@@ -92,14 +92,14 @@ public class MemoService {
                 memoRepository.create(new Memo(form, userId, Date.valueOf(LocalDate.now()), null)), userName
         );
 
-        createOrUpdateHistory(userId);
+        createOrUpdateHistory(userId, createdMemo.getCreatedDate());
 
         return createdMemo;
     }
 
-    private void createOrUpdateHistory(Long userId) {
+    private void createOrUpdateHistory(Long userId, Date curDate) {
         try {
-            myRepository.updateHistory(userId, MEMO, PLUS);
+            myRepository.updateHistory(userId, MEMO, PLUS, curDate);
         } catch (HistoryNotFoundException e) {
             myRepository.createHistory(userId, MEMO);
         }
@@ -130,9 +130,11 @@ public class MemoService {
     public void deleteMemo(Long memoId) {
 
         Long userId = getUserId(DELETE);
+        Memo memo = memoRepository.findById(memoId);
 
         memoRepository.delete(memoId);
-        myRepository.updateHistory(userId, MEMO, MINUS);
+
+        myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate());
     }
 
     private static Long getUserId(CRUDType type) {

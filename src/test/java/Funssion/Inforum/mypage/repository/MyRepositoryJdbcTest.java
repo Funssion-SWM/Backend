@@ -4,15 +4,10 @@ import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -31,6 +26,7 @@ class MyRepositoryJdbcTest {
     private MyRepository repository;
 
     private static final Long TEST_USERID = 9999L;
+    private static final Date curDate = Date.valueOf(LocalDate.now());
 
     @Test
     void createTest() {
@@ -48,15 +44,15 @@ class MyRepositoryJdbcTest {
     void updateTest() {
         repository.createHistory(TEST_USERID, QNA);
 
-        repository.updateHistory(TEST_USERID, BLOG, PLUS);
-        repository.updateHistory(TEST_USERID, QNA, MINUS);
+        repository.updateHistory(TEST_USERID, BLOG, PLUS, curDate);
+        repository.updateHistory(TEST_USERID, QNA, MINUS, curDate);
 
         History history = repository.findMonthlyHistoryByUserId(TEST_USERID, LocalDate.now().getYear(), LocalDate.now().getMonthValue()).get(0);
 
         assertThat(history.getBlogCnt()).isEqualTo(1);
         assertThat(history.getQnaCnt()).isEqualTo(0);
 
-        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QNA, MINUS))
+        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QNA, MINUS, curDate))
                 .isInstanceOf(HistoryNotFoundException.class);
     }
 }

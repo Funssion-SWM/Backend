@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.util.List;
 
 @Slf4j
@@ -47,20 +48,20 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     @Override
-    public void updateHistory(Long userId, PostType postType, Sign sign) {
+    public void updateHistory(Long userId, PostType postType, Sign sign, Date curDate) {
         String fieldName = getFieldName(postType);
         String sql = getSql(sign, fieldName);
 
-        if (template.update(sql, userId) == 0) throw new HistoryNotFoundException("update fail");
+        if (template.update(sql, userId, curDate) == 0) throw new HistoryNotFoundException("update fail");
     }
 
     private String getSql(Sign sign, String fieldName) {
         switch (sign) {
             case PLUS -> {
-                return "update member.history set "+fieldName+" = "+fieldName+" + 1 where user_id = ? and date = current_date";
+                return "update member.history set "+fieldName+" = "+fieldName+" + 1 where user_id = ? and date = ?";
             }
             case MINUS -> {
-                return "update member.history set "+fieldName+" = "+fieldName+" - 1 where user_id = ? and date = current_date and "+fieldName+" > 0";
+                return "update member.history set "+fieldName+" = "+fieldName+" - 1 where user_id = ? and date = ? and "+fieldName+" > 0";
             }
             default -> {
                 return "";
