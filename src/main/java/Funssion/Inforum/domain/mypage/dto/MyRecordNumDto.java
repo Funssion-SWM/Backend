@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.mypage.dto;
 
-import Funssion.Inforum.domain.mypage.entity.History;
+import Funssion.Inforum.domain.mypage.domain.History;
 import lombok.Getter;
 
 import java.util.Date;

@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.exception;
 
-import Funssion.Inforum.common.exception.NotFoundException;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 
 public class NotYetImplementException extends NotFoundException {
     public NotYetImplementException(String msg){

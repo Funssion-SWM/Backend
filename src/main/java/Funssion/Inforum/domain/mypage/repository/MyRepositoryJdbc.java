@@ -2,10 +2,11 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.exception.NotFoundException;
+
+import Funssion.Inforum.domain.mypage.domain.History;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.mypage.entity.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.util.List;
 
 @Slf4j
@@ -26,9 +28,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month) {
         String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
-        List<History> histories = template.query(sql, historyRowMapper(), userId, year, month);
-        if (histories.isEmpty()) throw new HistoryNotFoundException();
-        return histories;
+        return template.query(sql, historyRowMapper(), userId, year, month);
     }
     public MemberProfileEntity findProfileByUserId(Long userId) {
         String sql = "select name,introduce,tags,image_path from member.user where id = ?";
@@ -48,20 +48,20 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     @Override
-    public void updateHistory(Long userId, PostType postType, Sign sign) {
+    public void updateHistory(Long userId, PostType postType, Sign sign, Date curDate) {
         String fieldName = getFieldName(postType);
         String sql = getSql(sign, fieldName);
 
-        if (template.update(sql, userId) == 0) throw new HistoryNotFoundException("update fail");
+        if (template.update(sql, userId, curDate) == 0) throw new HistoryNotFoundException("update fail");
     }
 
     private String getSql(Sign sign, String fieldName) {
         switch (sign) {
             case PLUS -> {
-                return "update member.history set "+fieldName+" = "+fieldName+" + 1 where user_id = ? and date = current_date";
+                return "update member.history set "+fieldName+" = "+fieldName+" + 1 where user_id = ? and date = ?";
             }
             case MINUS -> {
-                return "update member.history set "+fieldName+" = "+fieldName+" - 1 where user_id = ? and date = current_date and "+fieldName+" > 0";
+                return "update member.history set "+fieldName+" = "+fieldName+" - 1 where user_id = ? and date = ? and "+fieldName+" > 0";
             }
             default -> {
                 return "";
