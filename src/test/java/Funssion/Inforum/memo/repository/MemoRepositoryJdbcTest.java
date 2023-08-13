@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,19 +37,23 @@ class MemoRepositoryJdbcTest {
     private Memo memo2 = new Memo(form2);
     private Memo memo3 = new Memo(form3);
 
+    private static Memo createdMemo;
+
+    @BeforeEach
+    void before() {
+        createdMemo = repository.create(memo1);
+    }
+
 
     @Test
     void createTest() {
-        Memo createdMemo = repository.create(memo1);
         Memo savedMemo = repository.findById(createdMemo.getId());
 
         assertThat(createdMemo).isEqualTo(savedMemo);
     }
 
     @Test
-    void updateTest() {
-        Memo createdMemo = repository.create(memo1);
-
+    void updateContentTest() {
         Memo updatedMemo = repository.updateContentInMemo(form2, createdMemo.getId());
 
         Memo savedMemo = repository.findById(createdMemo.getId());
@@ -65,9 +70,27 @@ class MemoRepositoryJdbcTest {
     }
 
     @Test
-    void deleteTest() {
-        Memo createdMemo = repository.create(memo1);
+    void updateLikesTest() {
+        Memo likesUpdatedMemo = repository.updateLikesInMemo(createdMemo.updateLikes(Sign.PLUS), createdMemo.getId());
 
+        assertThat(likesUpdatedMemo.getLikes()).isEqualTo(createdMemo.getLikes());
+    }
+
+    @Test
+    void updateAuthorProfileTest() {
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), "TEST NAME", "TEST URL");
+
+        Memo updatedMemo = repository.findById(createdMemo.getId());
+
+        assertThat(updatedMemo.getAuthorName()).isEqualTo("TEST NAME");
+        assertThat(updatedMemo.getAuthorImagePath()).isEqualTo("TEST URL");
+
+        // null input test
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), null, null);
+    }
+
+    @Test
+    void deleteTest() {
         repository.delete(createdMemo.getId());
 
         assertThatThrownBy(() -> repository.delete(createdMemo.getId()))

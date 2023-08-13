@@ -14,6 +14,7 @@ import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +38,16 @@ public class MemberService {
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
     private final MyRepository myRepository;
+    private final MemoRepository memoRepository;
     private final AmazonS3 S3client;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
 
-    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, AmazonS3 S3client) {
+    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, MemoRepository memoRepository, AmazonS3 S3client) {
         this.repositoryMap = repositoryMap;
         this.myRepository = myRepository;
+        this.memoRepository = memoRepository;
         this.S3client = S3client;
     }
     HashMap<LoginType, String> loginTypeMap = new HashMap<>();
@@ -111,6 +114,7 @@ public class MemberService {
         if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isPresent()){
             throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
         }
+        memoRepository.updateAuthorProfile(Long.valueOf(userId), memberInfoDto.getNickname(), null);
         return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
@@ -122,6 +126,7 @@ public class MemberService {
                 throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
             }
             uploadImageToS3(memberProfileImage, imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), memberInfoDto.getNickname(), imageName);
             return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);

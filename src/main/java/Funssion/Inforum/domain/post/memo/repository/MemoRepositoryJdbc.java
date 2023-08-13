@@ -119,6 +119,15 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public void updateAuthorProfile(Long authorId, String authorName, String authorProfileImagePath) {
+        String sql = "update memo.info " +
+                "set author_name = ?, author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql ,authorName, authorProfileImagePath, authorId);
+    }
+
+    @Override
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
