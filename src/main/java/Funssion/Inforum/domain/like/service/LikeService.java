@@ -6,6 +6,7 @@ import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.like.domain.Like;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.like.exception.LikeNotFoundException;
 import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
@@ -22,7 +23,14 @@ public class LikeService {
 
     public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
-        return new LikeResponseDto(likeRepository.findByUserIdAndPostInfo(userId, postType, postId));
+
+        try {
+            likeRepository.findByUserIdAndPostInfo(userId, postType, postId);
+            return new LikeResponseDto(true, memoRepository.findById(postId).getLikes());
+
+        } catch (LikeNotFoundException e) {
+            return new LikeResponseDto(false, memoRepository.findById(postId).getLikes());
+        }
     }
 
     @Transactional
