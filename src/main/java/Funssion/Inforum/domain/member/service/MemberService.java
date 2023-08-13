@@ -143,6 +143,7 @@ public class MemberService {
         else if(priorImageName.isPresent()){
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntityKeepingImagePath(memberInfoDto,priorImageName.get()));
         }
+        memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
         return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
@@ -155,6 +156,7 @@ public class MemberService {
                 deleteImageFromS3(priorImageName.get());
             }
             uploadImageToS3(memberProfileImage, imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), imageName);
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
