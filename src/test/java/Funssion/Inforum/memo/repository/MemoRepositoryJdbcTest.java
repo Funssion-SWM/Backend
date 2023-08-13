@@ -1,5 +1,6 @@
 package Funssion.Inforum.memo.repository;
 
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -31,9 +32,9 @@ class MemoRepositoryJdbcTest {
     private MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow");
     private MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green");
     private MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue");
-    private Memo memo1 = new Memo(form1, 9999L, new Date(0), new Date(0));
-    private Memo memo2 = new Memo(form2, 9999L, new Date(0), new Date(0));
-    private Memo memo3 = new Memo(form3, 9999L, new Date(0), new Date(0));
+    private Memo memo1 = new Memo(form1);
+    private Memo memo2 = new Memo(form2);
+    private Memo memo3 = new Memo(form3);
 
 
     @Test
@@ -48,15 +49,19 @@ class MemoRepositoryJdbcTest {
     void updateTest() {
         Memo createdMemo = repository.create(memo1);
 
-        Memo updatedMemo = repository.update(memo2, createdMemo.getId());
+        Memo updatedMemo = repository.updateContentInMemo(form2, createdMemo.getId());
 
         Memo savedMemo = repository.findById(createdMemo.getId());
 
         assertThat(createdMemo).isNotEqualTo(savedMemo);
         assertThat(updatedMemo).isEqualTo(savedMemo);
 
-        assertThatThrownBy(() -> repository.update(memo3, 0L))
+        assertThatThrownBy(() -> repository.updateContentInMemo(form3, 0L))
                 .isInstanceOf(MemoNotFoundException.class);
+
+        Memo likesUpdatedMemo = repository.updateLikesInMemo(updatedMemo.updateLikes(Sign.PLUS), updatedMemo.getId());
+
+        assertThat(likesUpdatedMemo.getLikes()).isEqualTo(updatedMemo.getLikes());
     }
 
     @Test

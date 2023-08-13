@@ -1,10 +1,8 @@
 package Funssion.Inforum.domain.post.domain;
 
 import Funssion.Inforum.common.constant.Sign;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.sql.Date;
@@ -13,33 +11,29 @@ import java.sql.Date;
 @SuperBuilder
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class Post {
     private Long id;
     private long authorId;
+    private String authorName;
+    private String authorImagePath;
     private Date createdDate;
     private Date updatedDate;
     private long likes;
 
-    public Post(Long authorId, Date createdDate, Date updatedDate) {
+    public Post(Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
         this.authorId = authorId;
+        this.authorName = authorProfile.getNickname();
+        this.authorImagePath = authorProfile.getProfileImageFilePath();
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
     }
 
-    public Post(Long id, Long authorId, Date updatedDate) {
-        this.id = id;
-        this.authorId = authorId;
-        this.updatedDate = updatedDate;
-    }
-
-    public void setIdForTest(Long id) {
-        this.id = id;
-    }
-
-    public void updateLikes(Sign sign) {
+    public Long updateLikes(Sign sign) {
         switch (sign) {
             case PLUS -> likes++;
             case MINUS -> likes--;
         }
+        return likes;
     }
 }

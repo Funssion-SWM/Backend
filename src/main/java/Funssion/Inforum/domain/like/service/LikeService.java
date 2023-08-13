@@ -58,8 +58,8 @@ public class LikeService {
         switch (postType) {
             case MEMO -> {
                 Memo memo = memoRepository.findById(postId);
-                memo.updateLikes(sign);
-                memoRepository.update(memo, postId);
+                Long updatedLikes = memo.updateLikes(sign);
+                memoRepository.updateLikesInMemo(updatedLikes, postId);
             }
             case QNA, BLOG -> throw new BadRequestException("not yet implement");
             default -> throw new BadRequestException("undefined post type");

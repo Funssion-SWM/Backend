@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.domain.post.domain.Post;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,7 +12,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -82,22 +85,34 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .color(rs.getString("memo_color"))
                         .createdDate(rs.getDate("created_date"))
                         .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
                         .likes(rs.getLong("likes"))
                         .build());
     }
 
     @Override
-    public Memo update(Memo memo, Long memoId) {
+    public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, likes = ?" +
-                "where memo_id = ? and author_id = ?";
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?" +
+                "where memo_id = ?";
 
         if (template.update(sql,
-                memo.getTitle(), memo.getDescription(), memo.getText(), memo.getColor(), memo.getUpdatedDate(), memo.getLikes(),
-                memoId, memo.getAuthorId())
+                form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()),
+                memoId)
                 == 0)
-            throw new MemoNotFoundException("update fail");
+            throw new MemoNotFoundException("update content fail");
+        return findById(memoId);
+    }
+
+    @Override
+    public Memo updateLikesInMemo(Long likes, Long memoId) {
+        String sql = "update memo.info " +
+                "set likes = ? " +
+                "where memo_id = ?";
+
+        if (template.update(sql, likes, memoId) == 0) throw new MemoNotFoundException("update likes fail");
         return findById(memoId);
     }
 

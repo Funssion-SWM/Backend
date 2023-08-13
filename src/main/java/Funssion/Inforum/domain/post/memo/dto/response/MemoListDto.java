@@ -1,5 +1,7 @@
 package Funssion.Inforum.domain.post.memo.dto.response;
 
+import Funssion.Inforum.domain.member.entity.Member;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.Getter;
 
@@ -14,7 +16,10 @@ public class MemoListDto {
     private String memoColor;
     private Date createdDate;
     private Long authorId;
+    private String authorName;
+    private String authorProfileImagePath;
     private Long likes;
+    private Boolean isLike;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -24,6 +29,12 @@ public class MemoListDto {
         this.memoColor = memo.getColor();
         this.createdDate = memo.getCreatedDate();
         this.authorId = memo.getAuthorId();
+        this.authorName = memo.getAuthorName();
+        this.authorProfileImagePath = memo.getAuthorImagePath();
         this.likes = memo.getLikes();
+    }
+
+    public void setIsLike(Boolean isLike) {
+        this.isLike = isLike;
     }
 }
