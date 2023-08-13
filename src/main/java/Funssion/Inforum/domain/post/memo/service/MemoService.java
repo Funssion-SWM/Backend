@@ -9,6 +9,8 @@ import Funssion.Inforum.common.utils.LikeUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.like.domain.Like;
 import Funssion.Inforum.domain.like.repository.LikeRepository;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
@@ -38,8 +40,8 @@ public class MemoService {
 
     private final MemoRepository memoRepository;
     private final MyRepository myRepository;
-    private final NonSocialMemberRepository memberRepository;
 
+    @Transactional(readOnly = true)
     public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
 
         Long days = getDays(period);
@@ -85,14 +87,15 @@ public class MemoService {
     @Transactional
     public MemoDto createMemo(MemoSaveDto form) {
 
-        Long userId = getUserId(CREATE);
-        String userName = memberRepository.findNameById(userId);
+        Long authorId = getUserId(CREATE);
+
+        MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
         MemoDto createdMemo = new MemoDto(
-                memoRepository.create(new Memo(form, userId, Date.valueOf(LocalDate.now()), null)), userName
+                memoRepository.create(new Memo(form, authorId, authorProfile, Date.valueOf(LocalDate.now()), null))
         );
 
-        createOrUpdateHistory(userId, createdMemo.getCreatedDate());
+        createOrUpdateHistory(authorId, createdMemo.getCreatedDate());
 
         return createdMemo;
     }
@@ -107,12 +110,10 @@ public class MemoService {
 
     @Transactional(readOnly = true)
     public MemoDto getMemoBy(Long memoId) {
-        Long userId = SecurityContextUtils.getUserId();
 
         Memo memo = memoRepository.findById(memoId);
-        String authorName = memberRepository.findNameById(memo.getAuthorId());
 
-        return new MemoDto(memo, authorName);
+        return new MemoDto(memo);
     }
 
     @Transactional
@@ -120,10 +121,9 @@ public class MemoService {
 
         Long userId = getUserId(UPDATE);
 
-        Memo memo = memoRepository.update(new Memo(form, memoId, userId, Date.valueOf(LocalDate.now())), memoId);
-        String authorName = memberRepository.findNameById(memo.getAuthorId());
+        Memo memo = memoRepository.updateContentInMemo(form, memoId);
 
-        return new MemoDto(memo, authorName);
+        return new MemoDto(memo);
     }
 
     @Transactional
@@ -138,9 +138,10 @@ public class MemoService {
     }
 
     private static Long getUserId(CRUDType type) {
+
         Long userId = SecurityContextUtils.getUserId();
 
-        if (userId != 0) return userId;
+        if (userId != 0 || type == READ) return userId;
 
         throw new NeedAuthenticationException(type.toString().toLowerCase() + " fail");
     }
