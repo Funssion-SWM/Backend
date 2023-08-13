@@ -31,6 +31,11 @@ public class MyController {
         return myService.getMyMemos(userId);
     }
 
+    @GetMapping("/memos/liked")
+    public List<MemoListDto> getMyLikedMemos(@PathVariable Long userId) {
+        return myService.getMyLikedMemos(userId);
+    }
+
     @GetMapping("/history")
     public List<MyRecordNumDto> getHistory(@PathVariable Long userId,@RequestParam Integer year, @RequestParam Integer month) {
         return myService.getHistory(userId, year, month);

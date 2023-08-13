@@ -39,8 +39,14 @@ public class MyService {
     }
 
     public List<MemoListDto> getMyMemos(Long userId) {
-        List<Like> likeList = likeRepository.findAllByUserIdAndPostType(userId, PostType.MEMO);
         return memoRepository.findAllByUserIdOrderById(userId)
+                .stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
+    public List<MemoListDto> getMyLikedMemos(Long userId) {
+        return memoRepository.findAllLikedMemosByUserId(userId)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();

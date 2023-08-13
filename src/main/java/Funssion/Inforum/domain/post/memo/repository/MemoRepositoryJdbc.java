@@ -72,6 +72,14 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public List<Memo> findAllLikedMemosByUserId(Long userId) {
+        String sql = "select * from memo.info i join member.like l on i.memo_id = l.post_id and l.post_type = 'MEMO' " +
+                "where l.user_id = ?";
+
+        return template.query(sql, memoRowMapper(), userId);
+    }
+
+    @Override
     public Memo findById(Long id) {
         String sql = "select * from memo.info where memo_id = ?";
         return template.query(sql, memoRowMapper(), id).stream().findAny().orElseThrow(() -> new MemoNotFoundException());
@@ -85,10 +93,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .description(rs.getString("memo_description"))
                         .text(rs.getString("memo_text"))
                         .color(rs.getString("memo_color"))
-                        .createdDate(rs.getDate("created_date"))
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .createdDate(rs.getDate("created_date"))
+                        .updatedDate(rs.getDate("updated_date"))
                         .likes(rs.getLong("likes"))
                         .build());
     }

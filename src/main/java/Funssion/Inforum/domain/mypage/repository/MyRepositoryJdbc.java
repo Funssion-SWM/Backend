@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -30,6 +31,7 @@ public class MyRepositoryJdbc implements MyRepository {
         String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
         return template.query(sql, historyRowMapper(), userId, year, month);
     }
+
     public MemberProfileEntity findProfileByUserId(Long userId) {
         String sql = "select name,introduce,tags,image_path from member.user where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);

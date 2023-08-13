@@ -12,6 +12,7 @@ public interface MemoRepository {
     List<Memo> findAllByDaysOrderByLikes(Long days);
     List<Memo> findAllOrderById();
     List<Memo> findAllByUserIdOrderById(Long userId);
+    List<Memo> findAllLikedMemosByUserId(Long userId);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateLikesInMemo(Long likes, Long memoId);

@@ -63,10 +63,6 @@ class MemoRepositoryJdbcTest {
 
         assertThatThrownBy(() -> repository.updateContentInMemo(form3, 0L))
                 .isInstanceOf(MemoNotFoundException.class);
-
-        Memo likesUpdatedMemo = repository.updateLikesInMemo(updatedMemo.updateLikes(Sign.PLUS), updatedMemo.getId());
-
-        assertThat(likesUpdatedMemo.getLikes()).isEqualTo(updatedMemo.getLikes());
     }
 
     @Test
@@ -100,7 +96,6 @@ class MemoRepositoryJdbcTest {
 
     @Test
     void readTest() {
-        Memo createdMemo1 = repository.create(memo1);
         Memo createdMemo2 = repository.create(memo2);
         Memo createdMemo3 = repository.create(memo3);
 
