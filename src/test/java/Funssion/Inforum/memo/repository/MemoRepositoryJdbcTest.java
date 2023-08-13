@@ -37,7 +37,7 @@ class MemoRepositoryJdbcTest {
     private Memo memo2 = new Memo(form2);
     private Memo memo3 = new Memo(form3);
 
-    private static Memo createdMemo;
+    private Memo createdMemo;
 
     @BeforeEach
     void before() {
@@ -78,15 +78,14 @@ class MemoRepositoryJdbcTest {
 
     @Test
     void updateAuthorProfileTest() {
-        repository.updateAuthorProfile(createdMemo.getAuthorId(), "TEST NAME", "TEST URL");
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), "TEST URL");
 
         Memo updatedMemo = repository.findById(createdMemo.getId());
 
-        assertThat(updatedMemo.getAuthorName()).isEqualTo("TEST NAME");
         assertThat(updatedMemo.getAuthorImagePath()).isEqualTo("TEST URL");
 
-        // null input test
-        repository.updateAuthorProfile(createdMemo.getAuthorId(), null, null);
+//         null input test
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), null);
     }
 
     @Test

@@ -15,6 +15,6 @@ public interface MemoRepository {
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateLikesInMemo(Long likes, Long memoId);
-    void updateAuthorProfile(Long authorId, String authorName, String authorProfileImagePath);
+    void updateAuthorProfile(Long authorId, String authorProfileImagePath);
     void delete(Long id);
 }

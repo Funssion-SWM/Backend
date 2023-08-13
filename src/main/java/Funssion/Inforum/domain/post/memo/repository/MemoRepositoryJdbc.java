@@ -119,12 +119,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public void updateAuthorProfile(Long authorId, String authorName, String authorProfileImagePath) {
+    public void updateAuthorProfile(Long authorId, String authorProfileImagePath) {
         String sql = "update memo.info " +
-                "set author_name = ?, author_image_path = ? " +
+                "set author_image_path = ? " +
                 "where author_id = ?";
 
-        template.update(sql ,authorName, authorProfileImagePath, authorId);
+        log.info("{}", template.update(sql, authorProfileImagePath, authorId));
     }
 
     @Override
