@@ -126,7 +126,7 @@ public class MemberService {
                 throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
             }
             uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), S3client.getUrl(profileDir, imageName).toString());
             return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
@@ -156,7 +156,7 @@ public class MemberService {
                 deleteImageFromS3(priorImageName.get());
             }
             uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), S3client.getUrl(profileDir, imageName).toString());
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
