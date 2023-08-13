@@ -33,18 +33,20 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
-                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?);";
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
             psmt.setLong(1, memo.getAuthorId());
-            psmt.setString(2, memo.getTitle());
-            psmt.setString(3, memo.getDescription());
-            psmt.setString(4, memo.getText());
-            psmt.setString(5, memo.getColor());
-            psmt.setDate(6, memo.getCreatedDate());
-            psmt.setDate(7,memo.getUpdatedDate());
+            psmt.setString(2, memo.getAuthorName());
+            psmt.setString(3, memo.getAuthorImagePath());
+            psmt.setString(4, memo.getTitle());
+            psmt.setString(5, memo.getDescription());
+            psmt.setString(6, memo.getText());
+            psmt.setString(7, memo.getColor());
+            psmt.setDate(8, memo.getCreatedDate());
+            psmt.setDate(9,memo.getUpdatedDate());
             return psmt;
         }, keyHolder);
 
