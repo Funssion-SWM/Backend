@@ -18,7 +18,10 @@ public interface MyRepository {
     void updateHistory(Long userId, PostType postType, Sign sign, Date curDate);
     void createHistory(Long userId, PostType postType);
 
+    IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity);
+
     IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity MemberProfileEntity);
+
 
     String findProfileImageNameById(Long userId);
 

@@ -1,18 +1,15 @@
 package Funssion.Inforum.domain.member.controller;
 
 
+import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
-import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
-import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -32,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 
 @Slf4j
@@ -96,11 +95,20 @@ public class MemberController {
 
     @PostMapping("/profile/{id}")
     public IsProfileSavedDto createProfileImage(@PathVariable("id") String userId,
-                                              @RequestPart(value = "image", required = false) MultipartFile image,
+                                                @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
+                                                @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
                                               @RequestPart(value = "tags", required = false) String tags){
-        MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
-        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
+        if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
+            throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
+        }
+        MemberInfoDto memberInfoDto;
+        try {
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tags);
+        }catch(NoSuchElementException e){
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tags);
+        }
+        return memberService.createMemberProfile(userId,memberInfoDto);
     }
     @GetMapping("/profile/{id}")
     public MemberProfileEntity getProfile(@PathVariable("id") String userId){
@@ -111,13 +119,19 @@ public class MemberController {
         }
     }
 
-    @PutMapping("/profile/{id}")
+    @PatchMapping("/profile/{id}")
     public IsProfileSavedDto updateProfileImage(@PathVariable("id") String userId,
-                                                @RequestPart(value = "image", required = false) MultipartFile image,
+                                                @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
+                                                @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
-        MemberInfoDto memberInfoDto = MemberInfoDto.createMemberInfo(image,introduce,tags);
-        return memberService.createOrUpdateMemberProfile(userId,memberInfoDto);
+        MemberInfoDto memberInfoDto;
+        try {
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tags);
+        }catch(NoSuchElementException e){
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tags);
+        }
+        return memberService.updateMemberProfile(userId,memberInfoDto);
     }
 
 }

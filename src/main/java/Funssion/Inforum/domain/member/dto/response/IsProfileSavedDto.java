@@ -10,4 +10,5 @@ public class IsProfileSavedDto {
     private final String imagePath;
     private final String tags;
     private final String introduce;
+    private final String message;
 }

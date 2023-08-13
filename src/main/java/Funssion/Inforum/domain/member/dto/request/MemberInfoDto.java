@@ -11,14 +11,16 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 public class MemberInfoDto {
     private String nickname;
+    private boolean isEmptyProfileImage;
     private MultipartFile image;
     private String introduce;
     private String tags;
 
-    public static MemberInfoDto createMemberInfo(MultipartFile image, String introduce, String tags){
+    public static MemberInfoDto createMemberInfo(boolean isEmptyProfileImage,MultipartFile image, String introduce, String tags){
         return MemberInfoDto.builder()
                 .image(image)
                 .introduce(introduce)
+                .isEmptyProfileImage(isEmptyProfileImage)
                 .tags(tags)
                 .build();
     }

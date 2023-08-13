@@ -2,11 +2,10 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-
-import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -78,11 +78,58 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     @Override
-    public IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
+    public IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
         String sql = "update member.user set introduce = ?, tags = ?, image_path = ? where id = ?";
         int updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), MemberProfileEntity.getTags(), MemberProfileEntity.getProfileImageFilePath(),userId);
         if (updatedRow ==0) throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
-        return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getTags(),MemberProfileEntity.getIntroduce());
+        return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getTags(),MemberProfileEntity.getIntroduce(),"성공적으로 프로필을 저장하였습니다.");
+    }
+
+    @Override
+    public IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
+        return patchMemberProfile(userId, memberProfileEntity);
+    }
+
+    private IsProfileSavedDto patchMemberProfile(Long userId, MemberProfileEntity memberProfileEntity) {
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE member.user SET ");
+        List<Object> params = new ArrayList<>();
+
+        if (memberProfileEntity.getIntroduce() != null) {
+            sqlBuilder.append("introduce = ?, ");
+            params.add(memberProfileEntity.getIntroduce());
+        }
+
+        if (memberProfileEntity.getTags() != null) {
+            sqlBuilder.append("tags = ?, ");
+            params.add(memberProfileEntity.getTags());
+        }
+
+        sqlBuilder.append("image_path = ?, ");
+        params.add(memberProfileEntity.getProfileImageFilePath());
+
+
+        // parameter 추가시 sql 뒤에 ", " 삭제
+        if (params.size() > 0) {
+            sqlBuilder.setLength(sqlBuilder.length() - 2);
+        } else {
+            return new IsProfileSavedDto(false, null, null, null,"수정 전 프로필과 동일합니다.");
+        }
+
+        sqlBuilder.append(" WHERE id = ?");
+        params.add(userId);
+
+        int updatedRow = template.update(sqlBuilder.toString(), params.toArray());
+
+        if (updatedRow == 0) {
+            throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
+        }
+
+        return new IsProfileSavedDto(true,
+                memberProfileEntity.getProfileImageFilePath(),
+                memberProfileEntity.getTags(),
+                memberProfileEntity.getIntroduce(),
+                "성공적으로 프로필을 수정하였습니다."
+        );
     }
 
     @Override
