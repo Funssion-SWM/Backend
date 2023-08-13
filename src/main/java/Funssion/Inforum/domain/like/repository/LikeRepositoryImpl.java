@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.like.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.like.domain.Like;
+import Funssion.Inforum.domain.like.exception.LikeNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -43,7 +44,7 @@ public class LikeRepositoryImpl implements LikeRepository {
         String sql = "select * from member.like where id = ?";
 
         return template.query(sql, likeRowMapper(), id).stream().findAny()
-                .orElseThrow(() -> new NotFoundException("like not found"));
+                .orElseThrow(() -> new LikeNotFoundException());
     }
 
     @Override
@@ -51,7 +52,7 @@ public class LikeRepositoryImpl implements LikeRepository {
         String sql = "select * from member.like where user_id = ? and post_type = ? and post_id = ?";
 
         return template.query(sql, likeRowMapper(), userId, postType.toString(), postId).stream().findAny()
-                .orElseThrow(() -> new NotFoundException("like not found"));
+                .orElseThrow(() -> new LikeNotFoundException());
     }
 
     @Override
@@ -66,7 +67,7 @@ public class LikeRepositoryImpl implements LikeRepository {
         String sql = "delete from member.like where user_id = ? and post_type = ? and post_id = ?";
 
         if (template.update(sql, userId, postType.toString(), postId) == 0)
-            throw new NotFoundException("like not found");
+            throw new LikeNotFoundException();
     }
 
     private RowMapper<Like> likeRowMapper() {
