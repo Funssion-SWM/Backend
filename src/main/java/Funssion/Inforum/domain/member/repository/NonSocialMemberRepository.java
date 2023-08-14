@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.common.exception.NotFoundException;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
@@ -74,7 +74,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         try {
             String name = jdbcTemplate.queryForObject(sql, String.class, id);
             return name;
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("user not found");
         }
     }

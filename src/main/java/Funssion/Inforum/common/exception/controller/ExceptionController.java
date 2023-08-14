@@ -1,6 +1,7 @@
 package Funssion.Inforum.common.exception.controller;
 
 import Funssion.Inforum.common.exception.*;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -48,6 +49,13 @@ public class ExceptionController {
                         .map(FieldError::getDefaultMessage)
                         .collect(Collectors.toList())
         );
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(ImageIOException.class)
+    public ErrorResult handleImageIOException(ImageIOException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return e.getErrorResult();
     }
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DuplicateException.class)

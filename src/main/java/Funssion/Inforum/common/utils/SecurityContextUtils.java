@@ -6,7 +6,7 @@ public abstract class SecurityContextUtils {
 
     public static Long getUserId() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (userId == "anonymousUser") {
+        if (userId.equals("anonymousUser")) {
             return 0L;
         }
         return Long.valueOf(userId);
