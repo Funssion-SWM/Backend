@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
@@ -136,6 +137,22 @@ public class MemoService {
 
         myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate());
     }
+
+    @Transactional(readOnly = true)
+    public List<MemoListDto> getMemosBy(String searchString, String orderBy) {
+
+        MemoOrderType memoOrderType = MemoOrderType.valueOf(orderBy.toUpperCase());
+        List<String> searchStringList = Arrays.stream(searchString.split(" "))
+                .map(str -> "%" + str + "%")
+                .toList();
+
+        return memoRepository
+                .findAllBySearchQuery(searchStringList, memoOrderType)
+                .stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
 
     private static Long getUserId(CRUDType type) {
 
