@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 
+import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 
@@ -13,6 +14,7 @@ public interface MemoRepository {
     List<Memo> findAllOrderById();
     List<Memo> findAllByUserIdOrderById(Long userId);
     List<Memo> findAllLikedMemosByUserId(Long userId);
+    List<Memo> findAllBySearchQuery(List<String> searchStringList, MemoOrderType orderType);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateLikesInMemo(Long likes, Long memoId);

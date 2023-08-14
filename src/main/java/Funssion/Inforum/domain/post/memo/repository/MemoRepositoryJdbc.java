@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
+import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.domain.post.domain.Post;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
@@ -15,6 +16,7 @@ import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -55,7 +57,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
-        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes, memo_id desc";
+        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes desc, memo_id desc";
         return template.query(sql, memoRowMapper(), days);
     }
 
@@ -77,6 +79,41 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "where l.user_id = ?";
 
         return template.query(sql, memoRowMapper(), userId);
+    }
+
+
+    @Override
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, MemoOrderType orderType) {
+        String sql = getSql(searchStringList, orderType);
+
+        return template.query(sql, memoRowMapper(), getParams(searchStringList));
+    }
+
+    private static String getSql(List<String> searchStringList, MemoOrderType orderType) {
+        String sql = "select * from memo.info where ";
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql += "memo_title like ? or ";
+        }
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql += "memo_text::text like ? ";
+            if (i != searchStringList.size() - 1) sql += "or ";
+        }
+
+        switch (orderType) {
+            case HOT -> sql += "order by likes desc, memo_id desc";
+            case NEW -> sql += "order by memo_id desc";
+        }
+
+        return sql;
+    }
+
+    private static Object[] getParams(List<String> searchStringList) {
+        ArrayList<String> params = new ArrayList<>();
+        params.addAll(searchStringList);
+        params.addAll(searchStringList);
+        return params.stream().toArray();
     }
 
     @Override
