@@ -13,4 +13,13 @@ public enum LoginType {
     public int getValue() {
         return value;
     }
+
+    public static LoginType fromValue(int value) {
+        for (LoginType type : LoginType.values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Invalid LoginType value: " + value);
+    }
 }

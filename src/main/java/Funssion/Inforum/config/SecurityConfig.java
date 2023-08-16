@@ -1,5 +1,6 @@
 package Funssion.Inforum.config;
 
+import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.JwtAccessDeniedHandler;
 import Funssion.Inforum.jwt.JwtAuthenticationEntryPoint;
 import Funssion.Inforum.jwt.JwtSecurityConfig;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,11 +31,12 @@ import java.util.Arrays;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-
+    //OAuth2LoginConfig에서 @Configuration으로 등록된 bean 주입
+    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final OAuthService oAuthService;
 
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
     @Bean
@@ -82,6 +85,11 @@ public class SecurityConfig {
                                         "/swagger-ui/**").permitAll()
                                 .requestMatchers("/favicon.ico").permitAll()
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
+                )
+                .oauth2Login((oauth2)->oauth2
+                        .clientRegistrationRepository(clientRegistrationRepository)
+                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+                                .userService(oAuthService))
                 )
                 .exceptionHandling((exceptionHandling)->exceptionHandling
                         .accessDeniedHandler(jwtAccessDeniedHandler)

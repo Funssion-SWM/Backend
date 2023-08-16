@@ -15,7 +15,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,5 +45,18 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with userEmail: " + userEmail));
         // non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. -> 토큰의 getName의 user_id가 들어갑니다.
         return new CustomUserDetails(member.getUserId(), member.getUserEmail(), member.getUserPw(), true, false);
+    }
+
+    public String socialLogin(Authentication authentication, OAuth2User oAuth2UserPrincipal){
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        System.out.println(attributes);
+        // PrincipalOauth2UserService의 getAttributes내용과 같음
+
+        Map<String, Object> attributes1 = oAuth2UserPrincipal.getAttributes();
+        // attributes == attributes1
+
+        log.info("social login 중 = code = google");
+        return attributes.toString();     //세션에 담긴 user가져올 수 있음음
     }
 }

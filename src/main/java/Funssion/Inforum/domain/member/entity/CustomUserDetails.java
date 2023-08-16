@@ -2,13 +2,15 @@ package Funssion.Inforum.domain.member.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 
-public class CustomUserDetails implements UserDetails, Serializable {
+public class CustomUserDetails implements UserDetails, OAuth2User, Serializable {
 
     private static final long serialVersionUID = 174726374856727L;
 
@@ -21,6 +23,17 @@ public class CustomUserDetails implements UserDetails, Serializable {
     private String nickname;	//닉네임
     private Collection<GrantedAuthority> authorities;	//권한 목록
 
+    private SocialMember socialMember;
+    private Map<String, Object> attributes;
+
+    //Social Login 용
+    public CustomUserDetails(SocialMember socialMember, Map<String, Object> attributes) {
+        //PrincipalOauth2UserService 참고
+        this.socialMember = socialMember;
+        this.attributes = attributes;
+    }
+
+    //Non Social Login 용
     public  CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
         this.id = String.valueOf(authId);
         this.email = userEmail;
@@ -29,6 +42,11 @@ public class CustomUserDetails implements UserDetails, Serializable {
         this.locked = !locked;
     }
 
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
 
     /**
      * 해당 유저의 권한 목록
@@ -103,4 +121,9 @@ public class CustomUserDetails implements UserDetails, Serializable {
 
     }
 
+    @Override
+    public String getName() {
+        String sub = attributes.get("sub").toString();
+        return sub;
+    }
 }
