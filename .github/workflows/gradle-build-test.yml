@@ -9,7 +9,7 @@ name: Gradle Build and Test
 
 on:
   pull_request:
-    branches: [ "develope" ]
+    branches: [ "main", "develope" ]
 
 jobs:
   test:
