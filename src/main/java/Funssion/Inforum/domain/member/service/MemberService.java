@@ -126,11 +126,15 @@ public class MemberService {
                 throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
             }
             uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), S3client.getUrl(profileDir, imageName).toString());
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
             return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
         }
+    }
+
+    private String getImagePath(String imageName) {
+        return "https://store.inforum.me/" + S3client.getUrl(profileDir, imageName).getPath();
     }
 
 
@@ -156,7 +160,7 @@ public class MemberService {
                 deleteImageFromS3(priorImageName.get());
             }
             uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), S3client.getUrl(profileDir, imageName).toString());
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
@@ -191,9 +195,8 @@ public class MemberService {
     }
 
     private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
-        URL imagePath = S3client.getUrl(profileDir, imageName);
         return MemberProfileEntity.builder()
-                .profileImageFilePath(imagePath.toString())
+                .profileImageFilePath(getImagePath(imageName))
                 .tags(memberInfoDto.getTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())

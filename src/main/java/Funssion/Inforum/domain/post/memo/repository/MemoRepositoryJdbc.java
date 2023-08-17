@@ -35,7 +35,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date)\n" +
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date) " +
                 "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
 
         template.update(con -> {
@@ -143,7 +143,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?" +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? " +
                 "where memo_id = ?";
 
         if (template.update(sql,
