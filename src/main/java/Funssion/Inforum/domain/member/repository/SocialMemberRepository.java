@@ -1,6 +1,8 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Optional;
+
 
 @Repository
 public class SocialMemberRepository implements MemberRepository<SocialMember> {
@@ -57,7 +60,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
             user_psmt.setString(1, name);
             user_psmt.setString(2, email);
-            user_psmt.setInt(3, loginType.getValue());
+            user_psmt.setInt(3, LoginType.SOCIAL.getValue());
             user_psmt.setDate(4, createdDate);
             return user_psmt;
         },userKeyHolder);
@@ -69,6 +72,15 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
                 .email(email)
                 .loginType(loginType)
                 .build();
+    }
+    public IsSuccessResponseDto saveSocialMemberNickname(String nickname,Long userId){
+        String sql ="UPDATE member.user SET name = ? WHERE id = ?";
+        int updatedRow = jdbcTemplate.update(sql, nickname, userId);
+        if (updatedRow == 0) {
+            throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
+        }
+        return new IsSuccessResponseDto(true,"정상적으로 닉네임이 등록되었습니다.");
+
     }
     private RowMapper<SocialMember> memberRowMapper(){
         return new RowMapper<SocialMember>() {

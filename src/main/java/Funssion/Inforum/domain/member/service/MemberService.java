@@ -5,7 +5,9 @@ import Funssion.Inforum.common.exception.ImageIOException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -24,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,14 +75,25 @@ public class MemberService {
                 NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
                 SaveMemberResponseDto savedMember = selectedMemberRepository.save(member);
                 return savedMember;
-            case SOCIAL: //social 회원가입의 경우 -> 요청 필요
+            case SOCIAL: //social 회원가입의 경우 -> 요청 필요 -
+                // ---------- 의미 없어짐 ----------- //
             {
                 throw new NotYetImplementException("해당 요청은 아직 구현되지 않았습니다.");
             }
         }
-        throw new InvalidParameterException("!~ 수정");
+        throw new InvalidParameterException("회원가입 로직중 잘못된 파라미터가 전달되었습니다.");
     }
 
+    public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
+        MemberRepository memberRepository = getMemberRepository(LoginType.SOCIAL);
+        ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname(), LoginType.SOCIAL);
+        if (isValidName.isValid()){
+            return memberRepository.saveSocialMemberNickname(nicknameRequestDto.getNickname(), userId);
+        }
+        else{
+            return new IsSuccessResponseDto(false,"닉네임 저장에 실패하였습니다.");
+        }
+    }
     public ValidatedDto isValidName(String username, LoginType loginType) {
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}", selectedMemberRepository);

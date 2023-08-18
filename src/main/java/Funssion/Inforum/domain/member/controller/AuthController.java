@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
+import Funssion.Inforum.domain.member.dto.response.isAlreadyExistSocialMember;
 import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.member.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,11 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @Slf4j
 @RestController
@@ -44,7 +45,7 @@ public class AuthController {
         }
     }
     @GetMapping("/users/oauth2/login")
-    public String socialLogin() {
-        return "hi";
+    public isAlreadyExistSocialMember socialLogin(@RequestParam("isSignUp") Boolean isSignUp, Authentication authentication) throws IOException {
+        return new isAlreadyExistSocialMember(isSignUp,Long.valueOf(authentication.getName()));
     }
 }
