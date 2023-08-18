@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.entity;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -23,13 +24,13 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     private String nickname;	//닉네임
     private Collection<GrantedAuthority> authorities;	//권한 목록
 
-    private SocialMember socialMember;
+    private User user;
     private Map<String, Object> attributes;
 
     //Social Login 용
-    public CustomUserDetails(SocialMember socialMember, Map<String, Object> attributes) {
+    public CustomUserDetails(String id, User user, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
-        this.socialMember = socialMember;
+        this.id = id;
         this.attributes = attributes;
     }
 

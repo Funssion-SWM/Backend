@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.service.AuthService;
+import Funssion.Inforum.domain.member.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,21 +13,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/login")
 public class AuthController {
     private final AuthService authService;
+    private final OAuthService oAuthService;
     @Value("${jwt.domain}") private String domain;
 
-    @PostMapping()
+    @PostMapping("/users/login")
     public ResponseEntity<IsSuccessResponseDto> nonSocialLogin(@Valid @RequestBody NonSocialMemberLoginDto nonSocialMemberLoginDto, HttpServletRequest request) {
         try {
             TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
@@ -42,8 +43,8 @@ public class AuthController {
             return new ResponseEntity<>(new IsSuccessResponseDto(false,"로그인에 실패하였습니다."),HttpStatus.UNAUTHORIZED);
         }
     }
-    @GetMapping("/oauth2/code/google")
-    public String socialLogin(Authentication authentication, @AuthenticationPrincipal OAuth2User oAuth2UserPrincipal){
-        return authService.socialLogin(authentication,oAuth2UserPrincipal);
+    @GetMapping("/users/oauth2/login")
+    public String socialLogin() {
+        return "hi";
     }
 }
