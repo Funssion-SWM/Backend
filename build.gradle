@@ -17,6 +17,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Web Client 사용
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 	implementation group: 'org.postgresql', name: 'postgresql', version: '42.6.0'
 	implementation group: 'org.json', name: 'json', version: '20220320'
 	implementation 'org.springframework.boot:spring-boot-starter-logging'
@@ -43,6 +47,8 @@ dependencies {
 	// ssh 연결
 	implementation 'com.jcraft:jsch:0.1.44-1'
 
+	// Spring OAuth2 설정
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 
