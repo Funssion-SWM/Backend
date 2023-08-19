@@ -1,11 +1,12 @@
 package Funssion.Inforum.domain.member.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class NicknameRequestDto {
-    private final String nickname;
-
+    private String nickname;
 }
