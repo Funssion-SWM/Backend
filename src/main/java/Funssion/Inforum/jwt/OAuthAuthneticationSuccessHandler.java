@@ -51,7 +51,7 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
 
         }
         else{
-            return UriComponentsBuilder.fromUriString("/")
+            return UriComponentsBuilder.fromUriString("/memos")
                 .build().toString();
         }
     }
