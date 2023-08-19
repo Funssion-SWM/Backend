@@ -7,7 +7,6 @@ import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -137,6 +136,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public String findProfileImageNameById(Long userId) {
         String sql = "select image_path from member.user where id =?";
+
         return template.queryForObject(sql, (rs, rowNum) -> rs.getString("image_path"), userId);
     }
 

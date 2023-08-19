@@ -4,10 +4,7 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
-import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
-import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
-import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
@@ -66,7 +63,11 @@ public class MemberController {
 
     @GetMapping("/check-duplication")
     public ValidatedDto isValidName(@RequestParam(value = "name", required = true) String name) {
-        return memberService.isValidName(name, LoginType.NON_SOCIAL);
+        return memberService.isValidName(name, LoginType.NON_SOCIAL); //로그인 타입은 상관없음 리팩토링 예정
+    }
+    @PostMapping("/nickname/{id}")
+    public IsSuccessResponseDto registerName(@PathVariable("id") String userId,@RequestBody NicknameRequestDto nicknameRequestDto){
+        return memberService.requestNicknameRegistration(nicknameRequestDto,Long.valueOf(userId));
     }
 
     @GetMapping("/check")
@@ -84,12 +85,12 @@ public class MemberController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("token".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     log.info("[Logout] User Id ={},", cookie.getValue());
                 }
             }
         }
-        ResponseCookie invalidateCookie = ResponseCookie.from("token", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie invalidateCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
         response.addHeader("Set-Cookie", invalidateCookie.toString());
     }
 
