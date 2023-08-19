@@ -43,7 +43,7 @@ class AuthControllerTest {
         when(authService.makeTokenInfo(nonSocialMemberLoginDto)).thenReturn(expectedTokenDto);
 
         //when
-        ResponseEntity<IsSuccessResponseDto> responseEntity = authController.login(nonSocialMemberLoginDto, mockRequest);
+        ResponseEntity<IsSuccessResponseDto> responseEntity = authController.nonSocialLogin(nonSocialMemberLoginDto, mockRequest);
 
         //then
         Assertions.assertThat(responseEntity.getStatusCode().equals(HttpStatus.CREATED));
