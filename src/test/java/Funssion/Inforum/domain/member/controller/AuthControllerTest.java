@@ -50,7 +50,7 @@ class AuthControllerTest {
         Assertions.assertThat(responseEntity.getBody().equals(expectedTokenDto));
         HttpHeaders httpHeaders = responseEntity.getHeaders();
         String cookieHeader = httpHeaders.getFirst(HttpHeaders.SET_COOKIE);
-        String tokenValue = cookieHeader.substring(6).split(";")[0];
+        String tokenValue = cookieHeader.substring(12).split(";")[0];
         Assertions.assertThat(tokenValue).isEqualTo(expectedTokenDto.getToken());
     }
 
