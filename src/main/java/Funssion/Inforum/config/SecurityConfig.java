@@ -34,7 +34,7 @@ import java.util.Set;
 
 @Slf4j
 @Configuration
-@EnableWebSecurity(debug=true)
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final TokenProvider tokenProvider;
