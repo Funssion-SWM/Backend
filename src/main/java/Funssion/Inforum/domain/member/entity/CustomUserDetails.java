@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 
@@ -55,7 +56,12 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getAuthorities();
+        if (user ==null){ //non social
+            return Collections.emptyList();
+        }
+        else { //social
+            return user.getAuthorities();
+        }
     }
 
     /**
