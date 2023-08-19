@@ -85,12 +85,12 @@ public class MemberController {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("token".equals(cookie.getName())) {
+                if ("accessToken".equals(cookie.getName())) {
                     log.info("[Logout] User Id ={},", cookie.getValue());
                 }
             }
         }
-        ResponseCookie invalidateCookie = ResponseCookie.from("token", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie invalidateCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
         response.addHeader("Set-Cookie", invalidateCookie.toString());
     }
 
