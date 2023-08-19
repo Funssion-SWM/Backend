@@ -44,13 +44,12 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
         //사실 authority 가 ROLE_FIRST_JOIN인게 이상하긴함. 하지만 authentication 객체를 활용하기 위해서 해당 방법을 사용하였음.
         //어차피 role은 우리 로직엔 사용되지 않기 때문임.
         if(authorities.stream().filter(o -> o.getAuthority().equals("ROLE_FIRST_JOIN")).findAny().isPresent()){
-            return UriComponentsBuilder.fromUriString("/api/users/oauth2/login")
-                    .queryParam("isSignUp","false")
+            return UriComponentsBuilder.fromUriString("/signup/setting")
+                    .path(authentication.getName())
                     .build().toString();
         }
         else{
-            return UriComponentsBuilder.fromUriString("/api/users/oauth2/login")
-                .queryParam("isSignUp","true")
+            return UriComponentsBuilder.fromUriString("")
                 .build().toString();
         }
     }
