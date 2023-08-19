@@ -123,7 +123,8 @@ public class MemberService {
                 : updateMemberProfileWithoutImage(userId, memberInfoDto);
     }
     private IsProfileSavedDto createMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
-        if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isPresent()){
+
+        if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isEmpty()){
             throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
         }
         memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
