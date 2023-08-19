@@ -48,7 +48,7 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
 //            return UriComponentsBuilder.fromUriString("/signup/setting/")
 //                    .path(authentication.getName())
 //                    .build().toString();
-            return UriComponentsBuilder.fromUriString("").build().toString();
+            return UriComponentsBuilder.fromUriString("/").build().toString();
         }
         else{
             return UriComponentsBuilder.fromUriString("")
