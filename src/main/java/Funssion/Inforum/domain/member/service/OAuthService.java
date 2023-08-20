@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,7 +33,7 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         log.info("oauth2user = {}",oAuth2User);
         String email = oAuth2User.getAttribute("email");
-        String nickname = "default";
+        String nickname = UUID.randomUUID().toString().substring(0,15);
         String password = "default";
 //        Role role = Role.ROLE_USER;
 
