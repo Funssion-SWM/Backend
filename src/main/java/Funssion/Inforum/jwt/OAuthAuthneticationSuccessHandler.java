@@ -52,7 +52,7 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
 
         }
         else{
-            return UriComponentsBuilder.fromUriString("https://"+host+".inforum.me")
+            return UriComponentsBuilder.fromUriString("https://"+host+".inforum.me/memos")
                 .build().toString();
         }
     }
