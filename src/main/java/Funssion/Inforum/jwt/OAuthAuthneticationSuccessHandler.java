@@ -22,6 +22,7 @@ import java.util.Collection;
 public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private final TokenProvider tokenProvider;
     @Value("${jwt.domain}") private String domain;
+    @Value("${profile}") private String host;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
@@ -45,13 +46,13 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
         //사실 authority 가 ROLE_FIRST_JOIN인게 이상하긴함. 하지만 authentication 객체를 활용하기 위해서 해당 방법을 사용하였음.
         //어차피 role은 우리 로직엔 사용되지 않기 때문임.
         if(authorities.stream().filter(o -> o.getAuthority().equals("ROLE_FIRST_JOIN")).findAny().isPresent()){
-            return UriComponentsBuilder.fromUriString("/signup/nickname/")
+            return UriComponentsBuilder.fromUriString("https://"+host+".inforum.me/signup/nickname/")
                     .path(authentication.getName())
                     .build().toString();
 
         }
         else{
-            return UriComponentsBuilder.fromUriString("/memos")
+            return UriComponentsBuilder.fromUriString("https://"+host+".inforum.me/signup/nickname/")
                 .build().toString();
         }
     }
