@@ -22,7 +22,7 @@ import java.util.Collection;
 public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private final TokenProvider tokenProvider;
     @Value("${jwt.domain}") private String domain;
-    @Value("${profile}") private String host;
+    @Value("${hostname}") private String host;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
