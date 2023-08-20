@@ -13,7 +13,7 @@ public class CommonTest {
 
     @Test
     public void test() {
-        ErrorResult errorResult = new ErrorResult(HttpStatus.NOT_FOUND, "Hi");
-        log.info("error: {}", LocalDate.now().getYear());
+        String fileName = "inforum-bucket/profiles/fc308805-dba8-4c51-8782-f5419f72ef29-77";
+        System.out.println("fileName = " + fileName.substring(15));
     }
 }

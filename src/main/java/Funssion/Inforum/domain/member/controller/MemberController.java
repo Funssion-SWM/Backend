@@ -134,5 +134,4 @@ public class MemberController {
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
     }
-
 }
