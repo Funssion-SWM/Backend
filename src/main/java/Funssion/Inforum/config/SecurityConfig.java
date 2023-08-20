@@ -94,7 +94,7 @@ public class SecurityConfig {
                                 .anyRequest().authenticated() // 그 외 인증 없이 접근X
                 )
                 .oauth2Login(oauth2 -> oauth2
-//                        .clientRegistrationRepository(clientRegistrationRepository)
+                        .clientRegistrationRepository(clientRegistrationRepository)
                         .userInfoEndpoint(it -> it.userService(oAuthService))
                         .successHandler(oAuthAuthneticationSuccessHandler))
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
