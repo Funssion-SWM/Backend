@@ -147,7 +147,7 @@ public class MemberService {
     }
 
     private String getImagePath(String imageName) {
-        return "https://store.inforum.me/" + S3client.getUrl(profileDir, imageName).getPath().substring(15);
+        return "https://store.inforum.me" + S3client.getUrl(profileDir, imageName).getPath().substring(15);
     }
 
 
