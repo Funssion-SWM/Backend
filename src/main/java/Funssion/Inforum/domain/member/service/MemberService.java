@@ -155,6 +155,7 @@ public class MemberService {
         Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
         if (priorImageName.isPresent() && memberInfoDto.isEmptyProfileImage()) {
             deleteImageFromS3(priorImageName.get());
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntityWithNoProfileImage(memberInfoDto));
         }
         else if(priorImageName.isPresent()){
@@ -171,6 +172,7 @@ public class MemberService {
             Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
             if (priorImageName.isPresent()) {
                 deleteImageFromS3(priorImageName.get());
+                memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
             }
             uploadImageToS3(memberProfileImage, imageName);
             memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
