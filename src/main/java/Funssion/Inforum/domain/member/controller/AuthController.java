@@ -18,8 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +43,7 @@ public class AuthController {
         }
     }
     @GetMapping("/users/oauth2/login")
-    public isAlreadyExistSocialMember socialLogin(@RequestParam("isSignUp") Boolean isSignUp, Authentication authentication) throws IOException {
+    public isAlreadyExistSocialMember socialLogin(@RequestParam("isSignUp") Boolean isSignUp, Authentication authentication){
         return new isAlreadyExistSocialMember(isSignUp,Long.valueOf(authentication.getName()));
     }
 }

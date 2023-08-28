@@ -102,6 +102,7 @@ public class MemberService {
         String message = isNameAvailable ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
         return new ValidatedDto(isNameAvailable, message);
     }
+    /* NonSocial만 해도 생관 없음 수정해야하는 부분  -> repository 분기가 의미가 없어짐 */
     public ValidatedDto isValidEmail(String email, LoginType loginType){
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
