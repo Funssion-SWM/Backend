@@ -11,6 +11,7 @@ CREATE TABLE "memo"."info" (
     memo_text jsonb,
     memo_color varchar(50),
     likes int8 NOT NULL DEFAULT 0,
+    is_temporary boolean NOT NULL DEFAULT false,
     created_date date,
     updated_date date
 );
@@ -18,7 +19,7 @@ CREATE TABLE "memo"."info" (
 CREATE TABLE "member"."auth" (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
-    password varchar(50) NOT NULL
+    password varchar(100) NOT NULL
 );
 
 CREATE TABLE "member"."history" (

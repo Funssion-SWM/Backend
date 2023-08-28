@@ -46,7 +46,6 @@ dependencies {
 	implementation 'com.amazonaws:aws-java-sdk-s3'
 	// ssh 연결
 	implementation 'com.jcraft:jsch:0.1.44-1'
-
 	// Spring OAuth2 설정
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }

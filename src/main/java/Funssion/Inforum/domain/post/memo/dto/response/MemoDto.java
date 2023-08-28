@@ -22,7 +22,7 @@ public class MemoDto {
     private Date createdDate;
     private Date updatedDate;
     private Long likes;
-    private Boolean isLike;
+    private Boolean isTemporary;
 
     public MemoDto(Memo memo) {
         this.memoId = memo.getId();
@@ -36,9 +36,6 @@ public class MemoDto {
         this.createdDate = memo.getCreatedDate();
         this.updatedDate = memo.getUpdatedDate();
         this.likes = memo.getLikes();
-    }
-
-    public void setIsLike(Boolean isLike) {
-        this.isLike = isLike;
+        this.isTemporary = memo.getIsTemporary();
     }
 }

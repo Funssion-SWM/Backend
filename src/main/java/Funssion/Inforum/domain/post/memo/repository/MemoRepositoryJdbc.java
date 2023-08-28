@@ -35,8 +35,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date, is_temporary) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
@@ -49,6 +49,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(7, memo.getColor());
             psmt.setDate(8, memo.getCreatedDate());
             psmt.setDate(9,memo.getUpdatedDate());
+            psmt.setBoolean(10, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
 
@@ -57,26 +58,27 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
-        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) order by likes desc, memo_id desc";
+        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
+                "order by likes desc, memo_id desc";
         return template.query(sql, memoRowMapper(), days);
     }
 
     @Override
     public List<Memo> findAllOrderById() {
-        String sql = "select * from memo.info order by memo_id desc";
+        String sql = "select * from memo.info where is_temporary = false order by memo_id desc";
         return template.query(sql, memoRowMapper());
     }
 
     @Override
     public List<Memo> findAllByUserIdOrderById(Long userId) {
-        String sql = "select * from memo.info where author_id = ? order by memo_id desc";
+        String sql = "select * from memo.info where author_id = ? and is_temporary = false order by memo_id desc";
         return template.query(sql, memoRowMapper(), userId);
     }
 
     @Override
     public List<Memo> findAllLikedMemosByUserId(Long userId) {
         String sql = "select * from memo.info i join member.like l on i.memo_id = l.post_id and l.post_type = 'MEMO' " +
-                "where l.user_id = ?";
+                "where l.user_id = ? and is_temporary = false";
 
         return template.query(sql, memoRowMapper(), userId);
     }
@@ -90,7 +92,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     private static String getSql(List<String> searchStringList, MemoOrderType orderType) {
-        String sql = "select * from memo.info where ";
+        String sql = "select * from memo.info where is_temporary = false and ";
 
         for (int i = 0; i < searchStringList.size() ; i++) {
             sql += "memo_title like ? or ";
@@ -136,6 +138,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getDate("created_date"))
                         .updatedDate(rs.getDate("updated_date"))
                         .likes(rs.getLong("likes"))
+                        .isTemporary(rs.getBoolean("is_temporary"))
                         .build());
     }
 
@@ -143,11 +146,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ? " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, is_temporary = ?" +
                 "where memo_id = ?";
 
         if (template.update(sql,
-                form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()),
+                form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), form.getIsTemporary(),
                 memoId)
                 == 0)
             throw new MemoNotFoundException("update content fail");
@@ -170,7 +173,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
-        log.info("{}", template.update(sql, authorProfileImagePath, authorId));
+        if (template.update(sql, authorProfileImagePath, authorId) == 0) throw new MemoNotFoundException("update profile fail");
     }
 
     @Override
