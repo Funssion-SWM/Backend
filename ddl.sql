@@ -22,6 +22,14 @@ CREATE TABLE "member"."auth" (
     password varchar(100) NOT NULL
 );
 
+CREATE TABLE "member"."auth_code" (
+    id bigserial,
+    email varchar(60) NOT NULL,
+    code bpchar(6) NOT NULL,
+    expiration bool NULL DEFAULT false,
+    due_date timestamp NULL,
+);
+
 CREATE TABLE "member"."history" (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
