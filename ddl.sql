@@ -6,7 +6,7 @@ CREATE TABLE "memo"."info" (
     author_id int8 NOT NULL,
     author_name varchar,
     author_image_path varchar,
-    memo_title varchar(50) NOT NULL,
+    memo_title varchar(255) NOT NULL,
     memo_description varchar(255),
     memo_text jsonb,
     memo_color varchar(50),
