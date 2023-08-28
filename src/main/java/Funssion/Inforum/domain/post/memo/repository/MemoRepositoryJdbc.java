@@ -83,6 +83,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), userId);
     }
 
+    @Override
+    public List<Memo> findAllDraftMemosByUserId(Long userId) {
+        String sql = "select * from memo.info where author_id = ? and is_temporary = true order by memo_id desc";
+
+        return template.query(sql, memoRowMapper(), userId);
+    }
+
 
     @Override
     public List<Memo> findAllBySearchQuery(List<String> searchStringList, MemoOrderType orderType) {

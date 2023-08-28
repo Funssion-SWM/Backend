@@ -51,4 +51,11 @@ public class MyService {
                 .map(MemoListDto::new)
                 .toList();
     }
+
+    public List<MemoListDto> getMyDraftMemos(Long userId) {
+        return memoRepository.findAllDraftMemosByUserId(userId)
+                .stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
 }
