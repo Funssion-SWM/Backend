@@ -109,6 +109,15 @@ public class MemoService {
         }
     }
 
+    public List<MemoListDto> getDraftMemos() {
+
+        Long authorId = getUserId(READ);
+
+        return memoRepository.findAllDraftMemosByUserId(authorId).stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public MemoDto getMemoBy(Long memoId) {
 

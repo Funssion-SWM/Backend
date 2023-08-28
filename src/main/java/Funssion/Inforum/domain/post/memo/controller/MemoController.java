@@ -54,8 +54,12 @@ public class MemoController {
             @RequestParam(name = "q") String searchString,
             @RequestParam(required = false, defaultValue = "HOT") String orderBy
     ) {
-        log.info("searchString = {}", searchString);
         return memoService.getMemosBy(searchString, orderBy);
+    }
+
+    @GetMapping("/drafts")
+    public List<MemoListDto> getDraftMemos() {
+        return memoService.getDraftMemos();
     }
 
 }
