@@ -30,6 +30,7 @@ public class MyRepositoryJdbc implements MyRepository {
         String sql = "select * from member.history where user_id = ? and extract('year' from date) = ? and extract('month' from date) = ? order by date";
         return template.query(sql, historyRowMapper(), userId, year, month);
     }
+
     public MemberProfileEntity findProfileByUserId(Long userId) {
         String sql = "select name,introduce,tags,image_path from member.user where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
@@ -135,6 +136,7 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public String findProfileImageNameById(Long userId) {
         String sql = "select image_path from member.user where id =?";
+
         return template.queryForObject(sql, (rs, rowNum) -> rs.getString("image_path"), userId);
     }
 

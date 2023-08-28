@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.mypage.domain.History;
 
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 
 import java.sql.Date;
 import java.util.List;

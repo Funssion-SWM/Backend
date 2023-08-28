@@ -43,14 +43,14 @@ class AuthControllerTest {
         when(authService.makeTokenInfo(nonSocialMemberLoginDto)).thenReturn(expectedTokenDto);
 
         //when
-        ResponseEntity<IsSuccessResponseDto> responseEntity = authController.login(nonSocialMemberLoginDto, mockRequest);
+        ResponseEntity<IsSuccessResponseDto> responseEntity = authController.nonSocialLogin(nonSocialMemberLoginDto, mockRequest);
 
         //then
         Assertions.assertThat(responseEntity.getStatusCode().equals(HttpStatus.CREATED));
         Assertions.assertThat(responseEntity.getBody().equals(expectedTokenDto));
         HttpHeaders httpHeaders = responseEntity.getHeaders();
         String cookieHeader = httpHeaders.getFirst(HttpHeaders.SET_COOKIE);
-        String tokenValue = cookieHeader.substring(6).split(";")[0];
+        String tokenValue = cookieHeader.substring(12).split(";")[0];
         Assertions.assertThat(tokenValue).isEqualTo(expectedTokenDto.getToken());
     }
 

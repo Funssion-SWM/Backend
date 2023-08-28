@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +68,11 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
         }
+    }
+
+    @Override
+    public IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId) {
+        return null;
     }
 
     public String findNameById(Long id) {

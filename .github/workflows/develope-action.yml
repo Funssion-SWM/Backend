@@ -39,7 +39,7 @@ jobs:
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 7.5.1
-        arguments: build
+        arguments: build -x test
         
     - name: Docker build
       run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} .

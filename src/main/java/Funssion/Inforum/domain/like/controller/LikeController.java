@@ -3,7 +3,6 @@ package Funssion.Inforum.domain.like.controller;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.exception.notfound.UrlNotFoundException;
-import Funssion.Inforum.domain.like.dto.response.IsLikeDto;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +20,8 @@ public class LikeController {
     private final LikeService likeService;
 
     @GetMapping("/{postType}/{postId}/like")
-    public IsLikeDto getLikeInfo(@PathVariable String postType, @PathVariable Long postId) {
-        try {
-            likeService.getLikeInfo(parseToEnumType(postType), postId);
-            return new IsLikeDto(true);
-        } catch (NotFoundException e) {
-            return new IsLikeDto(false);
-        }
+    public LikeResponseDto getLikeInfo(@PathVariable String postType, @PathVariable Long postId) {
+        return likeService.getLikeInfo(parseToEnumType(postType), postId);
     }
 
     @PostMapping("/{postType}/{postId}/like")

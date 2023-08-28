@@ -1,11 +1,13 @@
 package Funssion.Inforum.memo.repository;
 
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,38 +33,59 @@ class MemoRepositoryJdbcTest {
     private MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow");
     private MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green");
     private MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue");
-    private Memo memo1 = new Memo(form1, 9999L, new Date(0), new Date(0));
-    private Memo memo2 = new Memo(form2, 9999L, new Date(0), new Date(0));
-    private Memo memo3 = new Memo(form3, 9999L, new Date(0), new Date(0));
+    private Memo memo1 = new Memo(form1);
+    private Memo memo2 = new Memo(form2);
+    private Memo memo3 = new Memo(form3);
+
+    private Memo createdMemo;
+
+    @BeforeEach
+    void before() {
+        createdMemo = repository.create(memo1);
+    }
 
 
     @Test
     void createTest() {
-        Memo createdMemo = repository.create(memo1);
         Memo savedMemo = repository.findById(createdMemo.getId());
 
         assertThat(createdMemo).isEqualTo(savedMemo);
     }
 
     @Test
-    void updateTest() {
-        Memo createdMemo = repository.create(memo1);
-
-        Memo updatedMemo = repository.update(memo2, createdMemo.getId());
+    void updateContentTest() {
+        Memo updatedMemo = repository.updateContentInMemo(form2, createdMemo.getId());
 
         Memo savedMemo = repository.findById(createdMemo.getId());
 
         assertThat(createdMemo).isNotEqualTo(savedMemo);
         assertThat(updatedMemo).isEqualTo(savedMemo);
 
-        assertThatThrownBy(() -> repository.update(memo3, 0L))
+        assertThatThrownBy(() -> repository.updateContentInMemo(form3, 0L))
                 .isInstanceOf(MemoNotFoundException.class);
     }
 
     @Test
-    void deleteTest() {
-        Memo createdMemo = repository.create(memo1);
+    void updateLikesTest() {
+        Memo likesUpdatedMemo = repository.updateLikesInMemo(createdMemo.updateLikes(Sign.PLUS), createdMemo.getId());
 
+        assertThat(likesUpdatedMemo.getLikes()).isEqualTo(createdMemo.getLikes());
+    }
+
+    @Test
+    void updateAuthorProfileTest() {
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), "TEST URL");
+
+        Memo updatedMemo = repository.findById(createdMemo.getId());
+
+        assertThat(updatedMemo.getAuthorImagePath()).isEqualTo("TEST URL");
+
+//         null input test
+        repository.updateAuthorProfile(createdMemo.getAuthorId(), null);
+    }
+
+    @Test
+    void deleteTest() {
         repository.delete(createdMemo.getId());
 
         assertThatThrownBy(() -> repository.delete(createdMemo.getId()))
@@ -73,7 +96,6 @@ class MemoRepositoryJdbcTest {
 
     @Test
     void readTest() {
-        Memo createdMemo1 = repository.create(memo1);
         Memo createdMemo2 = repository.create(memo2);
         Memo createdMemo3 = repository.create(memo3);
 

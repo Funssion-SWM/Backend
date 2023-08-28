@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public class SocialMember extends Member {
 
-    public static SocialMember createSocialMember(String email, String nickname){
-            return SocialMember.builder()
+    public static SocialMember createSocialMember(String email, String nickname) {
+        return SocialMember.builder()
                 .userEmail(email)
-                .createdDate(LocalDateTime.now())
                 .userName(nickname)
+                .createdDate(LocalDateTime.now())
                 .build();
     }
 }

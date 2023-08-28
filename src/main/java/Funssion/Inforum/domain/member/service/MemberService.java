@@ -5,7 +5,9 @@ import Funssion.Inforum.common.exception.ImageIOException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
+import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -14,6 +16,7 @@ import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,14 +39,16 @@ public class MemberService {
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
     private final MyRepository myRepository;
+    private final MemoRepository memoRepository;
     private final AmazonS3 S3client;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
 
-    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, AmazonS3 S3client) {
+    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, MemoRepository memoRepository, AmazonS3 S3client) {
         this.repositoryMap = repositoryMap;
         this.myRepository = myRepository;
+        this.memoRepository = memoRepository;
         this.S3client = S3client;
     }
     HashMap<LoginType, String> loginTypeMap = new HashMap<>();
@@ -71,14 +75,25 @@ public class MemberService {
                 NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
                 SaveMemberResponseDto savedMember = selectedMemberRepository.save(member);
                 return savedMember;
-            case SOCIAL: //social 회원가입의 경우 -> 요청 필요
+            case SOCIAL: //social 회원가입의 경우 -> 요청 필요 -
+                // ---------- 의미 없어짐 ----------- //
             {
                 throw new NotYetImplementException("해당 요청은 아직 구현되지 않았습니다.");
             }
         }
-        throw new InvalidParameterException("!~ 수정");
+        throw new InvalidParameterException("회원가입 로직중 잘못된 파라미터가 전달되었습니다.");
     }
 
+    public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
+        MemberRepository memberRepository = getMemberRepository(LoginType.SOCIAL);
+        ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname(), LoginType.SOCIAL);
+        if (isValidName.isValid()){
+            return memberRepository.saveSocialMemberNickname(nicknameRequestDto.getNickname(), userId);
+        }
+        else{
+            return new IsSuccessResponseDto(false,"닉네임 저장에 실패하였습니다.");
+        }
+    }
     public ValidatedDto isValidName(String username, LoginType loginType) {
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}", selectedMemberRepository);
@@ -108,9 +123,11 @@ public class MemberService {
                 : updateMemberProfileWithoutImage(userId, memberInfoDto);
     }
     private IsProfileSavedDto createMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
-        if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isPresent()){
+
+        if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isEmpty()){
             throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
         }
+        memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
         return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
@@ -122,10 +139,15 @@ public class MemberService {
                 throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
             }
             uploadImageToS3(memberProfileImage, imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
             return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
         }
+    }
+
+    private String getImagePath(String imageName) {
+        return "https://store.inforum.me/" + S3client.getUrl(profileDir, imageName).getPath();
     }
 
 
@@ -138,6 +160,7 @@ public class MemberService {
         else if(priorImageName.isPresent()){
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntityKeepingImagePath(memberInfoDto,priorImageName.get()));
         }
+        memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
         return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
@@ -150,6 +173,7 @@ public class MemberService {
                 deleteImageFromS3(priorImageName.get());
             }
             uploadImageToS3(memberProfileImage, imageName);
+            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
             return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
         } catch (IOException e) {
             throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
@@ -184,9 +208,8 @@ public class MemberService {
     }
 
     private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
-        URL imagePath = S3client.getUrl(profileDir, imageName);
         return MemberProfileEntity.builder()
-                .profileImageFilePath(imagePath.toString())
+                .profileImageFilePath(getImagePath(imageName))
                 .tags(memberInfoDto.getTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())

@@ -28,14 +28,16 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     private Map<String, Object> attributes;
 
     //Social Login 용
-    public CustomUserDetails(String id, User user, Map<String, Object> attributes) {
+    public CustomUserDetails(String id, Collection<GrantedAuthority> authorities,User user, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
+        this.authorities = authorities; // social 회원가입 여부를 나타내는 것으로 사용됨
+        this.user=user;
         this.attributes = attributes;
     }
 
     //Non Social Login 용
-    public  CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
+    public CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
         this.id = String.valueOf(authId);
         this.email = userEmail;
         this.password = userPw;
@@ -54,7 +56,12 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        if (user ==null){ //non social
+            return Collections.emptyList();
+        }
+        else { //social
+            return user.getAuthorities();
+        }
     }
 
     /**
