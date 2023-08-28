@@ -20,6 +20,7 @@ public class MemoListDto {
     private String authorProfileImagePath;
     private Long likes;
     private Boolean isLike;
+    private Boolean isTemporary;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -32,6 +33,7 @@ public class MemoListDto {
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
         this.likes = memo.getLikes();
+        this.isTemporary = memo.getIsTemporary();
     }
 
     public void setIsLike(Boolean isLike) {
