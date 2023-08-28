@@ -48,7 +48,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByEmail(String email) {
-        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
+        String sql ="SELECT ID,EMAIL,NAME FROM MEMBER.USER WHERE EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -60,7 +60,7 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByName(String name) {
-        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.NAME = ?";
+        String sql ="SELECT ID,EMAIL,NAME FROM m    ember.user WHERE NAME = ?";
 
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),name);
@@ -126,9 +126,8 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
             @Override
             public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
                 NonSocialMember member = NonSocialMember.builder()
-                        .userId(rs.getLong("u_id"))
-                        .authId(rs.getLong("a_id"))
-                        .userPw(rs.getString("password"))
+                        .userId(rs.getLong("id"))
+                        .userName(rs.getString("name"))
                         .userEmail(rs.getString("email"))
                         .build();
                 return member;
