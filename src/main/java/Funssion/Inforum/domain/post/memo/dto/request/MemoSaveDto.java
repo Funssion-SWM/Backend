@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +18,14 @@ public class MemoSaveDto {
     private String memoText;
     @NotBlank(message = "색을 지정해주세요")
     private String memoColor;
+    @Builder.Default
+    private Boolean isTemporary = false;
 
-    public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor) {
+    public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor, Boolean isTemporary) {
         this.memoTitle = memoTitle;
         this.memoDescription = memoDescription;
         this.memoText = memoText;
         this.memoColor = memoColor;
+        this.isTemporary = isTemporary;
     }
 }

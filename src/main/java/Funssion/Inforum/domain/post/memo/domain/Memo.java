@@ -20,6 +20,7 @@ public class Memo extends Post {
     private String description;
     private String text;
     private String color;
+    private Boolean isTemporary;
 
     public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
         super(authorId, authorProfile, createdDate, updatedDate);
@@ -27,6 +28,7 @@ public class Memo extends Post {
         this.description = form.getMemoDescription();
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
+        this.isTemporary = form.getIsTemporary();
     }
 
     public Memo(MemoSaveDto form) {
@@ -34,5 +36,6 @@ public class Memo extends Post {
         this.description = form.getMemoDescription();
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
+        this.isTemporary = form.getIsTemporary();
     }
 }
