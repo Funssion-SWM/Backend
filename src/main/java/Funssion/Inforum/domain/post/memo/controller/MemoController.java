@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,5 +61,10 @@ public class MemoController {
     public List<MemoListDto> getDraftMemos() {
         return memoService.getDraftMemos();
     }
+
+//    @GetMapping("/comments")
+//    public List<CommentListDto> getMemoComments(
+//
+//    )
 
 }
