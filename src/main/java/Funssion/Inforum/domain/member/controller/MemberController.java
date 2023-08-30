@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -42,7 +41,7 @@ public class MemberController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto) throws NoSuchAlgorithmException { //dto로 바꿔야함
+    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto){ //dto로 바꿔야함
         return memberService.requestMemberRegistration(memberSaveDto);
     }
 
