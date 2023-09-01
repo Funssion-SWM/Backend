@@ -69,7 +69,8 @@ create table member.like_comment(
     id int8 primary key DEFAULT nextval('like_comment_seq'::regclass),
     user_id int8 not null,
     comment_id int8 not null,
-    is_recomment boolean not null
+    is_recomment boolean not null,
+    unique(user_id,comment_id,is_recomment)
 );
 
 

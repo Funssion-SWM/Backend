@@ -15,4 +15,5 @@ public class ReCommentListDto {
     private Date createdDate;
     private Date updatedDate;
     private Long likes;
+    private Boolean isLike;
 }
