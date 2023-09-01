@@ -117,6 +117,7 @@ public class CommentRespositoryImpl implements CommentRepository{
                     .authorId(rs.getLong("author_id"))
                     .authorName(rs.getString("author_name"))
                     .authorImagePath(rs.getString("author_image_path"))
+                    .commentText(rs.getString("comment_text"))
                     .createdDate(rs.getDate("created_date"))
                     .updatedDate(rs.getDate("updated_date"))
                     .likes(rs.getLong("likes"))
