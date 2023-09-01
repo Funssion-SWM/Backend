@@ -78,7 +78,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public List<Memo> findAllLikedMemosByUserId(Long userId) {
         String sql = "select * from memo.info i join member.like l on i.memo_id = l.post_id and l.post_type = 'MEMO' " +
-                "where l.user_id = ? and is_temporary = false";
+                "where l.user_id = ? and is_temporary = false order by memo_id desc";
 
         return template.query(sql, memoRowMapper(), userId);
     }

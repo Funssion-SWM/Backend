@@ -13,7 +13,7 @@ import java.sql.Date;
 
 @Getter
 @SuperBuilder
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class Memo extends Post {
     private String title;
