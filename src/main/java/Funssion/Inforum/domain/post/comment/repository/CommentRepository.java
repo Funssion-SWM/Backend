@@ -5,6 +5,7 @@ import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
+import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
@@ -16,6 +17,8 @@ public interface CommentRepository {
 
     void createReComment(ReComment reComment);
     IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
+
+    IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId);
 
     IsSuccessResponseDto deleteComment(Long commentId);
     /*

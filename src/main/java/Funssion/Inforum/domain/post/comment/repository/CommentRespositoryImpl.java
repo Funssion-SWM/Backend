@@ -10,6 +10,7 @@ import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
+import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
@@ -57,7 +58,7 @@ public class CommentRespositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
-        checkAuthorization(CRUDType.UPDATE, commentId);
+        checkAuthorization(CRUDType.UPDATE, commentId,false);
         String sql = "update comment.info set comment_text = ?, updated_date = ? where id = ?";
         if (template.update(sql, commentUpdateDto.getCommentText(), LocalDateTime.now(), commentId) == 0) {
             throw new UpdateFailException("댓글 수정에 실패하였습니다.");
@@ -68,8 +69,19 @@ public class CommentRespositoryImpl implements CommentRepository{
     }
 
     @Override
+    public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
+        checkAuthorization(CRUDType.UPDATE, reCommentId,true);
+        String sql = "update comment.re_comments set comment_text = ?, updated_date = ? where id = ?";
+        if (template.update(sql, reCommentUpdateDto.getCommentText(), LocalDateTime.now(), reCommentId) == 0) {
+            throw new UpdateFailException("대 댓글 수정에 실패하였습니다.");
+        }
+        return new IsSuccessResponseDto(true, "대댓글이 수정되었습니다.");
+
+    }
+
+    @Override
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        checkAuthorization(CRUDType.DELETE, commentId);
+        checkAuthorization(CRUDType.DELETE, commentId,false);
         String sql = "delete from comment.info where id = ?";
         if(template.update(sql, commentId) == 0){
             throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
@@ -146,17 +158,19 @@ public class CommentRespositoryImpl implements CommentRepository{
         }
     }
 
-    private Long findAuthorIdByCommentId(Long commentId){
-        String sql = "select author_id from comment.info where id = ?";
+    private Long findAuthorIdByCommentId(Long commentId, boolean isReComment){
+        String sql = "";
+        if (isReComment) sql = "select author_id from comment.re_comments where id = ?";
+        else sql ="select author_id from comment.info where id =?";
         try {
             return template.queryForObject(sql, Long.class, commentId);
         }catch(EmptyResultDataAccessException e){
             throw new NotFoundException("comment not found",e);
         }
     }
-    private void checkAuthorization(CRUDType crudType, Long commentId) {
+    private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {
         Long userId = AuthUtils.getUserId(crudType);
-        if (!userId.equals(findAuthorIdByCommentId(commentId))) {
+        if (!userId.equals(findAuthorIdByCommentId(commentId,isReComment))) {
             throw new UnAuthorizedException("Permission denied to "+crudType.toString());
         }
     }

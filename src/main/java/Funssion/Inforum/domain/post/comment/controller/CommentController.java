@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
+import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.service.CommentService;
@@ -46,5 +47,10 @@ public class CommentController {
     @PostMapping("/recomments")
     public IsSuccessResponseDto createReComment(@RequestBody ReCommentSaveDto reCommentSaveDto){
         return commentService.createReComment(reCommentSaveDto);
+    }
+
+    @PatchMapping("/recomments/{reCommentId}")
+    public IsSuccessResponseDto updateReComment(@RequestBody ReCommentUpdateDto reCommentUpdateDto, @PathVariable Long reCommentId){
+        return commentService.updateReComment(reCommentUpdateDto,reCommentId);
     }
 }
