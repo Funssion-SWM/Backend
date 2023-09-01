@@ -3,8 +3,8 @@ package Funssion.Inforum.domain.post.comment.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
+import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
-import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
@@ -13,9 +13,9 @@ import java.util.List;
 
 public interface CommentRepository {
     void createComment(Comment comment);
-    IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
 
-    void createReComment(ReCommentSaveDto commentSaveDto);
+    void createReComment(ReComment reComment);
+    IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
 
     IsSuccessResponseDto deleteComment(Long commentId);
     /*

@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.comment.controller;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
+import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.service.CommentService;
@@ -40,5 +41,10 @@ public class CommentController {
         /* To Do
             converter 사용할 것
          */
+    }
+
+    @PostMapping("/recomments")
+    public IsSuccessResponseDto createReComment(@RequestBody ReCommentSaveDto reCommentSaveDto){
+        return commentService.createReComment(reCommentSaveDto);
     }
 }

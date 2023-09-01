@@ -8,8 +8,8 @@ import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
+import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
-import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
@@ -25,6 +25,8 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public class CommentRespositoryImpl implements CommentRepository{
     private final JdbcTemplate template;
@@ -74,10 +76,28 @@ public class CommentRespositoryImpl implements CommentRepository{
         }
 
         return new IsSuccessResponseDto(true,"댓글이 삭제되었습니다.");
-
     }
     @Override
-    public void createReComment(ReCommentSaveDto commentSaveDto) {
+    public void createReComment(ReComment reComment) {
+        if (findParentCommentById(reComment.getParentCommentId()).isEmpty())
+            throw new NotFoundException("대댓글을 등록하기 위한 댓글이 존재하지 않습니다.");
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        String sql = "insert into comment.re_comments (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
+                + "values(?,?,?,?,?,?)";
+        int updatedRow = template.update(con -> {
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
+            psmt.setLong(1, reComment.getAuthorId());
+            psmt.setString(2, reComment.getAuthorImagePath());
+            psmt.setString(3, reComment.getAuthorName());
+            psmt.setLong(4, reComment.getParentCommentId());
+            psmt.setString(5, reComment.getCommentText());
+            psmt.setDate(6, reComment.getCreatedDate());
+            return psmt;
+        }, keyHolder);
+        if (updatedRow != 1){
+            throw new CreateFailException("대댓글 저장에 실패하였습니다.");
+        }
 
     }
 
@@ -114,6 +134,16 @@ public class CommentRespositoryImpl implements CommentRepository{
         return null;
     }
 
+    private Optional<CommentListDto> findParentCommentById(Long commentId){
+        String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date " +
+                "from comment.info " +
+                "where id = ?";
+        try {
+            return Optional.of(template.queryForObject(sql, commentRowMapper(), commentId));
+        }catch(EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
 
     private Long findAuthorIdByCommentId(Long commentId){
         String sql = "select author_id from comment.info where id = ?";

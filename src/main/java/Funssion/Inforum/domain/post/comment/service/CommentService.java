@@ -5,8 +5,10 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
+import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
+import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
@@ -27,6 +29,11 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final MyRepository myRepository;
 
+    /*
+     * 최초 댓글/대댓글 생성의 경우 Profile정보가 필요하므로 Service AuthUtils.getUserId 로
+     * 로그인된 유저의 정보를 가져와
+     * 이를 활용하여 profile을 가져옵니다.
+     */
     public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
@@ -46,5 +53,14 @@ public class CommentService {
 
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId){
         return commentRepository.getCommentsAtPost(postType, postId);
+    }
+
+    public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto){
+        Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
+        MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
+        commentRepository.createReComment(new ReComment(
+                authorId,authorProfile, Date.valueOf(now()),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
+        );
+        return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
     }
 }
