@@ -15,6 +15,7 @@ import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 public class CommentRespositoryImpl implements CommentRepository{
     private final JdbcTemplate template;
     public CommentRespositoryImpl(DataSource dataSource){
@@ -89,6 +91,17 @@ public class CommentRespositoryImpl implements CommentRepository{
 
         return new IsSuccessResponseDto(true,"댓글이 삭제되었습니다.");
     }
+
+    @Override
+    public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        checkAuthorization(CRUDType.DELETE, reCommentId,true);
+        String sql = "delete from comment.re_comments where id =?";
+        if(template.update(sql, reCommentId) == 0){
+            throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
+        }
+        return new IsSuccessResponseDto(true,"대댓글이 삭제되었습니다.");
+    }
+
     @Override
     public void createReComment(ReComment reComment) {
         if (findParentCommentById(reComment.getParentCommentId()).isEmpty())
@@ -119,27 +132,15 @@ public class CommentRespositoryImpl implements CommentRepository{
         String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date " +
                 "from comment.info " +
                 "where post_type = ?";
-        return template.query(sql,commentRowMapper(),postType.toString());
+        return template.query(sql, commentRowMapper(), postType.toString());
     }
-
-    private RowMapper<CommentListDto> commentRowMapper() {
-        return ((rs,rowNum)->
-            CommentListDto.builder()
-                    .id(rs.getLong("id"))
-                    .authorId(rs.getLong("author_id"))
-                    .authorName(rs.getString("author_name"))
-                    .authorImagePath(rs.getString("author_image_path"))
-                    .commentText(rs.getString("comment_text"))
-                    .createdDate(rs.getDate("created_date"))
-                    .updatedDate(rs.getDate("updated_date"))
-                    .likes(rs.getLong("likes"))
-                    .reComments(rs.getLong("re_comments"))
-                    .build());
-    };
 
     @Override
     public List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId) {
-        return null;
+        String sql = "select id,author_id,author_image_path, author_name, likes, comment_text, created_date, updated_date " +
+                "from comment.re_comments " +
+                "where parent_id = ?";
+        return template.query(sql,reCommentRowMapper(),parentCommentId);
     }
 
     @Override
@@ -174,4 +175,32 @@ public class CommentRespositoryImpl implements CommentRepository{
             throw new UnAuthorizedException("Permission denied to "+crudType.toString());
         }
     }
+    private RowMapper<CommentListDto> commentRowMapper() {
+        return ((rs,rowNum)->
+                CommentListDto.builder()
+                        .id(rs.getLong("id"))
+                        .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
+                        .commentText(rs.getString("comment_text"))
+                        .createdDate(rs.getDate("created_date"))
+                        .updatedDate(rs.getDate("updated_date"))
+                        .likes(rs.getLong("likes"))
+                        .reComments(rs.getLong("re_comments"))
+                        .build());
+    };
+
+    private RowMapper<ReCommentListDto> reCommentRowMapper() {
+        return ((rs,rowNum)->
+                ReCommentListDto.builder()
+                        .id(rs.getLong("id"))
+                        .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
+                        .commentText(rs.getString("comment_text"))
+                        .createdDate(rs.getDate("created_date"))
+                        .updatedDate(rs.getDate("updated_date"))
+                        .likes(rs.getLong("likes"))
+                        .build());
+    };
 }

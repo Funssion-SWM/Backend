@@ -12,6 +12,7 @@ import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
@@ -67,5 +68,13 @@ public class CommentService {
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
         return commentRepository.updateReComment(reCommentUpdateDto,reCommentId);
+    }
+
+    public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        return commentRepository.deleteReComment(reCommentId);
+    }
+
+    public List<ReCommentListDto> getReCommentsAtComments(Long parentCommentId) {
+        return commentRepository.getReCommentsAtComment(parentCommentId);
     }
 }

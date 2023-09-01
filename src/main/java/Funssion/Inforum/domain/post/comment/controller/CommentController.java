@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,5 +53,15 @@ public class CommentController {
     @PatchMapping("/recomments/{reCommentId}")
     public IsSuccessResponseDto updateReComment(@RequestBody ReCommentUpdateDto reCommentUpdateDto, @PathVariable Long reCommentId){
         return commentService.updateReComment(reCommentUpdateDto,reCommentId);
+    }
+
+    @DeleteMapping("/recomments/{reCommentId}")
+    public IsSuccessResponseDto deleteReComment(@PathVariable Long reCommentId){
+        return commentService.deleteReComment(reCommentId);
+    }
+
+    @GetMapping("/recomments/{parentCommentId}")
+    public List<ReCommentListDto> getReCommentsAtComments(@PathVariable Long parentCommentId){
+        return commentService.getReCommentsAtComments(parentCommentId);
     }
 }
