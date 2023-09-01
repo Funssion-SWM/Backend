@@ -1,7 +1,6 @@
 package Funssion.Inforum.domain.like.repository;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.like.domain.Like;
 import Funssion.Inforum.domain.like.exception.LikeNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,7 +42,8 @@ public class LikeRepositoryImpl implements LikeRepository {
     public Like findById(Long id) {
         String sql = "select * from member.like where id = ?";
 
-        return template.query(sql, likeRowMapper(), id).stream().findAny()
+        return template.query(sql,
+                        likeRowMapper(), id).stream().findAny()
                 .orElseThrow(() -> new LikeNotFoundException());
     }
 

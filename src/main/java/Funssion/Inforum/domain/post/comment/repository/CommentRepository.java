@@ -31,5 +31,7 @@ public interface CommentRepository {
 
     List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId);
 
-    LikeResponseDto likeComment(PostType postType, Long commentId);
+    LikeResponseDto likeComment(Long commentId, Boolean isReComment);
+
+    LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment);
 }

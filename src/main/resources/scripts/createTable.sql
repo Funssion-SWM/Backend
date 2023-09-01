@@ -2,6 +2,8 @@ create sequence auth_code_seq;
 create sequence profile_seq;
 create sequence comment_seq;
 create sequence re_comment_seq;
+create sequence like_comment_seq;
+
 create table member.USER(
     id int8 primary key DEFAULT nextval('user_id_seq'::regclass),
     name VARCHAR(15) NOT NULL UNIQUE,
@@ -63,6 +65,12 @@ create table comment.re_comments(
     updated_date timestamp
 );
 
+create table member.like_comment(
+    id int8 primary key DEFAULT nextval('like_comment_seq'::regclass),
+    user_id int8 not null,
+    comment_id int8 not null,
+    is_recomment boolean not null
+);
 
 
 -- db migration sql sequence<nextval>(auto_increment) 설정으로 인한 pk insert 생략--

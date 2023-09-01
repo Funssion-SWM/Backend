@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 @Slf4j
 public class CommentRespositoryImpl implements CommentRepository{
     private final JdbcTemplate template;
@@ -144,9 +146,62 @@ public class CommentRespositoryImpl implements CommentRepository{
     }
 
     @Override
-    public LikeResponseDto likeComment(PostType postType, Long commentId) {
-        return null;
+    public LikeResponseDto likeComment(Long commentId, Boolean isReComment) {
+        insertLikeOfMemberLikeCommentsTable(commentId, isReComment);
+        Long howManyLikesAfterLike = updateLikesOfCommentsTable(commentId, isReComment,false);
+        return new LikeResponseDto(true,howManyLikesAfterLike);
     }
+
+    @Override
+    public LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment) {
+        deleteLikeOfMemberLikeCommentsTable(commentId, isReComment);
+        Long howManyLikesAfterCancelLike = updateLikesOfCommentsTable(commentId, isReComment, true);
+        return new LikeResponseDto(false,howManyLikesAfterCancelLike);
+    }
+
+
+    private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
+        Long likesOfComment = getLikesOfComment(commentId, isReComment); // 좋아요 반영 이전
+        String sql = "";
+        if (isReComment) sql = "update comment.re_comments set likes = ? where id = ?";
+        else sql = "update comment.info set likes = ? where id = ?";
+        if (isCancel) {
+            template.update(sql,likesOfComment-1,commentId);
+            return likesOfComment - 1;
+        }
+        else {
+            template.update(sql,likesOfComment+1, commentId);
+            return likesOfComment + 1;
+        }
+
+    }
+
+    private void insertLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
+        Long userId = AuthUtils.getUserId(CRUDType.CREATE);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        String sql = "insert into member.like_comment (user_id,comment_id,is_recomment)" +
+                "values(?,?,?)";
+        int updatedRow = template.update(con -> {
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
+            psmt.setLong(1, userId);
+            psmt.setLong(2, commentId);
+            psmt.setBoolean(3, isReComment);
+            return psmt;
+        }, keyHolder);
+        if (updatedRow != 1){
+            throw new CreateFailException("댓글 좋아요 반영에 실패하였습니다.");
+        }
+    }
+
+    private void deleteLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
+        Long userId = AuthUtils.getUserId(CRUDType.DELETE);
+        String sql = "delete from member.like_comment where comment_id = ? and user_id = ? and is_recomment = ?";
+        int updatedRow = template.update(sql, commentId, userId, isReComment);
+        if (updatedRow != 1){
+            throw new CreateFailException("댓글 좋아요 취소에 실패하였습니다.");
+        }
+    }
+
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
         String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date " +
@@ -156,6 +211,17 @@ public class CommentRespositoryImpl implements CommentRepository{
             return Optional.of(template.queryForObject(sql, commentRowMapper(), commentId));
         }catch(EmptyResultDataAccessException e){
             return Optional.empty();
+        }
+    }
+
+    private Long getLikesOfComment(Long commentId,boolean isReComment){
+        String sql = "";
+        if (isReComment) sql = "select likes from comment.re_comments where id = ?";
+        else sql ="select likes from comment.info where id = ?";
+        try{
+            return template.queryForObject(sql, Long.class, commentId);
+        }catch(EmptyResultDataAccessException e){
+            throw new NotFoundException("좋아요한 댓글을 찾을 수 없습니다.");
         }
     }
 

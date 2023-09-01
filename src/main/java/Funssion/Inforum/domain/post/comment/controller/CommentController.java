@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.comment.controller;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
@@ -63,5 +64,14 @@ public class CommentController {
     @GetMapping("/recomments/{parentCommentId}")
     public List<ReCommentListDto> getReCommentsAtComments(@PathVariable Long parentCommentId){
         return commentService.getReCommentsAtComments(parentCommentId);
+    }
+
+    @PostMapping("/like/{commentId}")
+    public LikeResponseDto likeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
+        return commentService.likeComments(commentId,Boolean.valueOf(isReComment));
+    }
+    @DeleteMapping("/like/{commentId}")
+    public LikeResponseDto cancelLikeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
+        return commentService.cancelLikeComments(commentId,Boolean.valueOf(isReComment));
     }
 }

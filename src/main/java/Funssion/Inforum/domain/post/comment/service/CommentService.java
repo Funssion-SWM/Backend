@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -76,5 +77,12 @@ public class CommentService {
 
     public List<ReCommentListDto> getReCommentsAtComments(Long parentCommentId) {
         return commentRepository.getReCommentsAtComment(parentCommentId);
+    }
+
+    public LikeResponseDto likeComments(Long commentId, Boolean isReComment){
+        return commentRepository.likeComment(commentId,isReComment);
+    }
+    public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment){
+        return commentRepository.cancelLikeComment(commentId,isReComment);
     }
 }
