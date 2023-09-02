@@ -36,9 +36,9 @@ import java.util.Optional;
 @Repository
 @Transactional
 @Slf4j
-public class CommentRespositoryImpl implements CommentRepository{
+public class CommentRepositoryImpl implements CommentRepository{
     private final JdbcTemplate template;
-    public CommentRespositoryImpl(DataSource dataSource){
+    public CommentRepositoryImpl(DataSource dataSource){
         this.template = new JdbcTemplate(dataSource);
     }
     @Override
