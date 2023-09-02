@@ -13,7 +13,7 @@ import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import java.util.List;
 
 public interface CommentRepository {
-    void createComment(Comment comment);
+    Long createComment(Comment comment);
 
     void createReComment(ReComment reComment);
     IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);

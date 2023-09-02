@@ -48,6 +48,8 @@ dependencies {
 	implementation 'com.jcraft:jsch:0.1.44-1'
 	// Spring OAuth2 설정
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	//test 위한 h2
+	runtimeOnly 'com.h2database:h2'
 }
 
 

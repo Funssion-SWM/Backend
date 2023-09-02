@@ -23,5 +23,4 @@ public class Comment extends Post {
         this.commentText = commentSaveDto.getCommentText();
     }
 
-
 }

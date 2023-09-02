@@ -1,7 +1,7 @@
 create sequence comment_seq;
-
+create schema comment;
 create table comment.info(
-    id int8 primary key DEFAULT nextval('comment_seq'::regclass),
+    id serial primary key,
     author_id int8 not null,
     author_image_path varchar(300),
     author_name VARCHAR(15) not null,
@@ -14,5 +14,5 @@ create table comment.info(
     updated_date timestamp
 );
 
-insert into comment.info (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)
-values (1,"image_path","writer_name","MEMO",1,"test for comment_text",2023-09-01);
+-- insert into comment.info (id,author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)
+-- values (1,1,'image_path','writer_name','MEMO',1,'test for comment_text','2023-09-01');

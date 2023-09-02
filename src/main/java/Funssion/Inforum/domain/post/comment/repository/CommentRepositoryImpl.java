@@ -42,7 +42,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         this.template = new JdbcTemplate(dataSource);
     }
     @Override
-    public void createComment(Comment comment) {
+    public Long createComment(Comment comment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into comment.info (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)"
                 + "values (?, ?, ?, ?, ?, ?, ?)";
@@ -61,6 +61,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         if (updatedRow != 1){
             throw new CreateFailException("댓글 저장에 실패하였습니다.");
         }
+        return keyHolder.getKey().longValue();
     }
 
     @Override
