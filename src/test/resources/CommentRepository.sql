@@ -13,6 +13,3 @@ create table comment.info(
     created_date timestamp,
     updated_date timestamp
 );
-
--- insert into comment.info (id,author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)
--- values (1,1,'image_path','writer_name','MEMO',1,'test for comment_text','2023-09-01');

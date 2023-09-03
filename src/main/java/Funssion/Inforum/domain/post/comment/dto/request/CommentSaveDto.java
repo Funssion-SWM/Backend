@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.comment.dto.request;
 
 import Funssion.Inforum.common.constant.PostType;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class CommentSaveDto {
     private PostType postTypeWithComment;
     private Long postId;
-    @NotNull
+    @NotEmpty
     private String commentText;
 
 }
