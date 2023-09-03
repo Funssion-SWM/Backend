@@ -17,6 +17,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.List;
 import static java.time.LocalDate.now;
 
 @Service
+@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {

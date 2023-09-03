@@ -16,7 +16,7 @@ public class CommentListDto {
     private Date createdDate;
     private Date updatedDate;
     private Long likes;
-    private Long reComments;
+    private Long reCommentsNumber;
     private Boolean isLike;
 
 }

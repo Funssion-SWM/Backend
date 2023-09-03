@@ -23,7 +23,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -33,7 +32,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-@Transactional
 @Slf4j
 public class CommentRepositoryImpl implements CommentRepository{
     private final JdbcTemplate template;
@@ -96,18 +94,33 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        Long parentCommentId = getParentCommentId(reCommentId);
+        deleteReComments(reCommentId);
+        updateNumberOfReCommentsOfComment(parentCommentId,true);
+        return new IsSuccessResponseDto(true,"대댓글이 삭제되었습니다.");
+    }
+
+    private void deleteReComments(Long reCommentId) {
         String sql = "delete from comment.re_comments where id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
         }
-        return new IsSuccessResponseDto(true,"대댓글이 삭제되었습니다.");
+    }
+
+    private Long getParentCommentId(Long reCommentId) {
+        String sql = "select parent_id from comment.re_comments where id = ?";
+        return template.queryForObject(sql, Long.class, reCommentId);
     }
 
     @Override
     public void createReComment(ReComment reComment) {
         if (findParentCommentById(reComment.getParentCommentId()).isEmpty())
             throw new NotFoundException("대댓글을 등록하기 위한 댓글이 존재하지 않습니다.");
+        insertReCommentInTable(reComment);
+        updateNumberOfReCommentsOfComment(reComment.getParentCommentId(),false);
+    }
 
+    private void insertReCommentInTable(ReComment reComment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into comment.re_comments (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
                 + "values(?,?,?,?,?,?)";
@@ -124,7 +137,16 @@ public class CommentRepositoryImpl implements CommentRepository{
         if (updatedRow != 1){
             throw new CreateFailException("대댓글 저장에 실패하였습니다.");
         }
+    }
 
+    private void updateNumberOfReCommentsOfComment(Long commentId, Boolean isDelete) {
+        String sql = isDelete? "update comment.info set re_comments = re_comments - 1 where id = ?"
+                :"update comment.info set re_comments = re_comments + 1 where id = ?";
+        int updatedRow = template.update(sql, commentId);
+        if (updatedRow != 1){
+            throw new UpdateFailException("대댓글 수 갱신에 실패하였습니다.");
+        }
+        
     }
 
 
@@ -173,19 +195,15 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
-        Long likesOfComment = getLikesOfComment(commentId, isReComment); // 좋아요 반영 이전
-        String sql = "";
-        if (isReComment) sql = "update comment.re_comments set likes = ? where id = ?";
-        else sql = "update comment.info set likes = ? where id = ?";
-        if (isCancel) {
-            template.update(sql,likesOfComment-1,commentId);
-            return likesOfComment - 1;
-        }
-        else {
-            template.update(sql,likesOfComment+1, commentId);
-            return likesOfComment + 1;
-        }
+        Long currentLikes = getLikesOfComment(commentId, isReComment); // 현재 좋아요 수
+        String sql = isCancel ?
+                "update comment.re_comments set likes = ? where id = ?"
+                : "update comment.info set likes = ? where id = ?";
 
+        Long updatedLikes = isCancel ? currentLikes - 1 : currentLikes + 1;
+        template.update(sql, updatedLikes, commentId);
+
+        return updatedLikes;
     }
 
     private void insertLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
@@ -262,7 +280,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .createdDate(rs.getDate("created_date"))
                         .updatedDate(rs.getDate("updated_date"))
                         .likes(rs.getLong("likes"))
-                        .reComments(rs.getLong("re_comments"))
+                        .reCommentsNumber(rs.getLong("re_comments"))
                         .build());
     };
     private RowMapper<CommentListDto> commentListRowMapper() {
@@ -277,7 +295,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .updatedDate(rs.getDate("updated_date"))
                         .isLike(rs.getBoolean("is_liked"))
                         .likes(rs.getLong("likes"))
-                        .reComments(rs.getLong("re_comments"))
+                        .reCommentsNumber(rs.getLong("re_comments"))
                         .build());
     };
     private RowMapper<ReCommentListDto> reCommentRowMapper() {
