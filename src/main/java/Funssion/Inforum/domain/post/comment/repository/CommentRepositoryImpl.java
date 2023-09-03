@@ -196,7 +196,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
         Long currentLikes = getLikesOfComment(commentId, isReComment); // 현재 좋아요 수
-        String sql = isCancel ?
+        String sql = isReComment ?
                 "update comment.re_comments set likes = ? where id = ?"
                 : "update comment.info set likes = ? where id = ?";
 
