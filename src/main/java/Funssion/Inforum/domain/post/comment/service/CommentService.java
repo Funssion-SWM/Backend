@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.exception.UnAuthorizedException;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -47,20 +48,24 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
+        checkAuthorization(CRUDType.UPDATE, commentId,false);
         return commentRepository.updateComment(commentUpdateDto,commentId);
     }
 
     public IsSuccessResponseDto deleteComment(Long commentId) {
+        checkAuthorization(CRUDType.DELETE, commentId,false);
         return commentRepository.deleteComment(commentId);
     }
 
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId){
-        return commentRepository.getCommentsAtPost(postType, postId);
+        Long userId = AuthUtils.getUserId(CRUDType.READ);
+        return commentRepository.getCommentsAtPost(postType, postId,userId);
     }
 
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
+
         commentRepository.createReComment(new ReComment(
                 authorId,authorProfile, Date.valueOf(now()),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
         );
@@ -68,15 +73,18 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
+        checkAuthorization(CRUDType.UPDATE, reCommentId,true);
         return commentRepository.updateReComment(reCommentUpdateDto,reCommentId);
     }
 
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        checkAuthorization(CRUDType.DELETE, reCommentId,true);
         return commentRepository.deleteReComment(reCommentId);
     }
 
     public List<ReCommentListDto> getReCommentsAtComments(Long parentCommentId) {
-        return commentRepository.getReCommentsAtComment(parentCommentId);
+        Long userId = AuthUtils.getUserId(CRUDType.READ);
+        return commentRepository.getReCommentsAtComment(parentCommentId,userId);
     }
 
     public LikeResponseDto likeComments(Long commentId, Boolean isReComment){
@@ -84,5 +92,12 @@ public class CommentService {
     }
     public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment){
         return commentRepository.cancelLikeComment(commentId,isReComment);
+    }
+
+    private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {
+        Long userId = AuthUtils.getUserId(crudType);
+        if (!userId.equals(commentRepository.findAuthorIdByCommentId(commentId,isReComment))) {
+            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
+        }
     }
 }

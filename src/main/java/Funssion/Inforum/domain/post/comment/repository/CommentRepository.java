@@ -27,11 +27,13 @@ public interface CommentRepository {
        member.like table과의 join으로 처리합니다. -> 튜닝해야할 지도
      */
 
-    List<CommentListDto> getCommentsAtPost(PostType postType, Long postId);
+    List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId);
 
-    List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId);
+    List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId, Long userId);
 
     LikeResponseDto likeComment(Long commentId, Boolean isReComment);
 
     LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment);
+
+    Long findAuthorIdByCommentId(Long commentId, Boolean isReComment);
 }

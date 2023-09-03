@@ -3,7 +3,6 @@ package Funssion.Inforum.domain.post.comment.repository;
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.CreateFailException;
-import Funssion.Inforum.common.exception.UnAuthorizedException;
 import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
@@ -66,7 +65,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
-        checkAuthorization(CRUDType.UPDATE, commentId,false);
         String sql = "update comment.info set comment_text = ?, updated_date = ? where id = ?";
         if (template.update(sql, commentUpdateDto.getCommentText(), LocalDateTime.now(), commentId) == 0) {
             throw new UpdateFailException("댓글 수정에 실패하였습니다.");
@@ -78,7 +76,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
-        checkAuthorization(CRUDType.UPDATE, reCommentId,true);
         String sql = "update comment.re_comments set comment_text = ?, updated_date = ? where id = ?";
         if (template.update(sql, reCommentUpdateDto.getCommentText(), LocalDateTime.now(), reCommentId) == 0) {
             throw new UpdateFailException("대 댓글 수정에 실패하였습니다.");
@@ -89,7 +86,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        checkAuthorization(CRUDType.DELETE, commentId,false);
         String sql = "delete from comment.info where id = ?";
         if(template.update(sql, commentId) == 0){
             throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
@@ -100,7 +96,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
-        checkAuthorization(CRUDType.DELETE, reCommentId,true);
         String sql = "delete from comment.re_comments where id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
@@ -134,8 +129,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     @Override
-    public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId) {
-        Long userId = AuthUtils.getUserId(CRUDType.READ);
+    public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId) {
         String sql =
                 "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.likes, COMMENT.re_comments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
@@ -152,8 +146,7 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     @Override
-    public List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId) {
-        Long userId = AuthUtils.getUserId(CRUDType.READ);
+    public List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId,Long userId) {
         String sql =
                 "SELECT DISTINCT RECOMMENT.id, RECOMMENT.author_id, RECOMMENT.author_image_path, RECOMMENT.author_name, RECOMMENT.likes, RECOMMENT.comment_text, RECOMMENT.created_date, RECOMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
@@ -247,8 +240,8 @@ public class CommentRepositoryImpl implements CommentRepository{
             throw new NotFoundException("좋아요한 댓글을 찾을 수 없습니다.");
         }
     }
-
-    private Long findAuthorIdByCommentId(Long commentId, boolean isReComment){
+    @Override
+    public Long findAuthorIdByCommentId(Long commentId, Boolean isReComment){
         String sql = "";
         if (isReComment) sql = "select author_id from comment.re_comments where id = ?";
         else sql ="select author_id from comment.info where id =?";
@@ -258,14 +251,6 @@ public class CommentRepositoryImpl implements CommentRepository{
             throw new NotFoundException("comment not found",e);
         }
     }
-    private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {
-        Long userId = AuthUtils.getUserId(crudType);
-        if (!userId.equals(findAuthorIdByCommentId(commentId,isReComment))) {
-            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
-        }
-    }
-
-
     private RowMapper<CommentListDto> commentRowMapper() {
         return ((rs,rowNum)->
                 CommentListDto.builder()
