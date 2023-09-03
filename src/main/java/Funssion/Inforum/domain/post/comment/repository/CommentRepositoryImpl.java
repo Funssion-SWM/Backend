@@ -230,10 +230,12 @@ public class CommentRepositoryImpl implements CommentRepository{
     private void deleteLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
         Long userId = AuthUtils.getUserId(CRUDType.DELETE);
         String sql = "delete from member.like_comment where comment_id = ? and user_id = ? and is_recomment = ?";
-        int updatedRow = template.update(sql, commentId, userId, isReComment);
-        if (updatedRow != 1){
+        try {
+            template.update(sql, commentId, userId, isReComment);
+        }catch(Exception e){
             throw new CreateFailException("댓글 좋아요 취소에 실패하였습니다.");
         }
+
     }
 
 
