@@ -1,8 +1,6 @@
 package Funssion.Inforum.domain.post.comment.service;
 
-import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.exception.UnAuthorizedException;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -16,7 +14,6 @@ import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
-import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,8 +35,7 @@ public class CommentService {
      * 로그인된 유저의 정보를 가져와
      * 이를 활용하여 profile을 가져옵니다.
      */
-    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto){
-        Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
+    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         commentRepository.createComment(new Comment(
             authorId,authorProfile, Date.valueOf(now()),null,commentSaveDto)
@@ -48,22 +44,18 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
-        checkAuthorization(CRUDType.UPDATE, commentId,false);
         return commentRepository.updateComment(commentUpdateDto,commentId);
     }
 
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        checkAuthorization(CRUDType.DELETE, commentId,false);
         return commentRepository.deleteComment(commentId);
     }
 
-    public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId){
-        Long userId = AuthUtils.getUserId(CRUDType.READ);
+    public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId,Long userId){
         return commentRepository.getCommentsAtPost(postType, postId,userId);
     }
 
-    public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto){
-        Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
+    public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
         commentRepository.createReComment(new ReComment(
@@ -73,17 +65,14 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
-        checkAuthorization(CRUDType.UPDATE, reCommentId,true);
         return commentRepository.updateReComment(reCommentUpdateDto,reCommentId);
     }
 
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
-        checkAuthorization(CRUDType.DELETE, reCommentId,true);
         return commentRepository.deleteReComment(reCommentId);
     }
 
-    public List<ReCommentListDto> getReCommentsAtComments(Long parentCommentId) {
-        Long userId = AuthUtils.getUserId(CRUDType.READ);
+    public List<ReCommentListDto> getReCommentsAtComments(Long parentCommentId,Long userId) {
         return commentRepository.getReCommentsAtComment(parentCommentId,userId);
     }
 
@@ -94,10 +83,8 @@ public class CommentService {
         return commentRepository.cancelLikeComment(commentId,isReComment);
     }
 
-    private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {
-        Long userId = AuthUtils.getUserId(crudType);
-        if (!userId.equals(commentRepository.findAuthorIdByCommentId(commentId,isReComment))) {
-            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
-        }
+    public Long getAuthorIdOfComment(Long commentId, Boolean isReComment){
+        return commentRepository.findAuthorIdByCommentId(commentId,isReComment);
     }
+
 }
