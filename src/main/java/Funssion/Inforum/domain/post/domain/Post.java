@@ -9,6 +9,7 @@ import java.sql.Date;
 
 @Getter
 @SuperBuilder
+@ToString
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor

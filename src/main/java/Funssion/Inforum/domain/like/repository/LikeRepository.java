@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface LikeRepository {
 
-    Like save(Like like);
+    Like create(Like like);
     Like findById(Long id);
     Like findByUserIdAndPostInfo(Long userId, PostType postType, Long postId);
     List<Like> findAllByUserIdAndPostType(Long userId, PostType postType);

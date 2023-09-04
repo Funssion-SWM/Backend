@@ -31,6 +31,7 @@ public class MyRepositoryJdbc implements MyRepository {
         return template.query(sql, historyRowMapper(), userId, year, month);
     }
 
+    @Override
     public MemberProfileEntity findProfileByUserId(Long userId) {
         String sql = "select name,introduce,tags,image_path from member.user where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
@@ -42,7 +43,7 @@ public class MyRepositoryJdbc implements MyRepository {
                     .userId(rs.getLong("user_id"))
                     .memoCnt(rs.getLong("memo_cnt"))
                     .blogCnt(rs.getLong("blog_cnt"))
-                    .qnaCnt(rs.getLong("qna_cnt"))
+                    .questionCnt(rs.getLong("question_cnt"))
                     .date(rs.getDate("date"))
                     .build()
         );

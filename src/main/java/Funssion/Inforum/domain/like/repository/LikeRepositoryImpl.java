@@ -23,7 +23,7 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public Like save(Like like) {
+    public Like create(Like like) {
         String sql = "insert into member.like (user_id, post_type, post_id) values (?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();

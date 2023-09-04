@@ -14,6 +14,6 @@ public class MyRecordNumDto {
     public MyRecordNumDto(History history) {
         this.historyId = history.getId();
         this.date = history.getDate();
-        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQnaCnt();
+        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQuestionCnt();
     }
 }

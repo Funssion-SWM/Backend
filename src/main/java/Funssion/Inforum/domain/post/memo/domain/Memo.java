@@ -13,7 +13,7 @@ import java.sql.Date;
 
 @Getter
 @SuperBuilder
-@ToString
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class Memo extends Post {
     private String title;
@@ -21,6 +21,7 @@ public class Memo extends Post {
     private String text;
     private String color;
     private Boolean isTemporary;
+
 
     public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
         super(authorId, authorProfile, createdDate, updatedDate);
