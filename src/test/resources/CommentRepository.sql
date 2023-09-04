@@ -1,5 +1,5 @@
-create sequence comment_seq;
 create schema comment;
+create schema member;
 create table comment.info(
     id serial primary key,
     author_id int8 not null,
@@ -12,4 +12,12 @@ create table comment.info(
     comment_text text not null,
     created_date timestamp,
     updated_date timestamp
+);
+
+CREATE TABLE member.like_comment (
+    id serial primary key,
+    user_id int8 NOT NULL,
+    comment_id int8 NOT NULL,
+    is_recomment bool NOT NULL,
+    CONSTRAINT like_comment_user_id_comment_id_is_recomment_key UNIQUE (user_id, comment_id, is_recomment)
 );

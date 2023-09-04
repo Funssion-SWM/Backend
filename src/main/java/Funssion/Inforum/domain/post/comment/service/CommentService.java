@@ -78,11 +78,11 @@ public class CommentService {
         return commentRepository.getReCommentsAtComment(parentCommentId,userId);
     }
 
-    public LikeResponseDto likeComments(Long commentId, Boolean isReComment){
-        return commentRepository.likeComment(commentId,isReComment);
+    public LikeResponseDto likeComments(Long commentId, Boolean isReComment,Long userId){
+        return commentRepository.likeComment(commentId,isReComment,userId);
     }
-    public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment){
-        return commentRepository.cancelLikeComment(commentId,isReComment);
+    public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment,Long userId){
+        return commentRepository.cancelLikeComment(commentId,isReComment,userId);
     }
 
     public Long getAuthorIdOfComment(Long commentId, Boolean isReComment){
