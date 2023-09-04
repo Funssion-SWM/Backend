@@ -12,6 +12,6 @@ public class History {
     private Long userId;
     private Long memoCnt;
     private Long blogCnt;
-    private Long qnaCnt;
+    private Long questionCnt;
     private Date date;
 }

@@ -35,7 +35,7 @@ CREATE TABLE "member"."history" (
     user_id int8 NOT NULL,
     memo_cnt int8 NOT NULL DEFAULT 0,
     blog_cnt int8 NOT NULL DEFAULT 0,
-    qna_cnt int8 NOT NULL DEFAULT 0,
+    question_cnt int8 NOT NULL DEFAULT 0,
     date date NOT NULL DEFAULT current_date
 );
 

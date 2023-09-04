@@ -1,4 +1,4 @@
-package Funssion.Inforum.memo.repository;
+package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
@@ -8,15 +8,11 @@ import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
-import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -103,8 +99,8 @@ class MemoRepositoryJdbcTest {
         createdMemo3 = repository.create(memo3);
         createdMemo4 = repository.create(memo4);
 
-        likeRepository.save(new Like(9999L, PostType.MEMO, createdMemo2.getId()));
-        likeRepository.save(new Like(9999L, PostType.MEMO, createdMemo3.getId()));
+        likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo2.getId()));
+        likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo3.getId()));
     }
 
     @Test

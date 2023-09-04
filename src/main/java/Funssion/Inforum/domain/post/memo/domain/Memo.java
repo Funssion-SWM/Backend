@@ -22,6 +22,7 @@ public class Memo extends Post {
     private String color;
     private Boolean isTemporary;
 
+
     public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
         super(authorId, authorProfile, createdDate, updatedDate);
         this.title = form.getMemoTitle();
