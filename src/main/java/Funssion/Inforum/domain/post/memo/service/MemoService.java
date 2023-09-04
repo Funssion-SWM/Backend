@@ -1,25 +1,17 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.CRUDType;
-import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
-import Funssion.Inforum.common.utils.LikeUtils;
-import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.like.domain.Like;
-import Funssion.Inforum.domain.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.member.entity.NonSocialMember;
-import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
-import Funssion.Inforum.domain.post.memo.exception.NeedAuthenticationException;
-import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
-import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,8 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
-import static Funssion.Inforum.common.constant.PostType.*;
-import static Funssion.Inforum.common.constant.Sign.*;
+import static Funssion.Inforum.common.constant.PostType.MEMO;
+import static Funssion.Inforum.common.constant.Sign.MINUS;
+import static Funssion.Inforum.common.constant.Sign.PLUS;
 
 @Service
 @Slf4j
@@ -88,7 +81,7 @@ public class MemoService {
     @Transactional
     public MemoDto createMemo(MemoSaveDto form) {
 
-        Long authorId = getUserId(CREATE);
+        Long authorId = AuthUtils.getUserId(CREATE);
 
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
@@ -109,6 +102,15 @@ public class MemoService {
         }
     }
 
+    public List<MemoListDto> getDraftMemos() {
+
+        Long authorId = AuthUtils.getUserId(READ);
+
+        return memoRepository.findAllDraftMemosByUserId(authorId).stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public MemoDto getMemoBy(Long memoId) {
 
@@ -120,7 +122,7 @@ public class MemoService {
     @Transactional
     public MemoDto updateMemo(Long memoId, MemoSaveDto form) {
 
-        Long userId = getUserId(UPDATE);
+        Long userId = AuthUtils.getUserId(UPDATE);
 
         Memo memo = memoRepository.updateContentInMemo(form, memoId);
 
@@ -130,7 +132,7 @@ public class MemoService {
     @Transactional
     public void deleteMemo(Long memoId) {
 
-        Long userId = getUserId(DELETE);
+        Long userId = AuthUtils.getUserId(DELETE);
         Memo memo = memoRepository.findById(memoId);
 
         memoRepository.delete(memoId);
@@ -153,13 +155,4 @@ public class MemoService {
                 .toList();
     }
 
-
-    private static Long getUserId(CRUDType type) {
-
-        Long userId = SecurityContextUtils.getUserId();
-
-        if (userId != 0 || type == READ) return userId;
-
-        throw new NeedAuthenticationException(type.toString().toLowerCase() + " fail");
-    }
 }

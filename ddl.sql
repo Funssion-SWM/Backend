@@ -6,11 +6,12 @@ CREATE TABLE "memo"."info" (
     author_id int8 NOT NULL,
     author_name varchar,
     author_image_path varchar,
-    memo_title varchar(50) NOT NULL,
+    memo_title varchar(255) NOT NULL,
     memo_description varchar(255),
     memo_text jsonb,
     memo_color varchar(50),
     likes int8 NOT NULL DEFAULT 0,
+    is_temporary boolean NOT NULL DEFAULT false,
     created_date date,
     updated_date date
 );
@@ -18,7 +19,15 @@ CREATE TABLE "memo"."info" (
 CREATE TABLE "member"."auth" (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
-    password varchar(50) NOT NULL
+    password varchar(100) NOT NULL
+);
+
+CREATE TABLE "member"."auth_code" (
+    id bigserial,
+    email varchar(60) NOT NULL,
+    code bpchar(6) NOT NULL,
+    expiration bool NULL DEFAULT false,
+    due_date timestamp NULL,
 );
 
 CREATE TABLE "member"."history" (
@@ -26,7 +35,7 @@ CREATE TABLE "member"."history" (
     user_id int8 NOT NULL,
     memo_cnt int8 NOT NULL DEFAULT 0,
     blog_cnt int8 NOT NULL DEFAULT 0,
-    qna_cnt int8 NOT NULL DEFAULT 0,
+    question_cnt int8 NOT NULL DEFAULT 0,
     date date NOT NULL DEFAULT current_date
 );
 

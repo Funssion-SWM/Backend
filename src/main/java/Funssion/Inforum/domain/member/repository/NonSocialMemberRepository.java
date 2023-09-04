@@ -60,10 +60,10 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
 
     @Override
     public Optional<NonSocialMember> findByName(String name) {
-        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL FROM MEMBER.USER AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.NAME = ?";
+        String sql ="SELECT ID,EMAIL,NAME FROM MEMBER.USER WHERE NAME = ?";
 
         try{
-            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),name);
+            NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,memberEmailAndNameRowMapper(),name);
             return Optional.of(nonSocialMember);
         }catch (EmptyResultDataAccessException e){
             return Optional.empty();
@@ -133,7 +133,21 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
                         .build();
                 return member;
             }
-        };  
+        };
+    }
+
+    private RowMapper<NonSocialMember> memberEmailAndNameRowMapper(){
+        return new RowMapper<NonSocialMember>() {
+            @Override
+            public NonSocialMember mapRow(ResultSet rs, int rowNum) throws SQLException {
+                NonSocialMember member = NonSocialMember.builder()
+                        .userId(rs.getLong("id"))
+                        .userEmail(rs.getString("email"))
+                        .userName(rs.getString("name"))
+                        .build();
+                return member;
+            }
+        };
     }
 
 

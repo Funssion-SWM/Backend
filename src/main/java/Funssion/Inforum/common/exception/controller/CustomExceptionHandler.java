@@ -2,6 +2,7 @@ package Funssion.Inforum.common.exception.controller;
 
 import Funssion.Inforum.common.exception.*;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -15,34 +16,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpStatus.*;
+
 @Slf4j
 @RestControllerAdvice
-public class ExceptionController {
+public class CustomExceptionHandler {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public ErrorResult handleBadRequestEx(BadRequestException e) {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseStatus(UNAUTHORIZED)
     @ExceptionHandler(UnAuthorizedException.class)
     public ErrorResult handleUnauthorizedRequestEx(UnAuthorizedException e) {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public ErrorResult handleNotFoundEx(NotFoundException e) {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, List<String>> handleValidationErrors(MethodArgumentNotValidException e) {
+    public Map<String, List<String>> handleValidationEx(MethodArgumentNotValidException e) {
         log.warn("error message={}", e.getMessage(), e);
         return getErrorsMap(
                 e.getBindingResult().getFieldErrors().stream()
@@ -51,13 +54,20 @@ public class ExceptionController {
         );
     }
 
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(ValidationException.class)
+    public ErrorResult handleValidationEx(ValidationException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return new ErrorResult(BAD_REQUEST, e.getMessage());
+    }
+
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ImageIOException.class)
     public ErrorResult handleImageIOException(ImageIOException e) {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(CONFLICT)
     @ExceptionHandler(DuplicateException.class)
     public ErrorResult handleDuplicateEx(DuplicateException e){
         log.warn("error message = {}",e.getMessage());
