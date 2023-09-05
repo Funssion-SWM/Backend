@@ -35,7 +35,7 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=None; Secure";
+            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=None;";
             response.setHeader("Set-Cookie",cookieValue);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }

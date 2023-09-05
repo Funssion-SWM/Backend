@@ -35,7 +35,7 @@ public class AuthController {
                 httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400;");
             }
             else{
-                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=None; Secure");
+                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=None;");
             }
             return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인에 성공하였습니다."), httpHeaders, HttpStatus.OK);
         }catch(AuthenticationException e){
