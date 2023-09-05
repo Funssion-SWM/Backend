@@ -27,7 +27,7 @@ CREATE TABLE "member"."auth_code" (
     email varchar(60) NOT NULL,
     code bpchar(6) NOT NULL,
     expiration bool NULL DEFAULT false,
-    due_date timestamp NULL,
+    due_date timestamp NULL
 );
 
 CREATE TABLE "member"."history" (
