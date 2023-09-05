@@ -40,7 +40,7 @@ public class LikeService {
 
         Long userId = SecurityContextUtils.getUserId();
 
-        likeRepository.save(new Like(userId, postType, postId));
+        likeRepository.create(new Like(userId, postType, postId));
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class LikeService {
                 Long updatedLikes = memo.updateLikes(sign);
                 memoRepository.updateLikesInMemo(updatedLikes, postId);
             }
-            case QNA, BLOG -> throw new BadRequestException("not yet implement");
+            case QUESTION, BLOG -> throw new BadRequestException("not yet implement");
             default -> throw new BadRequestException("undefined post type");
         }
     }

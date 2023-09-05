@@ -15,14 +15,13 @@ import java.util.List;
 public interface MyRepository {
 
     List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month);
-    MemberProfileEntity findProfileByUserId(Long userID);
     void updateHistory(Long userId, PostType postType, Sign sign, Date curDate);
     void createHistory(Long userId, PostType postType);
 
+    MemberProfileEntity findProfileByUserId(Long userID);
+
     IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity);
-
     IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity MemberProfileEntity);
-
 
     String findProfileImageNameById(Long userId);
 

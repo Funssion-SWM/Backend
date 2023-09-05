@@ -3,11 +3,15 @@ package Funssion.Inforum.domain.post.memo.dto.response;
 import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Date;
 
 @Getter
+@AllArgsConstructor
+@Builder
 public class MemoListDto {
     private Long memoId;
     private String memoTitle;
