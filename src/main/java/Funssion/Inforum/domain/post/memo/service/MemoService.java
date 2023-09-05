@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.service;
 
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
@@ -89,14 +90,15 @@ public class MemoService {
                 memoRepository.create(new Memo(form, authorId, authorProfile, Date.valueOf(LocalDate.now()), null))
         );
 
-        if (!form.getIsTemporary()) createOrUpdateHistory(authorId, createdMemo.getCreatedDate());
+        if (!form.getIsTemporary())
+            createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
 
         return createdMemo;
     }
 
-    private void createOrUpdateHistory(Long userId, Date curDate) {
+    private void createOrUpdateHistory(Long userId, Date curDate, Sign sign) {
         try {
-            myRepository.updateHistory(userId, MEMO, PLUS, curDate);
+            myRepository.updateHistory(userId, MEMO, sign, curDate);
         } catch (HistoryNotFoundException e) {
             myRepository.createHistory(userId, MEMO);
         }
@@ -124,9 +126,24 @@ public class MemoService {
 
         Long userId = AuthUtils.getUserId(UPDATE);
 
+        Memo savedMemo = memoRepository.findById(memoId);
+        updateHistory(form, userId, savedMemo);
+
         Memo memo = memoRepository.updateContentInMemo(form, memoId);
 
         return new MemoDto(memo);
+    }
+
+    private void updateHistory(MemoSaveDto form, Long userId, Memo savedMemo) {
+        if(form.getIsTemporary() == savedMemo.getIsTemporary()) return;
+
+        // 임시글 -> 등록
+        if (form.getIsTemporary())
+            createOrUpdateHistory(userId, savedMemo.getCreatedDate(), PLUS);
+        // 등록된 글 -> 임시글
+        else
+            createOrUpdateHistory(userId, savedMemo.getCreatedDate(), MINUS);
+
     }
 
     @Transactional
