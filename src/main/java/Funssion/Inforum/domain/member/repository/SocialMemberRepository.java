@@ -13,11 +13,9 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -50,7 +48,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
     /* 설정 필요 */
 
     private SaveMemberResponseDto saveMemberInUserTable(SocialMember member) {
-        Date createdDate = Date.valueOf(LocalDate.now());
+        LocalDateTime createdDate = LocalDateTime.now();
         String name = member.getUserName();
         String email = member.getUserEmail();
         LoginType loginType = member.getLoginType();
@@ -61,7 +59,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
             user_psmt.setString(1, name);
             user_psmt.setString(2, email);
             user_psmt.setInt(3, LoginType.SOCIAL.getValue());
-            user_psmt.setDate(4, createdDate);
+            user_psmt.setTimestamp(4, Timestamp.valueOf(createdDate));
             return user_psmt;
         },userKeyHolder);
         long savedUserId = userKeyHolder.getKey().longValue();

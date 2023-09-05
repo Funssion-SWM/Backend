@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 public class MemoDto {
@@ -19,8 +20,8 @@ public class MemoDto {
     private String memoDescription;
     private String memoText;
     private String memoColor;
-    private Date createdDate;
-    private Date updatedDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
     private Long likes;
     private Boolean isTemporary;
 

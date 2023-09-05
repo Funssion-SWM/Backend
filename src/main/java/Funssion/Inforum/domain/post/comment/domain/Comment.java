@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 public class Comment extends Post {
@@ -17,8 +18,8 @@ public class Comment extends Post {
     private Long postId;
     private long replies;
 
-    public Comment(Long authorId, MemberProfileEntity memberProfileEntity,Date createdDate, Date updatedDate,
-                    CommentSaveDto commentSaveDto) {
+    public Comment(Long authorId, MemberProfileEntity memberProfileEntity, LocalDateTime createdDate, LocalDateTime updatedDate,
+                   CommentSaveDto commentSaveDto) {
         super(authorId, memberProfileEntity, createdDate, updatedDate);
         this.postTypeWithComment = commentSaveDto.getPostTypeWithComment();
         this.postId = commentSaveDto.getPostId();

@@ -12,8 +12,8 @@ CREATE TABLE "memo"."info" (
     memo_color varchar(50),
     likes int8 NOT NULL DEFAULT 0,
     is_temporary boolean NOT NULL DEFAULT false,
-    created_date date,
-    updated_date date
+    created_date timestamp,
+    updated_date timestamp
 );
 
 CREATE TABLE "member"."auth" (

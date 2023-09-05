@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -50,7 +51,7 @@ class CommentRepositoryImplTest {
     void beforeEach(){
         Comment comment = new Comment(1L,
                 testUserProfileEntity,
-                Date.valueOf(now()),
+                LocalDateTime.now(),
                 null,
                 new CommentSaveDto(PostType.MEMO,1L,"댓글 내용 저장"));
         commentRepository.createComment(comment);
@@ -61,7 +62,7 @@ class CommentRepositoryImplTest {
     void createValidComment(){
         Comment comment = new Comment(1L,
                 testUserProfileEntity,
-                Date.valueOf(now()),
+                LocalDateTime.now(),
                 null,
                 new CommentSaveDto(PostType.MEMO,1L,"댓글 내용 저장"));
         assertThatCode(()->commentRepository.createComment(comment)).doesNotThrowAnyException();
@@ -89,7 +90,7 @@ class CommentRepositoryImplTest {
         assertThatCode(
                 ()->commentRepository.createReComment(new ReComment(1L,
                 testUserProfileEntity,
-                Date.valueOf(now()),
+                LocalDateTime.now(),
                 null,
                 1L,
                 "대댓글 내용")))
@@ -104,7 +105,7 @@ class CommentRepositoryImplTest {
         assertThatThrownBy(
                 ()->commentRepository.createReComment(new ReComment(1L,
                         testUserProfileEntity,
-                        Date.valueOf(now()),
+                        LocalDateTime.now(),
                         null,
                         2L,
                         "대댓글 내용")))

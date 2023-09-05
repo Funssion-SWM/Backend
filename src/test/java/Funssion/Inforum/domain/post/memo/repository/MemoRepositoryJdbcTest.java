@@ -15,7 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,10 +44,10 @@ class MemoRepositoryJdbcTest {
             .authorId(9999L)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
-            .createdDate(Date.valueOf(LocalDate.now()))
-            .updatedDate(Date.valueOf(LocalDate.now()))
+            .createdDate(LocalDateTime.now())
+            .updatedDate(LocalDateTime.now())
             .isTemporary(false)
-            .likes(0)
+            .likes(0L)
             .build();
     Memo memo2 = Memo.builder()
             .title(form2.getMemoTitle())
@@ -55,10 +57,10 @@ class MemoRepositoryJdbcTest {
             .authorId(9999L)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
-            .createdDate(Date.valueOf(LocalDate.now()))
-            .updatedDate(Date.valueOf(LocalDate.now()))
+            .createdDate(LocalDateTime.now())
+            .updatedDate(LocalDateTime.now())
             .isTemporary(false)
-            .likes(1)
+            .likes(1L)
             .build();
     Memo memo3 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -68,10 +70,10 @@ class MemoRepositoryJdbcTest {
             .authorId(10000L)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
-            .createdDate(Date.valueOf(LocalDate.now()))
-            .updatedDate(Date.valueOf(LocalDate.now()))
+            .createdDate(LocalDateTime.now())
+            .updatedDate(LocalDateTime.now())
             .isTemporary(false)
-            .likes(9999)
+            .likes(9999L)
             .build();
     Memo memo4 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -81,10 +83,10 @@ class MemoRepositoryJdbcTest {
             .authorId(10000L)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
-            .createdDate(Date.valueOf(LocalDate.now()))
-            .updatedDate(Date.valueOf(LocalDate.now()))
+            .createdDate(LocalDateTime.now())
+            .updatedDate(LocalDateTime.now())
             .isTemporary(true)
-            .likes(9999)
+            .likes(9999L)
             .build();
 
     @Nested
@@ -92,7 +94,6 @@ class MemoRepositoryJdbcTest {
     class CreateMemo {
         Memo createdMemo;
         @Test
-        @DisplayName("메모 생성하기")
         void createTest() {
             createdMemo = repository.create(memo1);
             Memo savedMemo = repository.findById(createdMemo.getId());
@@ -160,7 +161,6 @@ class MemoRepositoryJdbcTest {
     class DeleteMemo {
         Memo createdMemo;
         @Test
-        @DisplayName("메모 삭제하기")
         void deleteTest() {
             createdMemo = repository.create(memo1);
             repository.delete(createdMemo.getId());

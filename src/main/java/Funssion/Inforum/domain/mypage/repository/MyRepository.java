@@ -8,14 +8,17 @@ import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
+import org.springframework.cglib.core.Local;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MyRepository {
 
     List<History> findMonthlyHistoryByUserId(Long userId, Integer year, Integer month);
-    void updateHistory(Long userId, PostType postType, Sign sign, Date curDate);
+    void updateHistory(Long userId, PostType postType, Sign sign, LocalDate curDate);
     void createHistory(Long userId, PostType postType);
 
     MemberProfileEntity findProfileByUserId(Long userID);

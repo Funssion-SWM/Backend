@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class MemoListDto {
     private String memoText;
     private String memoDescription;
     private String memoColor;
-    private Date createdDate;
+    private LocalDateTime createdDate;
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
