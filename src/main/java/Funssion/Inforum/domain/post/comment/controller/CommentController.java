@@ -79,11 +79,13 @@ public class CommentController {
 
     @PostMapping("/like/{commentId}")
     public LikeResponseDto likeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
-        return commentService.likeComments(commentId,Boolean.valueOf(isReComment));
+        Long userId = AuthUtils.getUserId(CRUDType.CREATE);
+        return commentService.likeComments(commentId,Boolean.valueOf(isReComment),userId);
     }
     @DeleteMapping("/like/{commentId}")
     public LikeResponseDto cancelLikeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
-        return commentService.cancelLikeComments(commentId,Boolean.valueOf(isReComment));
+        Long userId = AuthUtils.getUserId(CRUDType.DELETE);
+        return commentService.cancelLikeComments(commentId,Boolean.valueOf(isReComment),userId);
     }
 
     private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {

@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.post.comment.repository;
 
-import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.CreateFailException;
 import Funssion.Inforum.common.exception.UpdateFailException;
@@ -14,7 +13,6 @@ import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.exception.DuplicateLikeException;
-import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -180,15 +178,15 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     @Override
-    public LikeResponseDto likeComment(Long commentId, Boolean isReComment) {
-        insertLikeOfMemberLikeCommentsTable(commentId, isReComment);
+    public LikeResponseDto likeComment(Long commentId, Boolean isReComment,Long userId) {
+        insertLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterLike = updateLikesOfCommentsTable(commentId, isReComment,false);
         return new LikeResponseDto(true,howManyLikesAfterLike);
     }
 
     @Override
-    public LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment) {
-        deleteLikeOfMemberLikeCommentsTable(commentId, isReComment);
+    public LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment,Long userId) {
+        deleteLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterCancelLike = updateLikesOfCommentsTable(commentId, isReComment, true);
         return new LikeResponseDto(false,howManyLikesAfterCancelLike);
     }
@@ -206,8 +204,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         return updatedLikes;
     }
 
-    private void insertLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
-        Long userId = AuthUtils.getUserId(CRUDType.CREATE);
+    private void insertLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment,Long userId) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into member.like_comment (user_id,comment_id,is_recomment)" +
                 "values(?,?,?)";
@@ -227,8 +224,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         }
     }
 
-    private void deleteLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment) {
-        Long userId = AuthUtils.getUserId(CRUDType.DELETE);
+    private void deleteLikeOfMemberLikeCommentsTable(Long commentId, boolean isReComment,Long userId) {
         String sql = "delete from member.like_comment where comment_id = ? and user_id = ? and is_recomment = ?";
         try {
             template.update(sql, commentId, userId, isReComment);

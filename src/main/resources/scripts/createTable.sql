@@ -53,6 +53,7 @@ create table comment.info(
     updated_date timestamp
 );
 
+
 create table comment.re_comments(
     id int8 primary key DEFAULT nextval('re_comment_seq'::regclass),
     author_id int8 not null,
