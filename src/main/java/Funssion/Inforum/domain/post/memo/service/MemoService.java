@@ -89,7 +89,7 @@ public class MemoService {
                 memoRepository.create(new Memo(form, authorId, authorProfile, Date.valueOf(LocalDate.now()), null))
         );
 
-        createOrUpdateHistory(authorId, createdMemo.getCreatedDate());
+        if (!form.getIsTemporary()) createOrUpdateHistory(authorId, createdMemo.getCreatedDate());
 
         return createdMemo;
     }
