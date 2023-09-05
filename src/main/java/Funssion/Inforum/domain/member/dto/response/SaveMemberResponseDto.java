@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -15,6 +16,6 @@ public class SaveMemberResponseDto {
     private final Long id;
     private final String name;
     private final LoginType loginType;
-    private final Date createdDate;
+    private final LocalDateTime createdDate;
     private final String email;
 }

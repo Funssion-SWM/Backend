@@ -129,7 +129,7 @@ public class CommentRepositoryImpl implements CommentRepository{
             psmt.setString(3, reComment.getAuthorName());
             psmt.setLong(4, reComment.getParentCommentId());
             psmt.setString(5, reComment.getCommentText());
-            psmt.setDate(6, reComment.getCreatedDate());
+            psmt.setTimestamp(6, Timestamp.valueOf(reComment.getCreatedDate()));
             return psmt;
         }, keyHolder);
         if (updatedRow != 1){

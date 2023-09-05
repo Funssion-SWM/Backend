@@ -3,6 +3,8 @@ package Funssion.Inforum.domain.mypage.domain;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -13,5 +15,5 @@ public class History {
     private Long memoCnt;
     private Long blogCnt;
     private Long questionCnt;
-    private Date date;
+    private LocalDate date;
 }

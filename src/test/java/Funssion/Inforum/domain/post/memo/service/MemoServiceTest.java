@@ -6,6 +6,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class MemoServiceTest {
 
@@ -29,7 +30,7 @@ public class MemoServiceTest {
                 .authorId(1L)
                 .authorName("jinu")
                 .authorProfileImagePath("jinu-image")
-                .createdDate(Date.valueOf(LocalDate.now()))
+                .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isLike(false)
                 .isTemporary(false)
@@ -43,7 +44,7 @@ public class MemoServiceTest {
                 .authorId(1L)
                 .authorName("jinu")
                 .authorProfileImagePath("jinu-image")
-                .createdDate(Date.valueOf(LocalDate.now()))
+                .createdDate(LocalDateTime.now())
                 .likes(9999L)
                 .isLike(true)
                 .isTemporary(false)
@@ -57,7 +58,7 @@ public class MemoServiceTest {
                 .authorId(2L)
                 .authorName("jinu2")
                 .authorProfileImagePath("jinu2-image")
-                .createdDate(Date.valueOf(LocalDate.now()))
+                .createdDate(LocalDateTime.now())
                 .likes(9999L)
                 .isLike(false)
                 .isTemporary(false)
@@ -71,7 +72,7 @@ public class MemoServiceTest {
                 .authorId(2L)
                 .authorName("jinu2")
                 .authorProfileImagePath("jinu2-image")
-                .createdDate(Date.valueOf(LocalDate.now()))
+                .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isLike(false)
                 .isTemporary(true)

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -87,7 +88,7 @@ public class MemoService {
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
         MemoDto createdMemo = new MemoDto(
-                memoRepository.create(new Memo(form, authorId, authorProfile, Date.valueOf(LocalDate.now()), null))
+                memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), null))
         );
 
         if (!form.getIsTemporary())
@@ -96,9 +97,9 @@ public class MemoService {
         return createdMemo;
     }
 
-    private void createOrUpdateHistory(Long userId, Date curDate, Sign sign) {
+    private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
         try {
-            myRepository.updateHistory(userId, MEMO, sign, curDate);
+            myRepository.updateHistory(userId, MEMO, sign, curDate.toLocalDate());
         } catch (HistoryNotFoundException e) {
             myRepository.createHistory(userId, MEMO);
         }
@@ -155,7 +156,7 @@ public class MemoService {
         memoRepository.delete(memoId);
 
         if (!memo.getIsTemporary())
-            myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate());
+            myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
     }
 
     @Transactional(readOnly = true)
