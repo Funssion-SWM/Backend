@@ -3,12 +3,14 @@ package Funssion.Inforum.domain.mypage.dto;
 import Funssion.Inforum.domain.mypage.domain.History;
 import lombok.Getter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
 public class MyRecordNumDto {
     private final Long historyId;
-    private final Date date;
+    private final LocalDate date;
     private final Long postCnt;
 
     public MyRecordNumDto(History history) {

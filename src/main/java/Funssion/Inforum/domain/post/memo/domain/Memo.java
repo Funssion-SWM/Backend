@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -23,7 +24,7 @@ public class Memo extends Post {
     private Boolean isTemporary;
 
 
-    public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
+    public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate) {
         super(authorId, authorProfile, createdDate, updatedDate);
         this.title = form.getMemoTitle();
         this.description = form.getMemoDescription();

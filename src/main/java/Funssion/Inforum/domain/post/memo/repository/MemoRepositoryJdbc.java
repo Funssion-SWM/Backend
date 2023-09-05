@@ -15,7 +15,9 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,8 +49,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(5, memo.getDescription());
             psmt.setString(6, memo.getText());
             psmt.setString(7, memo.getColor());
-            psmt.setDate(8, memo.getCreatedDate());
-            psmt.setDate(9,memo.getUpdatedDate());
+            psmt.setTimestamp(8, Timestamp.valueOf(memo.getCreatedDate()));
+            psmt.setTimestamp(9,Timestamp.valueOf(memo.getUpdatedDate()));
             psmt.setBoolean(10, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
@@ -142,8 +144,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
-                        .createdDate(rs.getDate("created_date"))
-                        .updatedDate(rs.getDate("updated_date"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .build());

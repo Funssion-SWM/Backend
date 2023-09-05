@@ -43,7 +43,7 @@ public class SecurityConfig {
     //OAuth2LoginConfig에서 @Configuration으로 등록된 bean 주입
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
-    private final OAuthAuthneticationSuccessHandler oAuthAuthneticationSuccessHandler;
+    private final OAuthAuthenticationSuccessHandler oAuthAuthneticationSuccessHandler;
 
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
     @Bean

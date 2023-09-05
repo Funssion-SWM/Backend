@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +46,13 @@ public class MyRepositoryJdbc implements MyRepository {
                     .memoCnt(rs.getLong("memo_cnt"))
                     .blogCnt(rs.getLong("blog_cnt"))
                     .questionCnt(rs.getLong("question_cnt"))
-                    .date(rs.getDate("date"))
+                    .date(rs.getTimestamp("date").toLocalDateTime().toLocalDate())
                     .build()
         );
     }
 
     @Override
-    public void updateHistory(Long userId, PostType postType, Sign sign, Date curDate) {
+    public void updateHistory(Long userId, PostType postType, Sign sign, LocalDate curDate) {
         String fieldName = getFieldName(postType);
         String sql = getSql(sign, fieldName);
 

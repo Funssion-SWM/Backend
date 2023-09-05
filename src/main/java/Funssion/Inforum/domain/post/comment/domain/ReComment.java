@@ -5,13 +5,14 @@ import Funssion.Inforum.domain.post.domain.Post;
 import lombok.Getter;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 public class ReComment extends Post {
     private Long parentCommentId;
     private String commentText;
 
-    public ReComment(Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate,Long parentCommentId,String commentText) {
+    public ReComment(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate, Long parentCommentId, String commentText) {
         super(authorId,authorProfile,createdDate,updatedDate);
         this.parentCommentId = parentCommentId;
         this.commentText = commentText;

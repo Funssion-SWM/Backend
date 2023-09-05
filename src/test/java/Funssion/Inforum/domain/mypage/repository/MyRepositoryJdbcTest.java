@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.PostType.*;
@@ -29,7 +30,7 @@ class MyRepositoryJdbcTest {
     private MyRepository repository;
 
     private static final Long TEST_USERID = 9999L;
-    private static final Date curDate = Date.valueOf(LocalDate.now());
+    private static final LocalDateTime curDate = LocalDateTime.now();
 
     @Test
     @DisplayName("히스토리 생성")
@@ -40,7 +41,7 @@ class MyRepositoryJdbcTest {
 
         assertThat(created.getQuestionCnt()).isEqualTo(1);
         assertThat(created.getBlogCnt()).isEqualTo(0);
-        assertThat(created.getDate()).isEqualTo(Date.valueOf(LocalDate.now()));
+        assertThat(created.getDate()).isEqualTo(LocalDate.now());
     }
 
     @Test
@@ -48,15 +49,15 @@ class MyRepositoryJdbcTest {
     void updateHistoryTest() {
         repository.createHistory(TEST_USERID, QUESTION);
 
-        repository.updateHistory(TEST_USERID, BLOG, PLUS, curDate);
-        repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate);
+        repository.updateHistory(TEST_USERID, BLOG, PLUS, curDate.toLocalDate());
+        repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate());
 
         History updated = repository.findMonthlyHistoryByUserId(TEST_USERID, LocalDate.now().getYear(), LocalDate.now().getMonthValue()).get(0);
 
         assertThat(updated.getBlogCnt()).isEqualTo(1);
         assertThat(updated.getQuestionCnt()).isEqualTo(0);
 
-        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate))
+        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate()))
                 .isInstanceOf(HistoryNotFoundException.class);
     }
 }

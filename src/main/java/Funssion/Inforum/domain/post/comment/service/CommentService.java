@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.time.LocalDate.now;
@@ -40,7 +41,7 @@ public class CommentService {
     public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         commentRepository.createComment(new Comment(
-            authorId,authorProfile, Date.valueOf(now()),null,commentSaveDto)
+            authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)
         );
         return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
     }
@@ -61,7 +62,7 @@ public class CommentService {
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
         commentRepository.createReComment(new ReComment(
-                authorId,authorProfile, Date.valueOf(now()),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
+                authorId,authorProfile, LocalDateTime.now(),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
         );
         return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
     }
@@ -78,11 +79,11 @@ public class CommentService {
         return commentRepository.getReCommentsAtComment(parentCommentId,userId);
     }
 
-    public LikeResponseDto likeComments(Long commentId, Boolean isReComment){
-        return commentRepository.likeComment(commentId,isReComment);
+    public LikeResponseDto likeComments(Long commentId, Boolean isReComment,Long userId){
+        return commentRepository.likeComment(commentId,isReComment,userId);
     }
-    public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment){
-        return commentRepository.cancelLikeComment(commentId,isReComment);
+    public LikeResponseDto cancelLikeComments(Long commentId, Boolean isReComment,Long userId){
+        return commentRepository.cancelLikeComment(commentId,isReComment,userId);
     }
 
     public Long getAuthorIdOfComment(Long commentId, Boolean isReComment){

@@ -12,8 +12,8 @@ CREATE TABLE "memo"."info" (
     memo_color varchar(50),
     likes int8 NOT NULL DEFAULT 0,
     is_temporary boolean NOT NULL DEFAULT false,
-    created_date date,
-    updated_date date
+    created_date timestamp,
+    updated_date timestamp
 );
 
 CREATE TABLE "member"."auth" (
@@ -27,7 +27,7 @@ CREATE TABLE "member"."auth_code" (
     email varchar(60) NOT NULL,
     code bpchar(6) NOT NULL,
     expiration bool NULL DEFAULT false,
-    due_date timestamp NULL,
+    due_date timestamp NULL
 );
 
 CREATE TABLE "member"."history" (

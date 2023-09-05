@@ -19,7 +19,7 @@ import java.util.Collection;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
+public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
     private final TokenProvider tokenProvider;
     @Value("${jwt.domain}") private String domain;
     @Value("${oauth-signup-uri}") private String signUpURI;
@@ -30,13 +30,12 @@ public class OAuthAuthneticationSuccessHandler extends SavedRequestAwareAuthenti
                                         Authentication authentication) throws IOException {
         String accessToken = tokenProvider.createToken(authentication);
         if(request.getServerName().equals("localhost")){
-            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800";
+            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; HttpOnly";
             response.setHeader("Set-Cookie", cookieValue);
-            log.info("redirect url ={}",redirectUriByFirstJoinOrNot(authentication));
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; SameSite=None; Secure";
+            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure";
             response.setHeader("Set-Cookie",cookieValue);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }

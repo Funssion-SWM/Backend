@@ -6,6 +6,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter
 @SuperBuilder
@@ -15,14 +17,14 @@ import java.sql.Date;
 @NoArgsConstructor
 public class Post {
     private Long id;
-    private long authorId;
+    private Long authorId;
     private String authorName;
     private String authorImagePath;
-    private Date createdDate;
-    private Date updatedDate;
-    private long likes;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+    private Long likes;
 
-    public Post(Long authorId, MemberProfileEntity authorProfile, Date createdDate, Date updatedDate) {
+    public Post(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate) {
         this.authorId = authorId;
         this.authorName = authorProfile.getNickname();
         this.authorImagePath = authorProfile.getProfileImageFilePath();
