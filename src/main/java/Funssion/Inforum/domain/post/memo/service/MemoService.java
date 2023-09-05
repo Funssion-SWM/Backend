@@ -88,7 +88,7 @@ public class MemoService {
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
         MemoDto createdMemo = new MemoDto(
-                memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), null))
+                memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), LocalDateTime.now()))
         );
 
         if (!form.getIsTemporary())
