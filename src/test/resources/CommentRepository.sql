@@ -21,3 +21,15 @@ CREATE TABLE member.like_comment (
     is_recomment bool NOT NULL,
     CONSTRAINT like_comment_user_id_comment_id_is_recomment_key UNIQUE (user_id, comment_id, is_recomment)
 );
+
+CREATE TABLE comment.re_comments (
+    id serial primary key,
+    author_id int8 NOT NULL,
+    author_image_path varchar(300) NULL,
+    author_name varchar(15) NOT NULL,
+    likes int8 NOT NULL DEFAULT 0,
+    parent_id int8 NOT NULL,
+    comment_text text NOT NULL,
+    created_date timestamp NULL,
+    updated_date timestamp NULL
+);

@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.post.comment.repository;
 
-import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.CreateFailException;
 import Funssion.Inforum.common.exception.UpdateFailException;
@@ -14,7 +13,6 @@ import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.exception.DuplicateLikeException;
-import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -188,7 +186,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment,Long userId) {
-        deleteLikeOfMemberLikeCommentsTable(commentId, isReComment);
+        deleteLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterCancelLike = updateLikesOfCommentsTable(commentId, isReComment, true);
         return new LikeResponseDto(false,howManyLikesAfterCancelLike);
     }
