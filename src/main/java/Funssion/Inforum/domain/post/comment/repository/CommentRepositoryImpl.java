@@ -53,7 +53,7 @@ public class CommentRepositoryImpl implements CommentRepository{
             return psmt;
         }, keyHolder);
 
-        if (updatedRow != 1){
+        if (updatedRow != 01){
             throw new CreateFailException("댓글 저장에 실패하였습니다.");
         }
         return keyHolder.getKey().longValue();
@@ -93,12 +93,12 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
         Long parentCommentId = getParentCommentId(reCommentId);
-        deleteReComments(reCommentId);
+        deleteReCommentsInTable(reCommentId);
         updateNumberOfReCommentsOfComment(parentCommentId,true);
         return new IsSuccessResponseDto(true,"대댓글이 삭제되었습니다.");
     }
 
-    private void deleteReComments(Long reCommentId) {
+    private void deleteReCommentsInTable(Long reCommentId) {
         String sql = "delete from comment.re_comments where id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
