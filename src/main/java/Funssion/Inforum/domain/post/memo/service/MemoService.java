@@ -154,7 +154,8 @@ public class MemoService {
 
         memoRepository.delete(memoId);
 
-        myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate());
+        if (!memo.getIsTemporary())
+            myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate());
     }
 
     @Transactional(readOnly = true)
