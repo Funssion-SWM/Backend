@@ -179,6 +179,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public LikeResponseDto likeComment(Long commentId, Boolean isReComment,Long userId) {
+        log.info("is Recomment ? ={}",isReComment);
         insertLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterLike = updateLikesOfCommentsTable(commentId, isReComment,false);
         return new LikeResponseDto(true,howManyLikesAfterLike);
@@ -194,7 +195,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
         Long currentLikes = getLikesOfComment(commentId, isReComment); // 현재 좋아요 수
-        String sql = isCancel ?
+        String sql = isReComment ?
                 "update comment.re_comments set likes = ? where id = ?"
                 : "update comment.info set likes = ? where id = ?";
 

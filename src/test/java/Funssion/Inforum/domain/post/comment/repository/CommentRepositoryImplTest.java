@@ -193,7 +193,7 @@ class CommentRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("개인 사용자가 특정 댓글 좋아요 했는지 댓글 리스트에 포함")
+    @DisplayName("사용자가 특정 댓글 좋아요 했는지 댓글 리스트에 포함")
     void doesUserLikeComment() {
 
         Comment comment = new Comment(1L,
@@ -219,7 +219,7 @@ class CommentRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("개인 사용자가 특정 댓글 좋아요를 취소했는지 댓글 리스트에 포함")
+    @DisplayName("사용자가 특정 댓글 좋아요를 취소했는지 댓글 리스트에 포함")
     void doesUserCancelLikeComment() {
         CommentListDto firstComment = commentRepository.getCommentsAtPost(PostType.MEMO, 1L, 1L).get(0);
         Long userIdWhoLikesComment = 10L;
@@ -233,4 +233,27 @@ class CommentRepositoryImplTest {
         assertThat(firstCommentAfterCancelLike.getIsLike()).isEqualTo(false);
 
     }
+
+    @Test
+    @DisplayName("사용자가 대댓글에 좋아요를 누르면, 좋아요 개수와, 자신이 좋아요를 눌렀는지 확인")
+    void doesUserLikeReComment(){
+        CommentListDto firstComment = commentRepository.getCommentsAtPost(PostType.MEMO, 1L, 1L).get(0);
+        Long reCommentWriterId = 10L;
+        Long reCommentLikerId = 9L;
+
+        commentRepository.createReComment(new ReComment(reCommentWriterId,
+                testUserProfileEntity,
+                Date.valueOf(now()),
+                null,
+                firstComment.getId(),
+                "대댓글 내용"));
+
+        ReCommentListDto firstReCommentOfComment = commentRepository.getReCommentsAtComment(firstComment.getId(), reCommentLikerId).get(0);
+        assertThat(commentRepository.likeComment(firstReCommentOfComment.getId(), true, reCommentLikerId).getLikes()).isEqualTo(1L);
+        List<ReCommentListDto> reCommentsAtComment = commentRepository.getReCommentsAtComment(firstComment.getId(), reCommentLikerId);
+        assertThat(reCommentsAtComment.size()).isEqualTo(1);
+        assertThat(reCommentsAtComment.get(0).getLikes()).isEqualTo(1L);
+        assertThat(reCommentsAtComment.get(0).getIsLike()).isEqualTo(true);
+    }
+
 }
