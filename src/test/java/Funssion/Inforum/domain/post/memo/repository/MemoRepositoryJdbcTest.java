@@ -96,8 +96,9 @@ class MemoRepositoryJdbcTest {
         @Test
         void createTest() {
             createdMemo = repository.create(memo1);
+            System.out.println("memo1 = " + memo1);
             Memo savedMemo = repository.findById(createdMemo.getId());
-
+            System.out.println("savedMemo = " + savedMemo);
             assertThat(createdMemo).isEqualTo(savedMemo);
         }
     }

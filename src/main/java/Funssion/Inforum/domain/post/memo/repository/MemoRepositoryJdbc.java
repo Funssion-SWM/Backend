@@ -37,8 +37,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, created_date, updated_date, is_temporary) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, is_temporary) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?);";
 
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
@@ -49,9 +49,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(5, memo.getDescription());
             psmt.setString(6, memo.getText());
             psmt.setString(7, memo.getColor());
-            psmt.setTimestamp(8, Timestamp.valueOf(memo.getCreatedDate()));
-            psmt.setTimestamp(9,Timestamp.valueOf(memo.getUpdatedDate()));
-            psmt.setBoolean(10, memo.getIsTemporary());
+            psmt.setBoolean(8, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
 
