@@ -1,8 +1,7 @@
-package Funssion.Inforum.domain.like.controller;
+package Funssion.Inforum.domain.post.like.controller;
 
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.like.service.LikeService;
-import org.junit.jupiter.api.BeforeAll;
+import Funssion.Inforum.domain.post.like.controller.LikeController;
+import Funssion.Inforum.domain.post.like.service.LikeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;

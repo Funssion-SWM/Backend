@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.like.dto.response;
+package Funssion.Inforum.domain.post.like.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.post.comment.controller;
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.UnAuthorizedException;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;

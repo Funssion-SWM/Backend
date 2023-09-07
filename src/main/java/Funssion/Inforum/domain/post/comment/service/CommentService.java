@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 

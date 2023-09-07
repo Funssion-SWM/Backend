@@ -1,9 +1,6 @@
 package Funssion.Inforum.domain.mypage.service;
 
-import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.utils.LikeUtils;
-import Funssion.Inforum.domain.like.domain.Like;
-import Funssion.Inforum.domain.like.repository.LikeRepository;
+import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
@@ -14,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -4,7 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.CreateFailException;
 import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;

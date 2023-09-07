@@ -1,8 +1,9 @@
-package Funssion.Inforum.domain.like.repository;
+package Funssion.Inforum.domain.post.like.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.like.domain.Like;
+import Funssion.Inforum.domain.post.like.domain.Like;
+import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

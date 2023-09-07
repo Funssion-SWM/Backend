@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.service;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
@@ -13,6 +14,8 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
+import Funssion.Inforum.domain.post.searchhistory.repository.SearchHistoryRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,7 @@ import static Funssion.Inforum.common.constant.Sign.PLUS;
 public class MemoService {
 
     private final MemoRepository memoRepository;
+    private final SearchHistoryRepository searchHistoryRepository;
     private final MyRepository myRepository;
 
     @Transactional(readOnly = true)
@@ -161,18 +165,38 @@ public class MemoService {
             myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
     }
 
-    @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosBy(String searchString, String orderBy) {
+    public List<MemoListDto> getMemosBy(
+            String searchString,
+            MemoOrderType orderBy,
+            Boolean isRecoded,
+            Boolean isTag) {
 
-        MemoOrderType memoOrderType = MemoOrderType.valueOf(orderBy.toUpperCase());
-        List<String> searchStringList = Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
-                .toList();
+        if (isTag) throw new BadRequestException("not yet implemented");
 
-        return memoRepository
-                .findAllBySearchQuery(searchStringList, memoOrderType)
+        if (isRecoded) saveSearchHistory(searchString, isTag);
+
+        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
                 .map(MemoListDto::new)
+                .toList();
+    }
+
+    private void saveSearchHistory(String searchString, Boolean isTag) {
+        Long userId = SecurityContextUtils.getUserId();
+
+        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) return;
+
+        searchHistoryRepository.save(
+                SearchHistory.builder()
+                        .userId(userId)
+                        .searchText(searchString)
+                        .isTag(isTag)
+                        .build());
+    }
+
+    private static List<String> getSearchStringList(String searchString) {
+        return Arrays.stream(searchString.split(" "))
+                .map(str -> "%" + str + "%")
                 .toList();
     }
 

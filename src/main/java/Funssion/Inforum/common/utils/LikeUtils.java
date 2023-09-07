@@ -1,6 +1,6 @@
 package Funssion.Inforum.common.utils;
 
-import Funssion.Inforum.domain.like.domain.Like;
+import Funssion.Inforum.domain.post.like.domain.Like;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

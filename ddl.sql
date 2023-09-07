@@ -1,5 +1,7 @@
 CREATE SCHEMA member;
 CREATE SCHEMA memo;
+create schema comment;
+create schema post;
 
 CREATE TABLE "memo"."info" (
     memo_id bigserial PRIMARY KEY,
@@ -58,8 +60,6 @@ CREATE TABLE "member"."user" (
     created_date timestamp
 );
 
-create schema comment;
-create schema member;
 create table comment.info(
     id serial primary key,
     author_id int8 not null,
@@ -92,4 +92,11 @@ CREATE TABLE comment.re_comments (
     comment_text text NOT NULL,
     created_date timestamp NULL,
     updated_date timestamp NULL
+);
+
+CREATE TABLE post.search_history (
+    id bigserial primary key,
+    user_id int8 not null,
+    search_text text,
+    is_tag boolean
 );
