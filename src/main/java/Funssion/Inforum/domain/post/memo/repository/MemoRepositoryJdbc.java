@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.tag.repository.TagRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
@@ -61,22 +62,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
         return findById(createdMemoId);
     }
-    private Array createSqlArray(List<String> tags) throws SQLException {
-        Array stringArray = null;
-        try {
-            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
-        } catch (SQLException e) {
-            throw new SQLException(e);
-        }
-        return stringArray;
-    }
 
-    private List<String> createStringListFromArray(Array array)  {
-        return Arrays.asList(array).stream()
-                .map(arrayElement -> String.valueOf(arrayElement))
-                .collect(Collectors.toList());
-
-    }
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
@@ -145,6 +131,22 @@ public class MemoRepositoryJdbc implements MemoRepository{
         params.addAll(searchStringList);
         return params.stream().toArray();
     }
+    private Array createSqlArray(List<String> tags) throws SQLException {
+        Array stringArray = null;
+        try {
+            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+        } catch (SQLException e) {
+            throw new SQLException(e);
+        }
+        return stringArray;
+    }
+
+    private List<String> createStringListFromArray(Array array)  {
+        return Arrays.asList(array).stream()
+                .map(arrayElement -> String.valueOf(arrayElement))
+                .collect(Collectors.toList());
+
+    }
 
     @Override
     public Memo findById(Long id) {
@@ -175,14 +177,19 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, is_temporary = ? " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = ?, is_temporary = ? " +
                 "where memo_id = ?";
-
-        if (template.update(sql,
-                form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), form.getIsTemporary(),
-                memoId)
-                == 0)
-            throw new MemoNotFoundException("update content fail");
+        try {
+            List<String> updatedTags = form.getMemoTags();
+            List<String> originalUpdatedTags = List.copyOf(form.getMemoTags());
+            if (!tagRepository.updateTags(memoId,updatedTags).getIsSuccess()
+                || template.update(sql,
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),createSqlArray(originalUpdatedTags), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
+                    == 0)
+                throw new MemoNotFoundException("update content fail");
+        } catch (SQLException e) {
+            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+        }
         return findById(memoId);
     }
 
@@ -208,6 +215,10 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
-        if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+        try {
+            if (!tagRepository.deleteTags(id).getIsSuccess() || template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+        } catch (SQLException e) {
+            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+        }
     }
 }
