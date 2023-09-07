@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.like.exception;
+package Funssion.Inforum.domain.post.like.exception;
 
 import Funssion.Inforum.common.exception.ErrorResult;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;

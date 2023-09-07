@@ -1,13 +1,13 @@
-package Funssion.Inforum.domain.like.service;
+package Funssion.Inforum.domain.post.like.service;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.like.domain.Like;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.like.exception.LikeNotFoundException;
-import Funssion.Inforum.domain.like.repository.LikeRepository;
+import Funssion.Inforum.domain.post.like.domain.Like;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.like.exception.LikeNotFoundException;
+import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;

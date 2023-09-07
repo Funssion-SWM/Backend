@@ -1,10 +1,9 @@
-package Funssion.Inforum.domain.like.controller;
+package Funssion.Inforum.domain.post.like.controller;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.UrlNotFoundException;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.like.service.LikeService;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.like.service.LikeService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
