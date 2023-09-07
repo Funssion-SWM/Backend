@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -118,8 +119,9 @@ public class MemoService {
     public MemoDto getMemoBy(Long memoId) {
 
         Memo memo = memoRepository.findById(memoId);
-
-        return new MemoDto(memo);
+        MemoDto responseDto = new MemoDto(memo);
+        responseDto.setIsMine(SecurityContextUtils.getUserId());
+        return responseDto;
     }
 
     @Transactional

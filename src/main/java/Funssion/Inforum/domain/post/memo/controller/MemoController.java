@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
