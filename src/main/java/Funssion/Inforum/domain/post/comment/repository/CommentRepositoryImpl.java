@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.comment.repository;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.CreateFailException;
 import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
@@ -10,7 +11,6 @@ import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
-import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.exception.DuplicateLikeException;
 import lombok.extern.slf4j.Slf4j;

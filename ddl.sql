@@ -1,7 +1,49 @@
 CREATE SCHEMA member;
 CREATE SCHEMA memo;
+CREATE SCHEMA tag;
+CREATE SCHEMA comment;
 
-CREATE TABLE "memo"."info" (
+CREATE TABLE tag.memo_to_tag (
+    memo_id bigserial,
+    tag_id bigserial,
+    primary key (memo_id, tag_id)
+);
+
+CREATE TABLE tag.info (
+    id bigserial primary key,
+    tag_name varchar,
+    is_default boolean default (false),
+    tag_count int8 default (1)
+);
+insert into tag.info(tag_name, is_default, tag_count)
+values
+    ('Backend', true, 0),
+    ('Frontend', true, 0),
+    ('AI', true, 0),
+    ('DevOps', true, 0),
+    ('Security', true, 0),
+    ('DBA', true, 0),
+    ('Java', true, 0),
+    ('Python', true, 0),
+    ('JavaScript', true, 0),
+    ('TypeScript', true, 0),
+    ('C', true, 0),
+    ('C++', true, 0),
+    ('Spring', true, 0),
+    ('Nest', true, 0),
+    ('Node', true, 0),
+    ('Django', true, 0),
+    ('AWS', true, 0),
+    ('React', true, 0),
+    ('Next', true, 0),
+    ('Vue', true, 0),
+    ('SQL', true, 0),
+    ('NoSQL', true, 0),
+    ('MySQL', true, 0),
+    ('MongoDB', true, 0),
+    ('PostgreSQL', true, 0);
+
+CREATE TABLE memo.info (
     memo_id bigserial PRIMARY KEY,
     author_id int8 NOT NULL,
     author_name varchar,
@@ -12,25 +54,26 @@ CREATE TABLE "memo"."info" (
     memo_color varchar(50),
     likes int8 NOT NULL DEFAULT 0,
     is_temporary boolean NOT NULL DEFAULT false,
-    created_date timestamp,
-    updated_date timestamp
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    tags varchar array
 );
 
-CREATE TABLE "member"."auth" (
+CREATE TABLE member.auth (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
     password varchar(100) NOT NULL
 );
 
-CREATE TABLE "member"."auth_code" (
+CREATE TABLE member.auth_code (
     id bigserial,
     email varchar(60) NOT NULL,
-    code bpchar(6) NOT NULL,
+    code char(6) NOT NULL,
     expiration bool NULL DEFAULT false,
     due_date timestamp NULL
 );
 
-CREATE TABLE "member"."history" (
+CREATE TABLE member.history (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
     memo_cnt int8 NOT NULL DEFAULT 0,
@@ -39,7 +82,7 @@ CREATE TABLE "member"."history" (
     date date NOT NULL DEFAULT current_date
 );
 
-CREATE TABLE "member"."like"  (
+CREATE TABLE member.like  (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
     post_type varchar NOT NULL,
@@ -47,7 +90,7 @@ CREATE TABLE "member"."like"  (
     created timestamp DEFAULT current_timestamp
 );
 
-CREATE TABLE "member"."user" (
+CREATE TABLE member.user (
     id bigserial PRIMARY KEY,
     name varchar(15) NOT NULL,
     email varchar(60) NOT NULL,
@@ -58,8 +101,6 @@ CREATE TABLE "member"."user" (
     created_date timestamp
 );
 
-create schema comment;
-create schema member;
 create table comment.info(
     id serial primary key,
     author_id int8 not null,
@@ -93,3 +134,4 @@ CREATE TABLE comment.re_comments (
     created_date timestamp NULL,
     updated_date timestamp NULL
 );
+

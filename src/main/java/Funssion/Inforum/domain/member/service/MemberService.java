@@ -7,7 +7,7 @@ import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;

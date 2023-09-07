@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 

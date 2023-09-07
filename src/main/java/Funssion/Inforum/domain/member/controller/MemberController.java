@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.controller;
 
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;

@@ -1,15 +1,15 @@
 package Funssion.Inforum.domain.post.memo.domain;
 
-import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.domain.Post;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -21,6 +21,7 @@ public class Memo extends Post {
     private String description;
     private String text;
     private String color;
+    private List<String> memoTags;
     private Boolean isTemporary;
 
 
@@ -30,6 +31,7 @@ public class Memo extends Post {
         this.description = form.getMemoDescription();
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
+        this.memoTags = form.getMemoTags();
         this.isTemporary = form.getIsTemporary();
     }
 
@@ -38,6 +40,7 @@ public class Memo extends Post {
         this.description = form.getMemoDescription();
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
+        this.memoTags = form.getMemoTags();
         this.isTemporary = form.getIsTemporary();
     }
 }

@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
-import Funssion.Inforum.domain.post.domain.Post;
+import Funssion.Inforum.common.tag.repository.TagRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -13,22 +13,25 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.Array;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.Timestamp;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
 public class MemoRepositoryJdbc implements MemoRepository{
 
     private final JdbcTemplate template;
+    private final TagRepository tagRepository;
 
-
-    public MemoRepositoryJdbc(DataSource dataSource) {
+    public MemoRepositoryJdbc(DataSource dataSource, TagRepository tagRepository) {
+        this.tagRepository = tagRepository;
         this.template = new JdbcTemplate(dataSource);
     }
 
@@ -37,9 +40,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, is_temporary) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?);";
-
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, tags, is_temporary) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
+        List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
             psmt.setLong(1, memo.getAuthorId());
@@ -49,13 +52,31 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(5, memo.getDescription());
             psmt.setString(6, memo.getText());
             psmt.setString(7, memo.getColor());
-            psmt.setBoolean(8, memo.getIsTemporary());
+            psmt.setArray(8,createSqlArray(listOfTagsInMemo));
+            psmt.setBoolean(9, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
+        long createdMemoId = keyHolder.getKey().longValue();
+        tagRepository.saveTags(createdMemoId,listOfTagsInMemo);
 
-        return findById(keyHolder.getKey().longValue());
+        return findById(createdMemoId);
+    }
+    private Array createSqlArray(List<String> tags) throws SQLException {
+        Array stringArray = null;
+        try {
+            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+        } catch (SQLException e) {
+            throw new SQLException(e);
+        }
+        return stringArray;
     }
 
+    private List<String> createStringListFromArray(Array array)  {
+        return Arrays.asList(array).stream()
+                .map(arrayElement -> String.valueOf(arrayElement))
+                .collect(Collectors.toList());
+
+    }
     @Override
     public List<Memo> findAllByDaysOrderByLikes(Long days) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
@@ -142,6 +163,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .memoTags(createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))

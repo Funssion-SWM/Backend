@@ -1,13 +1,13 @@
 package Funssion.Inforum.domain.post.comment.repository;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
-import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 
 import java.util.List;
