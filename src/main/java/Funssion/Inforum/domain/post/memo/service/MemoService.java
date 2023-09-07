@@ -145,7 +145,7 @@ public class MemoService {
         if(form.getIsTemporary() == savedMemo.getIsTemporary()) return;
 
         // 임시글 -> 등록
-        if (form.getIsTemporary())
+        if (savedMemo.getIsTemporary())
             createOrUpdateHistory(userId, savedMemo.getCreatedDate(), PLUS);
         // 등록된 글 -> 임시글
         else
