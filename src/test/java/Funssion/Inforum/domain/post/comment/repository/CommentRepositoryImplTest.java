@@ -20,14 +20,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
