@@ -1,7 +1,7 @@
 CREATE SCHEMA member;
 CREATE SCHEMA memo;
-CREATE SCHEMA tag;
-CREATE SCHEMA comment;
+create schema comment;
+create schema post;
 
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
@@ -135,3 +135,9 @@ CREATE TABLE comment.re_comments (
     updated_date timestamp NULL
 );
 
+CREATE TABLE post.search_history (
+    id bigserial primary key,
+    user_id int8 not null,
+    search_text text,
+    is_tag boolean
+);

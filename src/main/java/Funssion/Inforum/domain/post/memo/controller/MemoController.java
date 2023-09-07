@@ -1,5 +1,9 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
+import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
@@ -56,10 +60,21 @@ public class MemoController {
 
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
-            @RequestParam(name = "q") @NotBlank String searchString,
-            @RequestParam(required = false, defaultValue = "HOT") String orderBy
+            @RequestParam @NotBlank String searchString,
+            @RequestParam String orderBy,
+            @RequestParam Boolean isRecoded,
+            @RequestParam Boolean isTag
     ) {
-        return memoService.getMemosBy(searchString, orderBy);
+        return memoService.getMemosBy(
+                searchString, getOrderBy(orderBy), isRecoded, isTag);
+    }
+
+    private static MemoOrderType getOrderBy(String orderBy) {
+        try {
+            return MemoOrderType.valueOf(orderBy.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage(), e);
+        }
     }
 
     @GetMapping("/drafts")

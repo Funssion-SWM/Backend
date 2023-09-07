@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.like.domain;
+package Funssion.Inforum.domain.post.like.domain;
 
 import Funssion.Inforum.common.constant.PostType;
 import lombok.*;

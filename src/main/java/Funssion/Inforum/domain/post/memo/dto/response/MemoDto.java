@@ -21,6 +21,7 @@ public class MemoDto {
     private Long likes;
     private List<String> memoTags;
     private Boolean isTemporary;
+    private Boolean isMine;
 
     public MemoDto(Memo memo) {
         this.memoId = memo.getId();
@@ -36,5 +37,9 @@ public class MemoDto {
         this.memoTags = memo.getMemoTags();
         this.likes = memo.getLikes();
         this.isTemporary = memo.getIsTemporary();
+    }
+
+    public void setIsMine(Long authorId) {
+        this.isMine = this.authorId.equals(authorId);
     }
 }
