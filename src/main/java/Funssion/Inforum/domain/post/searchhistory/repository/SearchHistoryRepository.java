@@ -9,5 +9,5 @@ public interface SearchHistoryRepository {
 
     void save(SearchHistory history);
 
-    List<SearchHistory> findSearchHistoryListByUserId(Long userId);
+    List<SearchHistory> findAllByUserIdRecent10(Long userId);
 }

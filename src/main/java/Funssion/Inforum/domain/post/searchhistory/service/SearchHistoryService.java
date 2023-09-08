@@ -14,10 +14,10 @@ public class SearchHistoryService {
 
     private final SearchHistoryRepository searchHistoryRepository;
 
-    public List<SearchHistoryDto> getSearchHistories() {
+    public List<SearchHistoryDto> getRecentSearchHistoryTop10() {
         Long userId = SecurityContextUtils.getUserId();
 
-        return searchHistoryRepository.findSearchHistoryListByUserId(userId).stream()
+        return searchHistoryRepository.findAllByUserIdRecent10(userId).stream()
                 .map(searchHistory -> SearchHistoryDto.of(searchHistory))
                 .toList();
     }

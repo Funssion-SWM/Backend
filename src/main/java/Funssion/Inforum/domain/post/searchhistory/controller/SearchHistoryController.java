@@ -17,7 +17,7 @@ public class SearchHistoryController {
     private final SearchHistoryService service;
 
     @GetMapping("/history")
-    public List<SearchHistoryDto> getSearchHistories() {
-        return service.getSearchHistories();
+    public List<SearchHistoryDto> getRecentSearchHistoryTop10() {
+        return service.getRecentSearchHistoryTop10();
     }
 }

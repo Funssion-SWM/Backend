@@ -27,8 +27,8 @@ public class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
     }
 
     @Override
-    public List<SearchHistory> findSearchHistoryListByUserId(Long userId) {
-        String sql = "select * from post.search_history where user_id = ?";
+    public List<SearchHistory> findAllByUserIdRecent10(Long userId) {
+        String sql = "select * from post.search_history where user_id = ? order by id desc limit 10";
 
         return template.query(sql, searchHistoryRowMapper(), userId);
     }
