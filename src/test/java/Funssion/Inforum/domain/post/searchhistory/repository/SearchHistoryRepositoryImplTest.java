@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -75,5 +76,19 @@ class SearchHistoryRepositoryImplTest {
         assertThat(savedList.size()).isEqualTo(0);
         assertThatThrownBy(() -> repository.delete(saved.getId()))
                 .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("검색 기록 시간 수정")
+    void updateTime() {
+        repository.save(history1);
+        SearchHistory saved = repository.findAllByUserIdRecent10(history1.getUserId()).get(0);
+
+        LocalDateTime now = LocalDateTime.now();
+        repository.updateTime(saved.getId(), now);
+        SearchHistory updated = repository.findAllByUserIdRecent10(history1.getUserId()).get(0);
+
+        assertThat(saved.getAccessTime()).isNotEqualTo(now);
+        assertThat(updated.getAccessTime()).isEqualTo(now);
     }
 }

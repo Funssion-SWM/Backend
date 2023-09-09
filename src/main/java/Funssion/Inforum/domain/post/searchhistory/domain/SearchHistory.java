@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @ToString
@@ -15,4 +17,5 @@ public class SearchHistory {
     private final Long userId;
     private final String searchText;
     private final Boolean isTag;
+    private final LocalDateTime accessTime;
 }

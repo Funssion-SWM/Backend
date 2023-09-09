@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,5 +41,10 @@ public class SearchHistoryService {
     @Transactional
     public void removeSearchHistory(Long id) {
         searchHistoryRepository.delete(id);
+    }
+
+    @Transactional
+    public void refreshSearchHistory(Long id) {
+        searchHistoryRepository.updateTime(id, LocalDateTime.now());
     }
 }

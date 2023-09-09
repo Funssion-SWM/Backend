@@ -83,4 +83,18 @@ public class SearchHistoryControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @WithMockUser
+    @DisplayName("검색 기록 수정하기")
+    void updateSearchHistory() throws Exception {
+        mvc.perform(post("/search/history/4")
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+
+        mvc.perform(post("/search/history/-4")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
 }

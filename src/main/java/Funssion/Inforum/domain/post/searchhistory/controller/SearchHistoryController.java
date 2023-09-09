@@ -38,4 +38,11 @@ public class SearchHistoryController {
     ) {
         service.removeSearchHistory(id);
     }
+
+    @PostMapping("/history/{id}")
+    public void updateSearchHistory(
+            @PathVariable @Min(1) Long id
+    ) {
+        service.refreshSearchHistory(id);
+    }
 }
