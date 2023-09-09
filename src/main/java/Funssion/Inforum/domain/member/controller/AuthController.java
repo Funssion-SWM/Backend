@@ -32,10 +32,10 @@ public class AuthController {
             TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
             HttpHeaders httpHeaders = new HttpHeaders();
             if(request.getServerName().equals("localhost")){
-                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; HttpOnly");
+                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=Lax;HttpOnly");
             }
             else{
-                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400;SameSite=None;HttpOnly;Secure");
+                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400;SameSite=Lax;HttpOnly;Secure");
             }
             return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인에 성공하였습니다."), httpHeaders, HttpStatus.OK);
         }catch(AuthenticationException e){

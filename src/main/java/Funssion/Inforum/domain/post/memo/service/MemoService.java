@@ -1,11 +1,13 @@
 package Funssion.Inforum.domain.post.memo.service;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -14,6 +16,8 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
+import Funssion.Inforum.domain.post.searchhistory.repository.SearchHistoryRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +41,7 @@ public class MemoService {
 
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
+    private final SearchHistoryRepository searchHistoryRepository;
     private final MyRepository myRepository;
 
     @Transactional(readOnly = true)
@@ -121,8 +126,9 @@ public class MemoService {
     public MemoDto getMemoBy(Long memoId) {
 
         Memo memo = memoRepository.findById(memoId);
-
-        return new MemoDto(memo);
+        MemoDto responseDto = new MemoDto(memo);
+        responseDto.setIsMine(SecurityContextUtils.getUserId());
+        return responseDto;
     }
 
     @Transactional
@@ -146,7 +152,7 @@ public class MemoService {
         if(form.getIsTemporary() == savedMemo.getIsTemporary()) return;
 
         // 임시글 -> 등록
-        if (form.getIsTemporary())
+        if (savedMemo.getIsTemporary())
             createOrUpdateHistory(userId, savedMemo.getCreatedDate(), PLUS);
         // 등록된 글 -> 임시글
         else
@@ -171,18 +177,38 @@ public class MemoService {
             myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
     }
 
-    @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosBy(String searchString, String orderBy) {
+    public List<MemoListDto> getMemosBy(
+            String searchString,
+            MemoOrderType orderBy,
+            Boolean isRecoded,
+            Boolean isTag) {
 
-        MemoOrderType memoOrderType = MemoOrderType.valueOf(orderBy.toUpperCase());
-        List<String> searchStringList = Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
-                .toList();
+        if (isTag) throw new BadRequestException("not yet implemented");
 
-        return memoRepository
-                .findAllBySearchQuery(searchStringList, memoOrderType)
+        if (isRecoded) saveSearchHistory(searchString, isTag);
+
+        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
                 .map(MemoListDto::new)
+                .toList();
+    }
+
+    private void saveSearchHistory(String searchString, Boolean isTag) {
+        Long userId = SecurityContextUtils.getUserId();
+
+        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) return;
+
+        searchHistoryRepository.save(
+                SearchHistory.builder()
+                        .userId(userId)
+                        .searchText(searchString)
+                        .isTag(isTag)
+                        .build());
+    }
+
+    private static List<String> getSearchStringList(String searchString) {
+        return Arrays.stream(searchString.split(" "))
+                .map(str -> "%" + str + "%")
                 .toList();
     }
 

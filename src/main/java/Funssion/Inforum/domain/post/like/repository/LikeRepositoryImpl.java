@@ -1,8 +1,8 @@
-package Funssion.Inforum.domain.like.repository;
+package Funssion.Inforum.domain.post.like.repository;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.like.domain.Like;
-import Funssion.Inforum.domain.like.exception.LikeNotFoundException;
+import Funssion.Inforum.domain.post.like.domain.Like;
+import Funssion.Inforum.domain.post.like.exception.LikeNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;

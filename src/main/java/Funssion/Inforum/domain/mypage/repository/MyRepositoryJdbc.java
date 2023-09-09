@@ -54,7 +54,11 @@ public class MyRepositoryJdbc implements MyRepository {
         String fieldName = getFieldName(postType);
         String sql = getSql(sign, fieldName);
 
-        if (template.update(sql, userId, curDate) == 0) throw new HistoryNotFoundException("update fail");
+        int updated = template.update(sql, userId, curDate);
+        if (updated == 0 && sign.equals(Sign.PLUS))
+            throw new HistoryNotFoundException("update fail");
+        else if (updated == 0 && sign.equals(Sign.MINUS))
+            throw new IllegalStateException("update fail: history post count can't below 0");
     }
 
     private String getSql(Sign sign, String fieldName) {

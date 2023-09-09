@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.like.dto.request;
+package Funssion.Inforum.domain.post.like.dto.request;
 
 import Funssion.Inforum.common.constant.PostType;
 import jakarta.validation.constraints.NotNull;

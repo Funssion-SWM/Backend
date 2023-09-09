@@ -137,7 +137,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return stringArray;
     }
 
-
     @Override
     public Memo findById(Long id) {
         String sql = "select * from memo.info where memo_id = ?";
@@ -179,7 +178,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
         }
         return findById(memoId);
     }
-
     @Override
     public Memo updateLikesInMemo(Long likes, Long memoId) {
         String sql = "update memo.info " +

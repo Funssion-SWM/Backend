@@ -78,8 +78,8 @@ public class TagRepository {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
             deleteTagInMemoToTagTable(memoId,priorTagId);
-
         }
+        // 블럭단위로 extract 하면 좋을지도.
         return new IsSuccessResponseDto(true,"성공적으로 태그가 삭제 되었습니다.");
     }
 
