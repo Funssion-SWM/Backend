@@ -34,8 +34,12 @@ public class TagRepository {
         for (String tagName : tags) {
             try {
                 saveTagIfNotExistInTableOrUpdateTagCountIfExist(createdMemoId, tagName);
+                // 너무 길다.
             }catch(DataAccessException e){
                 return new IsSuccessResponseDto(false,"tag 저장중 db 오류, 오류 메시지 = "+e.getMessage());
+                /**
+                 * new 로 반환하기보다는 error를 던지는게 낫겠다.
+                 */
             }
         }
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 반영되었습니다.");
@@ -43,6 +47,7 @@ public class TagRepository {
 
     private void saveTagIfNotExistInTableOrUpdateTagCountIfExist(Long createdMemoId, String tagName) {
         int updatedRow = template.update("update tag.info set tag_count = tag_count + 1 where tag_name = ?;", tagName);
+        // updated row 가 두개이면 어떡하죠?
         if (updatedRow != 1){
             /**
              * 해당 태그 이름이 테이블에 없으면 태그 정보를 새로 tag table에 추가합니다.
@@ -73,8 +78,8 @@ public class TagRepository {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
             deleteTagInMemoToTagTable(memoId,priorTagId);
-
         }
+        // 블럭단위로 extract 하면 좋을지도.
         return new IsSuccessResponseDto(true,"성공적으로 태그가 삭제 되었습니다.");
     }
 

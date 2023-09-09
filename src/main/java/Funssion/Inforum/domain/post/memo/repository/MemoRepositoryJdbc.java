@@ -183,6 +183,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             List<String> updatedTags = form.getMemoTags();
             List<String> originalUpdatedTags = List.copyOf(form.getMemoTags());
             if (!tagRepository.updateTags(memoId,updatedTags).getIsSuccess()
+                    // tag repository 서비스 계층으로 빼기
                 || template.update(sql,
                     form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),createSqlArray(originalUpdatedTags), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
                     == 0)
@@ -192,7 +193,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
         }
         return findById(memoId);
     }
-
     @Override
     public Memo updateLikesInMemo(Long likes, Long memoId) {
         String sql = "update memo.info " +

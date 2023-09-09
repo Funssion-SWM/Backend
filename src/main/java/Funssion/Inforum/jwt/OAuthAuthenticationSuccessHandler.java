@@ -30,12 +30,12 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
                                         Authentication authentication) throws IOException {
         String accessToken = tokenProvider.createToken(authentication);
         if(request.getServerName().equals("localhost")){
-            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; HttpOnly";
+            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; SameSite=Lax; HttpOnly";
             response.setHeader("Set-Cookie", cookieValue);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=None; Secure";
+            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=Lax; Secure";
             response.setHeader("Set-Cookie",cookieValue);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }

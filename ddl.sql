@@ -2,7 +2,7 @@ CREATE SCHEMA member;
 CREATE SCHEMA memo;
 create schema comment;
 create schema post;
-
+create schema tag;
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
     tag_id bigserial,

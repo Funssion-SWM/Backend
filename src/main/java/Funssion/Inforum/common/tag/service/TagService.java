@@ -16,5 +16,4 @@ public class TagService {
     public List<String> getAllTags() {
         return tagRepository.getDefaultTags();
     }
-
 }
