@@ -39,6 +39,6 @@ public class SearchHistoryService {
 
     @Transactional
     public void removeSearchHistory(Long id) {
-
+        searchHistoryRepository.delete(id);
     }
 }
