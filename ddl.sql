@@ -56,7 +56,7 @@ CREATE TABLE memo.info (
     is_temporary boolean NOT NULL DEFAULT false,
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
-    tags varchar array
+    tags varchar array DEFAULT '{}'
 );
 
 CREATE TABLE member.auth (
@@ -96,7 +96,7 @@ CREATE TABLE member.user (
     email varchar(60) NOT NULL,
     login_type int8 NOT NULL DEFAULT 0,
     introduce varchar(100),
-    tags varchar(60),
+    tags varchar array DEFAULT '{}',
     image_path varchar(300),
     created_date timestamp
 );

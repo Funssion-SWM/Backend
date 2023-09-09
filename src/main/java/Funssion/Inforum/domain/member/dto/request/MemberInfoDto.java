@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,14 +17,14 @@ public class MemberInfoDto {
     private boolean isEmptyProfileImage;
     private MultipartFile image;
     private String introduce;
-    private String tags;
+    private List<String> memberTags;
 
-    public static MemberInfoDto createMemberInfo(boolean isEmptyProfileImage,MultipartFile image, String introduce, String tags){
+    public static MemberInfoDto createMemberInfo(boolean isEmptyProfileImage,MultipartFile image, String introduce, List<String> tags){
         return MemberInfoDto.builder()
                 .image(image)
                 .introduce(introduce)
                 .isEmptyProfileImage(isEmptyProfileImage)
-                .tags(tags)
+                .memberTags(tags)
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package Funssion.Inforum.common.tag.repository;
+package Funssion.Inforum.domain.tag.repository;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.DuplicateException;

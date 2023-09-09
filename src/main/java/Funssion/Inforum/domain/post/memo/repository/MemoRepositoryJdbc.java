@@ -2,10 +2,11 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
-import Funssion.Inforum.common.tag.repository.TagRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
+import Funssion.Inforum.domain.tag.TagUtils;
+import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -20,9 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -138,12 +137,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return stringArray;
     }
 
-    private List<String> createStringListFromArray(Array array)  {
-        return Arrays.asList(array).stream()
-                .map(arrayElement -> String.valueOf(arrayElement))
-                .collect(Collectors.toList());
-
-    }
 
     @Override
     public Memo findById(Long id) {
@@ -162,7 +155,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
-                        .memoTags(createStringListFromArray(rs.getArray("tags")))
+                        .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
@@ -203,7 +196,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
-        if (template.update(sql, authorProfileImagePath, authorId) == 0) throw new MemoNotFoundException("update profile fail");
+        template.update(sql, authorProfileImagePath, authorId);
     }
 
     @Override

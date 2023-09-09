@@ -13,9 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,9 +82,9 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
         String sql = "update member.user set introduce = ?, tags = ?, image_path = ? where id = ?";
-        int updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), MemberProfileEntity.getTags(), MemberProfileEntity.getProfileImageFilePath(),userId);
+        int updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), MemberProfileEntity.getUserTags(), MemberProfileEntity.getProfileImageFilePath(),userId);
         if (updatedRow ==0) throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
-        return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getTags(),MemberProfileEntity.getIntroduce(),"성공적으로 프로필을 저장하였습니다.");
+        return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getUserTags(),MemberProfileEntity.getIntroduce(),"성공적으로 프로필을 저장하였습니다.");
     }
 
     @Override
@@ -103,9 +101,9 @@ public class MyRepositoryJdbc implements MyRepository {
             params.add(memberProfileEntity.getIntroduce());
         }
 
-        if (memberProfileEntity.getTags() != null) {
+        if (memberProfileEntity.getUserTags() != null) {
             sqlBuilder.append("tags = ?, ");
-            params.add(memberProfileEntity.getTags());
+            params.add(memberProfileEntity.getUserTags());
         }
 
         sqlBuilder.append("image_path = ?, ");
@@ -130,7 +128,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
         return new IsProfileSavedDto(true,
                 memberProfileEntity.getProfileImageFilePath(),
-                memberProfileEntity.getTags(),
+                memberProfileEntity.getUserTags(),
                 memberProfileEntity.getIntroduce(),
                 "성공적으로 프로필을 수정하였습니다."
         );

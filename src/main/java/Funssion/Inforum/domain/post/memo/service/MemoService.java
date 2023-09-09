@@ -5,7 +5,7 @@ import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
-import Funssion.Inforum.common.tag.repository.TagRepository;
+import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;

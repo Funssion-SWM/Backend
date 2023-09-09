@@ -1,6 +1,6 @@
-package Funssion.Inforum.common.tag.controller;
+package Funssion.Inforum.domain.tag.controller;
 
-import Funssion.Inforum.common.tag.service.TagService;
+import Funssion.Inforum.domain.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

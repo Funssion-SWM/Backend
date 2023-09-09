@@ -6,7 +6,10 @@ import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
-import Funssion.Inforum.domain.member.dto.response.*;
+import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -26,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -99,7 +103,8 @@ public class MemberController {
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
-                                              @RequestPart(value = "tags", required = false) String tags){
+                                              @RequestPart(value = "tags", required = false) List<String> tags){
+        log.info("tags = {}",tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }
@@ -125,7 +130,7 @@ public class MemberController {
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,
-                                                @RequestPart(value = "tags", required = false) String tags){
+                                                @RequestPart(value = "tags", required = false) List<String> tags){
         MemberInfoDto memberInfoDto;
         try {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tags);
