@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,6 +34,53 @@ public class SearchHistoryControllerTest {
     void getRecentSearchHistoryTop10() throws Exception {
         mvc.perform(get("/search/history"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("검색 기록 저장하기")
+    void addSearchHistory() throws Exception {
+        mvc.perform(post("/search/history")
+                        .param("searchString", "JPA")
+                        .param("isTag", "true")
+                        .with(csrf()))
+                .andExpect(status().isCreated());
+
+        mvc.perform(post("/search/history")
+                        .param("searchString", "")
+                        .param("isTag", "false")
+                        .with(csrf()))
+                .andExpect(status().isCreated());
+
+        mvc.perform(post("/search/history")
+                        .param("isTag", "true")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/search/history")
+                        .param("searchString", "JPA")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/search/history")
+                        .param("searchString", "JPA")
+                        .param("isTag", "true!!")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("검색 기록 삭제하기")
+    void removeSearchHistory() throws Exception {
+        mvc.perform(delete("/search/history/4")
+                .with(csrf()))
+                .andExpect(status().isOk());
+
+
+        mvc.perform(delete("/search/history/-4")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
     }
 
 }

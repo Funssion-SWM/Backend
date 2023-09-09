@@ -39,7 +39,6 @@ import static Funssion.Inforum.common.constant.Sign.PLUS;
 public class MemoService {
 
     private final MemoRepository memoRepository;
-    private final SearchHistoryRepository searchHistoryRepository;
     private final MyRepository myRepository;
 
     @Transactional(readOnly = true)
@@ -168,30 +167,14 @@ public class MemoService {
     public List<MemoListDto> getMemosBy(
             String searchString,
             MemoOrderType orderBy,
-            Boolean isRecoded,
             Boolean isTag) {
 
         if (isTag) throw new BadRequestException("not yet implemented");
-
-        if (isRecoded) saveSearchHistory(searchString, isTag);
 
         return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();
-    }
-
-    private void saveSearchHistory(String searchString, Boolean isTag) {
-        Long userId = SecurityContextUtils.getUserId();
-
-        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) return;
-
-        searchHistoryRepository.save(
-                SearchHistory.builder()
-                        .userId(userId)
-                        .searchText(searchString)
-                        .isTag(isTag)
-                        .build());
     }
 
     private static List<String> getSearchStringList(String searchString) {

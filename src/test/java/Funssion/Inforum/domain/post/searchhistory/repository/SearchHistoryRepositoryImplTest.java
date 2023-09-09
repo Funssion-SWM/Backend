@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.searchhistory.repository;
 
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -53,8 +55,22 @@ class SearchHistoryRepositoryImplTest {
 
         List<SearchHistory> foundList = repository.findAllByUserIdRecent10(TEST_USER_ID);
 
-        Assertions.assertThat(foundList.size()).isEqualTo(2);
-        Assertions.assertThat(foundList.get(0).getSearchText()).isEqualTo(history2.getSearchText());
-        Assertions.assertThat(foundList.get(1).getSearchText()).isEqualTo(history1.getSearchText());
+        assertThat(foundList.size()).isEqualTo(2);
+        assertThat(foundList.get(0).getSearchText()).isEqualTo(history2.getSearchText());
+        assertThat(foundList.get(1).getSearchText()).isEqualTo(history1.getSearchText());
+    }
+
+    @Test
+    @DisplayName("검색 기록 삭제")
+    void delete() {
+        repository.save(history1);
+        SearchHistory saved = repository.findAllByUserIdRecent10(history1.getUserId()).get(0);
+
+        repository.delete(saved.getId());
+        List<SearchHistory> savedList = repository.findAllByUserIdRecent10(history1.getUserId());
+
+        assertThat(savedList.size()).isEqualTo(0);
+        assertThatThrownBy(() -> repository.delete(saved.getId()))
+                .isInstanceOf(NotFoundException.class);
     }
 }

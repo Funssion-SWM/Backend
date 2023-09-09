@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.searchhistory.repository;
 
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -40,5 +41,13 @@ public class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
                     .isTag(rs.getBoolean("is_tag"))
                     .build();
 
+    }
+
+    @Override
+    public void delete(Long id) {
+        String sql = "delete from post.search_history where id = ?";
+
+        if (template.update(sql, id) == 0)
+            throw new NotFoundException("search history not found id = " + id);
     }
 }
