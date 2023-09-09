@@ -16,7 +16,7 @@ public class SearchHistoryDto {
 
     public static SearchHistoryDto of(SearchHistory history) {
         return SearchHistoryDto.builder()
-                .id(history.getUserId())
+                .id(history.getId())
                 .searchText(history.getSearchText())
                 .isTag(history.getIsTag())
                 .build();

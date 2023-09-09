@@ -37,6 +37,7 @@ public class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
     private RowMapper<SearchHistory> searchHistoryRowMapper() {
         return (rs, rowNum) -> SearchHistory.builder()
                     .id(rs.getLong("id"))
+                    .userId(rs.getLong("user_id"))
                     .searchText(rs.getString("search_text"))
                     .isTag(rs.getBoolean("is_tag"))
                     .build();

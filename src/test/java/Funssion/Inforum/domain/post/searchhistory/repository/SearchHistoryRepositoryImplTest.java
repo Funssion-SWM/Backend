@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.searchhistory.repository;
 
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
+import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Slf4j
 @Transactional
 class SearchHistoryRepositoryImplTest {
 
@@ -54,6 +56,7 @@ class SearchHistoryRepositoryImplTest {
         repository.save(history2);
 
         List<SearchHistory> foundList = repository.findAllByUserIdRecent10(TEST_USER_ID);
+        log.info("{}",foundList);
 
         assertThat(foundList.size()).isEqualTo(2);
         assertThat(foundList.get(0).getSearchText()).isEqualTo(history2.getSearchText());
