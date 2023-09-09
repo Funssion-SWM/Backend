@@ -3,7 +3,9 @@ package Funssion.Inforum.domain.post.memo.service;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.tag.repository.TagRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -18,8 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +36,7 @@ import static Funssion.Inforum.common.constant.Sign.PLUS;
 public class MemoService {
 
     private final MemoRepository memoRepository;
+    private final TagRepository tagRepository;
     private final MyRepository myRepository;
 
     @Transactional(readOnly = true)
@@ -90,6 +92,7 @@ public class MemoService {
         MemoDto createdMemo = new MemoDto(
                 memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), LocalDateTime.now()))
         );
+        tagRepository.saveTags(createdMemo.getMemoId(),form.getMemoTags());
 
         if (!form.getIsTemporary())
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
@@ -126,10 +129,14 @@ public class MemoService {
     public MemoDto updateMemo(Long memoId, MemoSaveDto form) {
 
         Long userId = AuthUtils.getUserId(UPDATE);
-
+        List<String> updatedTags = List.copyOf(form.getMemoTags());
         Memo savedMemo = memoRepository.findById(memoId);
         updateHistory(form, userId, savedMemo);
-
+        try {
+            tagRepository.updateTags(memoId,updatedTags);
+        } catch (SQLException e) {
+            throw new ArrayToListException("tag update 중 sql.Array를 List로 변환하는 중 오류 발생",e);
+        }
         Memo memo = memoRepository.updateContentInMemo(form, memoId);
 
         return new MemoDto(memo);
@@ -152,7 +159,12 @@ public class MemoService {
 
         Long userId = AuthUtils.getUserId(DELETE);
         Memo memo = memoRepository.findById(memoId);
+        try {
+            tagRepository.deleteTags(memoId);
+        } catch (SQLException e) {
+            throw new ArrayToListException("tag update 중 sql.Array를 List로 변환하는 중 오류 발생",e);
 
+        }
         memoRepository.delete(memoId);
 
         if (!memo.getIsTemporary())

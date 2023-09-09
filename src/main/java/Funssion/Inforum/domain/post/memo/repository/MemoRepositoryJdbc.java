@@ -29,10 +29,8 @@ import java.util.stream.Collectors;
 public class MemoRepositoryJdbc implements MemoRepository{
 
     private final JdbcTemplate template;
-    private final TagRepository tagRepository;
 
     public MemoRepositoryJdbc(DataSource dataSource, TagRepository tagRepository) {
-        this.tagRepository = tagRepository;
         this.template = new JdbcTemplate(dataSource);
     }
 
@@ -58,7 +56,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
             return psmt;
         }, keyHolder);
         long createdMemoId = keyHolder.getKey().longValue();
-        tagRepository.saveTags(createdMemoId,listOfTagsInMemo);
 
         return findById(createdMemoId);
     }
@@ -180,11 +177,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = ?, is_temporary = ? " +
                 "where memo_id = ?";
         try {
-            List<String> updatedTags = form.getMemoTags();
-            List<String> originalUpdatedTags = List.copyOf(form.getMemoTags());
-            if (!tagRepository.updateTags(memoId,updatedTags).getIsSuccess()
-                || template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),createSqlArray(originalUpdatedTags), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
+            if (template.update(sql,
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),createSqlArray(form.getMemoTags()), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {
@@ -215,10 +209,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
-        try {
-            if (!tagRepository.deleteTags(id).getIsSuccess() || template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
-        } catch (SQLException e) {
-            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
-        }
+        if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
     }
 }

@@ -1,6 +1,8 @@
 package Funssion.Inforum.common.tag.repository;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.DuplicateException;
+import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -33,17 +35,17 @@ public class TagRepository {
     public IsSuccessResponseDto saveTags(Long createdMemoId,List<String> tags) {
         for (String tagName : tags) {
             try {
-                saveTagIfNotExistInTableOrUpdateTagCountIfExist(createdMemoId, tagName);
+                saveTagOrUpdateTag(createdMemoId, tagName);
             }catch(DataAccessException e){
-                return new IsSuccessResponseDto(false,"tag 저장중 db 오류, 오류 메시지 = "+e.getMessage());
+                throw new UpdateFailException("Tag 저장중 오류가 발생하였습니다.",e);
             }
         }
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 반영되었습니다.");
     }
 
-    private void saveTagIfNotExistInTableOrUpdateTagCountIfExist(Long createdMemoId, String tagName) {
+    private void saveTagOrUpdateTag(Long createdMemoId, String tagName) {
         int updatedRow = template.update("update tag.info set tag_count = tag_count + 1 where tag_name = ?;", tagName);
-        if (updatedRow != 1){
+        if (updatedRow == 0){
             /**
              * 해당 태그 이름이 테이블에 없으면 태그 정보를 새로 tag table에 추가합니다.
              * 이 때, default로 'is_default' 필드 값은 false로, 태그 참조 횟수는 1로 insert 됩니다.
@@ -52,23 +54,26 @@ public class TagRepository {
             Long createdTagId = insertTagIntoTable(tagName);
             insertTagRelationInTable(createdMemoId, createdTagId);
         }
-        else{
+        else if (updatedRow == 1){
             Long updatedTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, tagName);
             insertTagRelationInTable(createdMemoId,updatedTagId);
         }
+        else {
+            throw new DuplicateException("중복된 태그정보가 태그 테이블에 존재합니다.. ['saveTagOrUpdateTag' 메서드 오류]");
+        }
+
     }
 
 
     public IsSuccessResponseDto updateTags(Long memoId,List<String> updatedTags) throws SQLException {
         List<String> priorTags = createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?", Array.class,memoId));
-        comparePriorTagsWithUpdatedTagsAndUpdateTagInfo(updatedTags, priorTags,memoId);
+        comparePriorTagWithUpdateTag(updatedTags, priorTags,memoId);
 
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 수정되었습니다.");
     }
 
     public IsSuccessResponseDto deleteTags(Long memoId) throws SQLException {
         List<String> priorTags = createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?;", Array.class,memoId));
-        log.info("prior tags = {}",priorTags);
         for (String priorTagName : priorTags) {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
@@ -78,11 +83,10 @@ public class TagRepository {
         return new IsSuccessResponseDto(true,"성공적으로 태그가 삭제 되었습니다.");
     }
 
-    private void comparePriorTagsWithUpdatedTagsAndUpdateTagInfo(List<String> updatedTags, List<String> priorTags,Long memoId) {
+    private void comparePriorTagWithUpdateTag(List<String> updatedTags, List<String> priorTags,Long memoId) {
         removePriorTagsComparingWithNewTags(updatedTags, priorTags, memoId);
-        log.info("now tags = {}",updatedTags);
         for (String updatedTagName : updatedTags){
-            saveTagIfNotExistInTableOrUpdateTagCountIfExist(memoId,updatedTagName);
+            saveTagOrUpdateTag(memoId,updatedTagName);
         }
     }
 
@@ -94,11 +98,9 @@ public class TagRepository {
         for (String priorTagName : priorTags) {
             if(!updatedTags.contains(priorTagName)){
                 Long priorTagIdNotInUpdatedTags = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
-                log.info("priorName = {}",priorTagName);
                 subtractTagCount(priorTagName);
                 deleteTagInMemoToTagTable(memoId,priorTagIdNotInUpdatedTags);
             }else {
-                log.info("updatedTags = {}",updatedTags);
                 updatedTags.remove(priorTagName);
             }
         }
@@ -121,8 +123,10 @@ public class TagRepository {
 
     private void deleteTagInMemoToTagTable(Long memoId,Long priorTagId) {
         int deletedRow = template.update("delete from tag.memo_to_tag where tag_id = ? and memo_id = ?", priorTagId,memoId);
-        if (deletedRow != 1 ){
+        if (deletedRow == 0 ){
             throw new NotFoundException("기존 tag id 정보가 존재하지 않습니다.");
+        }else if (deletedRow == 2){
+            throw new DuplicateException("중복된 tag가 테이블에 존재합니다.");
         }
     }
 

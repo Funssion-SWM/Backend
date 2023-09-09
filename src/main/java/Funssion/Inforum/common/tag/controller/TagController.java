@@ -16,7 +16,7 @@ import java.util.List;
 public class TagController {
     private final TagService tagService;
     @GetMapping
-    public List<String> getTags(){
-        return tagService.getAllTags();
+    public List<String> getDefaultTags(){
+        return tagService.getDefaultTags();
     }
 }

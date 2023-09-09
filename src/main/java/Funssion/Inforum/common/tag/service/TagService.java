@@ -13,7 +13,7 @@ import java.util.List;
 public class TagService {
     private final TagRepository tagRepository;
 
-    public List<String> getAllTags() {
+    public List<String> getDefaultTags() {
         return tagRepository.getDefaultTags();
     }
 
