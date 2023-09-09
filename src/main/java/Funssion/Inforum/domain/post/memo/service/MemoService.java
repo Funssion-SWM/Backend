@@ -14,8 +14,6 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
-import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
-import Funssion.Inforum.domain.post.searchhistory.repository.SearchHistoryRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +38,7 @@ public class MemoService {
 
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
-    private final SearchHistoryRepository searchHistoryRepository;
+
     private final MyRepository myRepository;
 
     @Transactional(readOnly = true)
@@ -179,30 +177,14 @@ public class MemoService {
     public List<MemoListDto> getMemosBy(
             String searchString,
             MemoOrderType orderBy,
-            Boolean isRecoded,
             Boolean isTag) {
 
         if (isTag) throw new BadRequestException("not yet implemented");
-
-        if (isRecoded) saveSearchHistory(searchString, isTag);
 
         return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();
-    }
-
-    private void saveSearchHistory(String searchString, Boolean isTag) {
-        Long userId = SecurityContextUtils.getUserId();
-
-        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) return;
-
-        searchHistoryRepository.save(
-                SearchHistory.builder()
-                        .userId(userId)
-                        .searchText(searchString)
-                        .isTag(isTag)
-                        .build());
     }
 
     private static List<String> getSearchStringList(String searchString) {

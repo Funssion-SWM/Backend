@@ -147,7 +147,7 @@ public class MemberController {
         List<String> tagList = convertStringToList(tags);
         MemberInfoDto memberInfoDto;
         try {
-            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
+            memberInfoDto = MemberInfoDto.createMemberInfo(B:wqoolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
         }catch(NoSuchElementException e){
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
