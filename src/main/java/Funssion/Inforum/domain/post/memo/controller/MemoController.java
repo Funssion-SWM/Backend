@@ -62,11 +62,10 @@ public class MemoController {
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
             @RequestParam String orderBy,
-            @RequestParam Boolean isRecoded,
             @RequestParam Boolean isTag
     ) {
         return memoService.getMemosBy(
-                searchString, getOrderBy(orderBy), isRecoded, isTag);
+                searchString, getOrderBy(orderBy), isTag);
     }
 
     private static MemoOrderType getOrderBy(String orderBy) {

@@ -185,53 +185,34 @@ class MemoControllerTest {
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
                         .param("orderBy", "hot")
-                        .param("isRecoded", "true")
                         .param("isTag", "true"))
                 .andExpect(status().isOk());
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
-                        .param("isRecoded", "true")
                         .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
-                        .param("orderBy", "hot")
-                        .param("isTag", "true"))
-                .andExpect(status().isBadRequest());
-
-        mvc.perform(get("/memos/search")
-                        .param("searchString", "JPA")
-                        .param("orderBy", "hot")
-                        .param("isRecoded", "true"))
+                        .param("orderBy", "hot"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "")
                         .param("orderBy", "hot")
-                        .param("isRecoded", "true")
                         .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
                         .param("orderBy", "hotty")
-                        .param("isRecoded", "true")
                         .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
                         .param("orderBy", "hot")
-                        .param("isRecoded", "true!")
-                        .param("isTag", "true"))
-                .andExpect(status().isBadRequest());
-
-        mvc.perform(get("/memos/search")
-                        .param("searchString", "JPA")
-                        .param("orderBy", "hot")
-                        .param("isRecoded", "true")
                         .param("isTag", "true!"))
                 .andExpect(status().isBadRequest());
     }
