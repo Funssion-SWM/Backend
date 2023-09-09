@@ -141,13 +141,16 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return stringArray;
     }
 
-    private List<String> createStringListFromArray(Array array)  {
-        return Arrays.asList(array).stream()
-                .map(arrayElement -> String.valueOf(arrayElement))
-                .collect(Collectors.toList());
-
+    private List<String> createStringListFromArray(java.sql.Array array) {
+        try {
+            Object[] arrayElements = (Object[]) array.getArray();
+            return Arrays.stream(arrayElements)
+                    .map(arrayElement -> String.valueOf(arrayElement))
+                    .collect(Collectors.toList());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
-
     @Override
     public Memo findById(Long id) {
         String sql = "select * from memo.info where memo_id = ?";
