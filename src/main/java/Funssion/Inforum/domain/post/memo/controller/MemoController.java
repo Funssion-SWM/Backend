@@ -1,17 +1,13 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
-import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
-import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,6 +36,7 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
+        log.info("tagList = {}",memoSaveDto.getMemoTags());
         return memoService.createMemo(memoSaveDto);
     }
 

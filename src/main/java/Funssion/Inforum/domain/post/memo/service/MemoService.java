@@ -1,12 +1,10 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
-import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -19,6 +17,7 @@ import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.searchhistory.domain.SearchHistory;
 import Funssion.Inforum.domain.post.searchhistory.repository.SearchHistoryRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

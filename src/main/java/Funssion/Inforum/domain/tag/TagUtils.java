@@ -1,5 +1,7 @@
 package Funssion.Inforum.domain.tag;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 import java.sql.Array;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -16,5 +18,14 @@ public class TagUtils {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+    public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
+        Array stringArray = null;
+        try {
+            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+        } catch (SQLException e) {
+            throw new SQLException(e);
+        }
+        return stringArray;
     }
 }

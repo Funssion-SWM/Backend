@@ -4,6 +4,7 @@ import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.DuplicateException;
 import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.domain.tag.TagUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,9 +16,7 @@ import javax.sql.DataSource;
 import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -66,14 +65,14 @@ public class TagRepository {
 
 
     public IsSuccessResponseDto updateTags(Long memoId,List<String> updatedTags) throws SQLException {
-        List<String> priorTags = createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?", Array.class,memoId));
         comparePriorTagWithUpdateTag(updatedTags, priorTags,memoId);
 
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 수정되었습니다.");
     }
 
     public IsSuccessResponseDto deleteTags(Long memoId) throws SQLException {
-        List<String> priorTags = createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?;", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?;", Array.class,memoId));
         for (String priorTagName : priorTags) {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
@@ -134,10 +133,4 @@ public class TagRepository {
         template.update("update tag.info set tag_count = tag_count - 1 where tag_name = ?", priorTagName);
     }
 
-    private List<String> createStringListFromArray(Array array) throws SQLException {
-        return Arrays.stream((String[])(array.getArray()))
-                .map(arrayElement -> String.valueOf(arrayElement))
-                .collect(Collectors.toList());
-
-    }
 }

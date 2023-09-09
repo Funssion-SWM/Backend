@@ -15,7 +15,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Array;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -50,7 +49,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(5, memo.getDescription());
             psmt.setString(6, memo.getText());
             psmt.setString(7, memo.getColor());
-            psmt.setArray(8,createSqlArray(listOfTagsInMemo));
+            psmt.setArray(8,TagUtils.createSqlArray(template,listOfTagsInMemo));
             psmt.setBoolean(9, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
@@ -127,15 +126,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
         params.addAll(searchStringList);
         return params.stream().toArray();
     }
-    private Array createSqlArray(List<String> tags) throws SQLException {
-        Array stringArray = null;
-        try {
-            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
-        } catch (SQLException e) {
-            throw new SQLException(e);
-        }
-        return stringArray;
-    }
 
     @Override
     public Memo findById(Long id) {
@@ -170,7 +160,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "where memo_id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),createSqlArray(form.getMemoTags()), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {

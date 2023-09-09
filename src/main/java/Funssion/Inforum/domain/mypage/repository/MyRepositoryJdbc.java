@@ -2,17 +2,20 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
+import Funssion.Inforum.domain.tag.TagUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +89,12 @@ public class MyRepositoryJdbc implements MyRepository {
     @Override
     public IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
         String sql = "update member.user set introduce = ?, tags = ?, image_path = ? where id = ?";
-        int updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), MemberProfileEntity.getUserTags(), MemberProfileEntity.getProfileImageFilePath(),userId);
+        int updatedRow = 0;
+        try {
+            updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), TagUtils.createSqlArray(template,MemberProfileEntity.getUserTags()), MemberProfileEntity.getProfileImageFilePath(),userId);
+        } catch (SQLException e) {
+            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+        }
         if (updatedRow ==0) throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
         return new IsProfileSavedDto(true,MemberProfileEntity.getProfileImageFilePath(),MemberProfileEntity.getUserTags(),MemberProfileEntity.getIntroduce(),"성공적으로 프로필을 저장하였습니다.");
     }
@@ -107,7 +115,11 @@ public class MyRepositoryJdbc implements MyRepository {
 
         if (memberProfileEntity.getUserTags() != null) {
             sqlBuilder.append("tags = ?, ");
-            params.add(memberProfileEntity.getUserTags());
+            try {
+                params.add(TagUtils.createSqlArray(template,memberProfileEntity.getUserTags()));
+            } catch (SQLException e) {
+                throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+            }
         }
 
         sqlBuilder.append("image_path = ?, ");
