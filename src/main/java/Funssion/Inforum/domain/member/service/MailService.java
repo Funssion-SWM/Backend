@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

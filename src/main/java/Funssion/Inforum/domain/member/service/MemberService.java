@@ -7,7 +7,7 @@ import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -213,7 +213,7 @@ public class MemberService {
     private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
         return MemberProfileEntity.builder()
                 .profileImageFilePath(getImagePath(imageName))
-                .tags(memberInfoDto.getTags())
+                .userTags(memberInfoDto.getMemberTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())
                 .build();
@@ -222,14 +222,14 @@ public class MemberService {
     private MemberProfileEntity generateMemberProfileEntityKeepingImagePath(MemberInfoDto memberInfoDto,String imagePath){
         return MemberProfileEntity.builder()
                 .profileImageFilePath(imagePath)
-                .tags(memberInfoDto.getTags())
+                .userTags(memberInfoDto.getMemberTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())
                 .build();
     }
     private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto){
         return MemberProfileEntity.builder()
-                .tags(memberInfoDto.getTags())
+                .userTags(memberInfoDto.getMemberTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())
                 .build();
@@ -239,7 +239,7 @@ public class MemberService {
     private MemberProfileEntity generateMemberProfileEntityWithNoProfileImage(MemberInfoDto memberInfoDto){
         return MemberProfileEntity.builder()
                 .profileImageFilePath(null)
-                .tags(memberInfoDto.getTags())
+                .userTags(memberInfoDto.getMemberTags())
                 .nickname(memberInfoDto.getNickname())
                 .introduce(memberInfoDto.getIntroduce())
                 .build();

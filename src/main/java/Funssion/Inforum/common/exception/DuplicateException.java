@@ -7,7 +7,8 @@ public class DuplicateException extends RuntimeException{
     private ErrorResult errorResult;
     private String message;
 
-    public DuplicateException(String message) {
+    public
+    DuplicateException(String message) {
         this.message = message;
         this.errorResult = new ErrorResult(HttpStatus.CONFLICT, message);
     }

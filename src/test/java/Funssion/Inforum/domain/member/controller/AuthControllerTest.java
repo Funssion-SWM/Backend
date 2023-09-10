@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.member.controller;
 
 import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.service.AuthService;
 import org.assertj.core.api.Assertions;

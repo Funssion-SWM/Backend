@@ -1,14 +1,12 @@
 package Funssion.Inforum.domain.post.memo.dto.response;
 
-import Funssion.Inforum.domain.member.entity.Member;
-import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -25,6 +23,7 @@ public class MemoListDto {
     private String authorProfileImagePath;
     private Long likes;
     private Boolean isLike;
+    private List<String> memoTags;
     private Boolean isTemporary;
 
     public MemoListDto(Memo memo) {
@@ -38,6 +37,7 @@ public class MemoListDto {
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
         this.likes = memo.getLikes();
+        this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
     }
 

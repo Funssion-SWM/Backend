@@ -1,14 +1,10 @@
 package Funssion.Inforum.domain.post.memo.dto.response;
 
-import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class MemoDto {
@@ -23,7 +19,9 @@ public class MemoDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Long likes;
+    private List<String> memoTags;
     private Boolean isTemporary;
+    private Boolean isMine;
 
     public MemoDto(Memo memo) {
         this.memoId = memo.getId();
@@ -36,7 +34,12 @@ public class MemoDto {
         this.memoColor = memo.getColor();
         this.createdDate = memo.getCreatedDate();
         this.updatedDate = memo.getUpdatedDate();
+        this.memoTags = memo.getMemoTags();
         this.likes = memo.getLikes();
         this.isTemporary = memo.getIsTemporary();
+    }
+
+    public void setIsMine(Long authorId) {
+        this.isMine = this.authorId.equals(authorId);
     }
 }

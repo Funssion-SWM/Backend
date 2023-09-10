@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
-import Funssion.Inforum.domain.member.dto.response.IsSuccessResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 

@@ -1,10 +1,12 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
-import Funssion.Inforum.domain.post.domain.Post;
+import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
+import Funssion.Inforum.domain.tag.TagUtils;
+import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -15,9 +17,8 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.Timestamp;
+import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     private final JdbcTemplate template;
 
-
-    public MemoRepositoryJdbc(DataSource dataSource) {
+    public MemoRepositoryJdbc(DataSource dataSource, TagRepository tagRepository) {
         this.template = new JdbcTemplate(dataSource);
     }
 
@@ -37,9 +37,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, is_temporary) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?);";
-
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, tags, is_temporary) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
+        List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
             psmt.setLong(1, memo.getAuthorId());
@@ -49,11 +49,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(5, memo.getDescription());
             psmt.setString(6, memo.getText());
             psmt.setString(7, memo.getColor());
-            psmt.setBoolean(8, memo.getIsTemporary());
+            psmt.setArray(8,TagUtils.createSqlArray(template,listOfTagsInMemo));
+            psmt.setBoolean(9, memo.getIsTemporary());
             return psmt;
         }, keyHolder);
+        long createdMemoId = keyHolder.getKey().longValue();
 
-        return findById(keyHolder.getKey().longValue());
+        return findById(createdMemoId);
     }
 
     @Override
@@ -142,6 +144,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
@@ -153,17 +156,18 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, updated_date = ?, is_temporary = ? " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = ?, is_temporary = ? " +
                 "where memo_id = ?";
-
-        if (template.update(sql,
-                form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(), Date.valueOf(LocalDate.now()), form.getIsTemporary(),
-                memoId)
-                == 0)
-            throw new MemoNotFoundException("update content fail");
+        try {
+            if (template.update(sql,
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
+                    == 0)
+                throw new MemoNotFoundException("update content fail");
+        } catch (SQLException e) {
+            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+        }
         return findById(memoId);
     }
-
     @Override
     public Memo updateLikesInMemo(Long likes, Long memoId) {
         String sql = "update memo.info " +
@@ -180,7 +184,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
-        if (template.update(sql, authorProfileImagePath, authorId) == 0) throw new MemoNotFoundException("update profile fail");
+        template.update(sql, authorProfileImagePath, authorId);
     }
 
     @Override

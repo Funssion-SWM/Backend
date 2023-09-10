@@ -57,7 +57,10 @@ class MyRepositoryJdbcTest {
         assertThat(updated.getBlogCnt()).isEqualTo(1);
         assertThat(updated.getQuestionCnt()).isEqualTo(0);
 
-        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate()))
+        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID + 1, MEMO, PLUS, curDate.toLocalDate()))
                 .isInstanceOf(HistoryNotFoundException.class);
+
+        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate()))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

@@ -1,13 +1,13 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
+import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +36,7 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
+        log.info("tagList = {}",memoSaveDto.getMemoTags());
         return memoService.createMemo(memoSaveDto);
     }
 
@@ -56,10 +57,20 @@ public class MemoController {
 
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
-            @RequestParam(name = "q") @NotBlank String searchString,
-            @RequestParam(required = false, defaultValue = "HOT") String orderBy
+            @RequestParam @NotBlank String searchString,
+            @RequestParam String orderBy,
+            @RequestParam Boolean isTag
     ) {
-        return memoService.getMemosBy(searchString, orderBy);
+        return memoService.getMemosBy(
+                searchString, getOrderBy(orderBy), isTag);
+    }
+
+    private static MemoOrderType getOrderBy(String orderBy) {
+        try {
+            return MemoOrderType.valueOf(orderBy.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage(), e);
+        }
     }
 
     @GetMapping("/drafts")

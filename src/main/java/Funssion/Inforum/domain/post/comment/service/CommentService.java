@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.domain.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -11,19 +11,16 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
-import Funssion.Inforum.domain.post.comment.dto.response.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static java.time.LocalDate.now;
 
 @Service
 @Transactional
@@ -38,7 +35,7 @@ public class CommentService {
      * 로그인된 유저의 정보를 가져와
      * 이를 활용하여 profile을 가져옵니다.
      */
-    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto,Long authorId){
+    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         commentRepository.createComment(new Comment(
             authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)

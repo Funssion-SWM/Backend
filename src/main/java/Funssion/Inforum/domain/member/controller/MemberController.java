@@ -1,11 +1,15 @@
 package Funssion.Inforum.domain.member.controller;
 
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
-import Funssion.Inforum.domain.member.dto.response.*;
+import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
+import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -25,8 +29,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -99,17 +105,30 @@ public class MemberController {
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
                                               @RequestPart(value = "tags", required = false) String tags){
+
+        List<String> tagList = convertStringToList(tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }
         MemberInfoDto memberInfoDto;
         try {
-            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tags);
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
         }catch(NoSuchElementException e){
-            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tags);
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.createMemberProfile(userId,memberInfoDto);
     }
+
+    private List<String> convertStringToList(String tags) {
+        /**
+         * 클라이언트에서 모든 도메인의 같은 tag 요청을 보낼 수 있게 "~~" 의 따옴표도 삭제합니다.
+         * form-data 형식이라 어쩔 수 없음.
+         */
+        return List.of(tags.substring(1, tags.length() - 1).split(","))
+                .stream().map(tag->tag.substring(1,tag.length()-1))
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/profile/{id}")
     public MemberProfileEntity getProfile(@PathVariable("id") String userId){
         try {
@@ -125,11 +144,12 @@ public class MemberController {
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
+        List<String> tagList = convertStringToList(tags);
         MemberInfoDto memberInfoDto;
         try {
-            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tags);
+            memberInfoDto = MemberInfoDto.createMemberInfo(B:wqoolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
         }catch(NoSuchElementException e){
-            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tags);
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
     }
