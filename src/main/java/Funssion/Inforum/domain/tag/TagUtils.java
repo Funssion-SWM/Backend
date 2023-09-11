@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TagUtils {
@@ -21,7 +22,7 @@ public class TagUtils {
         }
     }
     public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
-        try (Connection con = template.getDataSource().getConnection()) {
+        try (Connection con = Objects.requireNonNull(template.getDataSource()).getConnection()) {
             return con.createArrayOf("varchar", tags.toArray());
         } catch (SQLException e) {
             throw new SQLException(e);

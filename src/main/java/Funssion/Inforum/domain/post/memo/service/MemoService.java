@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -132,7 +133,7 @@ public class MemoService {
     public MemoDto updateMemo(Long memoId, MemoSaveDto form) {
 
         Long userId = AuthUtils.getUserId(UPDATE);
-        List<String> updatedTags = List.copyOf(form.getMemoTags());
+        ArrayList<String> updatedTags = new ArrayList<>(form.getMemoTags());
         Memo savedMemo = memoRepository.findById(memoId);
         updateHistory(form, userId, savedMemo);
         try {
