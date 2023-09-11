@@ -61,11 +61,11 @@ public class MemoController {
             @RequestParam String orderBy,
             @RequestParam Boolean isTag
     ) {
-        return memoService.getMemosBy(
-                searchString, getOrderBy(orderBy), isTag);
+        return memoService.searchMemosBy(
+                searchString, toMemoOrderType(orderBy), isTag);
     }
 
-    private static MemoOrderType getOrderBy(String orderBy) {
+    private static MemoOrderType toMemoOrderType(String orderBy) {
         try {
             return MemoOrderType.valueOf(orderBy.toUpperCase());
         } catch (IllegalArgumentException e) {

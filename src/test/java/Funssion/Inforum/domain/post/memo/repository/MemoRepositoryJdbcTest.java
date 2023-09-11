@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static Funssion.Inforum.common.constant.memo.MemoOrderType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,6 +54,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(0L)
+            .memoTags(List.of("JPA", "Java"))
             .build();
     Memo memo2 = Memo.builder()
             .title(form2.getMemoTitle())
@@ -66,6 +68,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(1L)
+            .memoTags(List.of("JDK", "Java"))
             .build();
     Memo memo3 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -79,6 +82,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(9999L)
+            .memoTags(List.of("JWT", "JAVA"))
             .build();
     Memo memo4 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -92,6 +96,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(true)
             .likes(9999L)
+            .memoTags(List.of("JWT", "Java"))
             .build();
 
     @Nested
@@ -242,13 +247,13 @@ class MemoRepositoryJdbcTest {
         }
 
         @Test
-        @DisplayName("메모 검색")
+        @DisplayName("메모 텍스트로 검색")
         void findAllBySearchQueryTest() {
             List<String> searchStringList = new ArrayList<>();
             searchStringList.add("%JPA란?%"); // memo1
             searchStringList.add("%JDK란?%"); // memo2
 
-            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, MemoOrderType.NEW);
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW);
 
             assertThat(foundMemoList.size()).isEqualTo(2);
 
@@ -259,5 +264,22 @@ class MemoRepositoryJdbcTest {
             assertThat(memo2).isEqualTo(createdMemo2);
         }
 
+        @Test
+        @DisplayName("메모 태그로 검색")
+        void findAllByTag() {
+            List<Memo> foundByJavaTag = repository.findAllByTag("Java", NEW);
+
+            assertThat(foundByJavaTag).contains(createdMemo, createdMemo2, createdMemo3);
+
+            List<Memo> foundByLowerCaseJavaTag = repository.findAllByTag("java", NEW);
+            List<Memo> foundByUpperCaseJavaTag = repository.findAllByTag("JAVA", NEW);
+
+            assertThat(foundByJavaTag).isEqualTo(foundByLowerCaseJavaTag);
+            assertThat(foundByJavaTag).isEqualTo(foundByUpperCaseJavaTag);
+
+            List<Memo> foundByJWTTag = repository.findAllByTag("JWT", NEW);
+
+            assertThat(foundByJWTTag).contains(createdMemo3);
+        }
     }
 }

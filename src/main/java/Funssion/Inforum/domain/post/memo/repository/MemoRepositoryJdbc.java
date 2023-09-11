@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
+import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -112,10 +113,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             if (i != searchStringList.size() - 1) sql += "or ";
         }
 
-        switch (orderType) {
-            case HOT -> sql += "order by likes desc, memo_id desc";
-            case NEW -> sql += "order by memo_id desc";
-        }
+        sql += getOrderBySql(orderType);
 
         return sql;
     }
@@ -125,6 +123,25 @@ public class MemoRepositoryJdbc implements MemoRepository{
         params.addAll(searchStringList);
         params.addAll(searchStringList);
         return params.stream().toArray();
+    }
+
+    @Override
+    public List<Memo> findAllByTag(String tagText, MemoOrderType orderType) {
+        String sql = "select * from memo.info where is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, memoRowMapper(), tagText);
+    }
+
+    private static String getOrderBySql(MemoOrderType orderType) {
+        switch (orderType) {
+            case HOT -> {
+                return  " order by likes desc, memo_id desc";
+            }
+            case NEW -> {
+                return  " order by memo_id desc";
+            }
+        }
+        throw new BadRequestException("Invalid orderType value");
     }
 
     @Override
