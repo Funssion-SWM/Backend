@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.tag;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Array;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -20,8 +21,8 @@ public class TagUtils {
         }
     }
     public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
-        try {
-            return template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+        try (Connection con = template.getDataSource().getConnection()) {
+            return con.createArrayOf("varchar", tags.toArray());
         } catch (SQLException e) {
             throw new SQLException(e);
         }
