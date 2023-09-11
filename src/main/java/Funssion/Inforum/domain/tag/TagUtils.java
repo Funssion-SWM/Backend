@@ -20,12 +20,10 @@ public class TagUtils {
         }
     }
     public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
-        Array stringArray = null;
         try {
-            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+            return template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
         } catch (SQLException e) {
             throw new SQLException(e);
         }
-        return stringArray;
     }
 }
