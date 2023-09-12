@@ -36,7 +36,7 @@ class CommentRepositoryImplTest {
     @Autowired
     CommentRepository commentRepository;
 
-    private MemberProfileEntity testUserProfileEntity = new MemberProfileEntity("회원 프로필 이미지 저장 경로", "회원 닉네임", "회원 자기소개", "회원 개인 태그");
+    private MemberProfileEntity testUserProfileEntity = new MemberProfileEntity("회원 프로필 이미지 저장 경로", "회원 닉네임", "회원 자기소개", List.of("tag1,tag2"));
 
     @BeforeEach
     void beforeEach() {

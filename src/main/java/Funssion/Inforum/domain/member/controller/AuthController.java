@@ -1,11 +1,10 @@
 package Funssion.Inforum.domain.member.controller;
 
-import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.dto.response.isAlreadyExistSocialMember;
 import Funssion.Inforum.domain.member.service.AuthService;
-import Funssion.Inforum.domain.member.service.OAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-    private final OAuthService oAuthService;
     @Value("${jwt.domain}") private String domain;
 
     @PostMapping("/users/login")
@@ -32,10 +30,12 @@ public class AuthController {
             TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
             HttpHeaders httpHeaders = new HttpHeaders();
             if(request.getServerName().equals("localhost")){
-                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=Lax;HttpOnly");
+                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getAccessToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=3600; SameSite=Lax;HttpOnly");
+                httpHeaders.add("Set-Cookie","refreshToken="+tokenDto.getRefreshToken()+";"+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=Lax;HttpOnly");
             }
             else{
-                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400;SameSite=Lax;HttpOnly;Secure");
+                httpHeaders.add("Set-Cookie", "accessToken="+tokenDto.getAccessToken()+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=3600;SameSite=Lax;HttpOnly;Secure");
+                httpHeaders.add("Set-Cookie","refreshToken="+tokenDto.getRefreshToken()+";"+"Path=/; "+"Domain="+domain+"; "+"Max-Age=86400; SameSite=Lax;HttpOnly");
             }
             return new ResponseEntity<>( new IsSuccessResponseDto(true,"로그인에 성공하였습니다."), httpHeaders, HttpStatus.OK);
         }catch(AuthenticationException e){

@@ -28,15 +28,20 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        String accessToken = tokenProvider.createToken(authentication);
+        String accessToken = tokenProvider.createAccessToken(authentication);
+        String refreshToken = tokenProvider.createRefreshToken(authentication);
         if(request.getServerName().equals("localhost")){
-            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; SameSite=Lax; HttpOnly";
-            response.setHeader("Set-Cookie", cookieValue);
+            String cookieValue1 = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly";
+            String cookieValue2 = "refreshToken=" + refreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; SameSite=Lax; HttpOnly";
+            response.setHeader("Set-Cookie", cookieValue1);
+            response.setHeader("Set-Cookie", cookieValue2);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=Lax; Secure";
+            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=3600; HttpOnly; SameSite=Lax; Secure";
+            String cookieValue2 = "refreshToken=" + refreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; HttpOnly; SameSite=Lax; Secure";
             response.setHeader("Set-Cookie",cookieValue);
+            response.setHeader("Set-Cookie", cookieValue2);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
     }

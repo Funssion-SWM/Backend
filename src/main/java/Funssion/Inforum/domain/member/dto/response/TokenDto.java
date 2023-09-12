@@ -4,11 +4,13 @@ import lombok.Getter;
 
 @Getter
 public class TokenDto {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private Long id;
 
-    public TokenDto(String token, Long id){
-        this.token = token;
+    public TokenDto(String accessToken,String refreshToken, Long id){
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
         this.id = id;
     }
 }
