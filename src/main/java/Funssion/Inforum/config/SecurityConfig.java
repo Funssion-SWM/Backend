@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,6 +45,7 @@ public class SecurityConfig {
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
     private final OAuthAuthenticationSuccessHandler oAuthAuthneticationSuccessHandler;
+    @Value("${jwt.domain}") private String domain;
 
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
     @Bean
@@ -103,7 +105,7 @@ public class SecurityConfig {
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
+                .apply(new JwtSecurityConfig(tokenProvider,domain)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
 
         return httpSecurity.build();
     }

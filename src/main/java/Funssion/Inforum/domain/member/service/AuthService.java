@@ -33,8 +33,9 @@ public class AuthService implements UserDetailsService {
         // 해당 객체를 SecurityContextHolder에 저장하고
         SecurityContextHolder.getContext().setAuthentication(authentication);
         // 인증받은 새로운 authentication 객체를 createToken 메소드를 통해서 JWT Token을 생성
-        String jwt = tokenProvider.createToken(authentication);
-        return new TokenDto(jwt,Long.parseLong(authentication.getName()));
+        String accessToken = tokenProvider.createAccessToken(authentication);
+        String refreshToken = tokenProvider.createRefreshToken(authentication);
+        return new TokenDto(accessToken,refreshToken,Long.parseLong(authentication.getName()));
     }
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
