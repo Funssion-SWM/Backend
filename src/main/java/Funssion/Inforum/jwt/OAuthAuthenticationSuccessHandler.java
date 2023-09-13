@@ -36,7 +36,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
             String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
             String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
             response.setHeader("Set-Cookie", accessCookieString);
-            response.setHeader("Set-Cookie", refreshCookieString);
+            response.addHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
@@ -44,7 +44,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
             String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
             String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
             response.setHeader("Set-Cookie",accessCookieString);
-            response.setHeader("Set-Cookie", refreshCookieString);
+            response.addHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
     }
