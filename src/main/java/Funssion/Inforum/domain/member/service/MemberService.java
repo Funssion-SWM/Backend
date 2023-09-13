@@ -2,6 +2,8 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.ImageIOException;
+import Funssion.Inforum.s3.S3Repository;
+import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
@@ -18,7 +20,7 @@ import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,27 +32,21 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MemberService {
     //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
     private final Map<String,MemberRepository> repositoryMap;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
-    private final AmazonS3 S3client;
+    private final S3Repository s3Repository;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
 
-    public MemberService(Map<String, MemberRepository> repositoryMap,MyRepository myRepository, MemoRepository memoRepository, AmazonS3 S3client) {
-        this.repositoryMap = repositoryMap;
-        this.myRepository = myRepository;
-        this.memoRepository = memoRepository;
-        this.S3client = S3client;
-    }
     HashMap<LoginType, String> loginTypeMap = new HashMap<>();
     {
         loginTypeMap.put(LoginType.NON_SOCIAL,"nonSocialMemberRepository");
@@ -106,93 +102,96 @@ public class MemberService {
     public ValidatedDto isValidEmail(String email, LoginType loginType){
         MemberRepository selectedMemberRepository = getMemberRepository(loginType);
         log.debug("selected repository = {}",selectedMemberRepository);
+
         boolean isEmailAvailable = selectedMemberRepository.findByEmail(email).isEmpty();
         String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return new ValidatedDto(isEmailAvailable,message);
     }
 
     @Transactional
-    public IsProfileSavedDto createMemberProfile(String userId, MemberInfoDto memberInfoDto){
+    public IsProfileSavedDto createMemberProfile(Long userId, MemberInfoDto memberInfoDto){
         return memberInfoDto.isEmptyProfileImage() == false
                 ? createMemberProfileWithImage(userId, memberInfoDto)
                 : createMemberProfileWithoutImage(userId, memberInfoDto);
     }
     @Transactional
-    public IsProfileSavedDto updateMemberProfile(String userId,MemberInfoDto memberInfoDto) {
+    public IsProfileSavedDto updateMemberProfile(Long userId,MemberInfoDto memberInfoDto) {
         return memberInfoDto.getImage() != null
                 ? updateMemberProfileWithImage(userId, memberInfoDto)
                 : updateMemberProfileWithoutImage(userId, memberInfoDto);
     }
-    private IsProfileSavedDto createMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
+    private IsProfileSavedDto createMemberProfileWithoutImage(Long userId, MemberInfoDto memberInfoDto) {
 
-        if(!Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isEmpty()){
+        checkAlreadyExists(userId);
+
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.generateWithNoProfileImage(memberInfoDto);
+
+        return createProfile(userId, memberProfileEntity);
+    }
+
+    private IsProfileSavedDto createMemberProfileWithImage(Long userId, MemberInfoDto memberInfoDto) {
+        MultipartFile memberProfileImage = memberInfoDto.getImage();
+        String imageName = S3Utils.generateImageNameOfS3(memberInfoDto, userId);
+
+        checkAlreadyExists(userId);
+
+        String uploadedImageURL = s3Repository.upload(memberProfileImage, profileDir, imageName);
+
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.generateWithProfileImage(memberInfoDto, uploadedImageURL);
+
+        return createProfile(userId, memberProfileEntity);
+
+    }
+
+    private void checkAlreadyExists(Long userId) {
+        if(!Optional.ofNullable(myRepository.findProfileImageNameById(userId)).isEmpty()){
             throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
         }
-        memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
-        return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
     }
 
-    private IsProfileSavedDto createMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
-        MultipartFile memberProfileImage = memberInfoDto.getImage();
-        String imageName = generateImageNameOfS3(memberInfoDto, userId);
-        try {
-            if(Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId))).isPresent()){
-                throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
-            }
-            uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
-            return myRepository.createProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
-        } catch (IOException e) {
-            throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
-        }
+    private IsProfileSavedDto createProfile(Long userId, MemberProfileEntity memberProfileEntity) {
+        memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
+        return myRepository.createProfile(userId, memberProfileEntity);
     }
 
-    private String getImagePath(String imageName) {
-        return "https://store.inforum.me" + S3client.getUrl(profileDir, imageName).getPath().substring(15);
-    }
+    private IsProfileSavedDto updateMemberProfileWithoutImage(Long userId, MemberInfoDto memberInfoDto) {
+        Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(userId));
+        MemberProfileEntity memberProfileEntity;
 
-
-    private IsProfileSavedDto updateMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
-        Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
+        // 이전 프로필 이미지가 존재하고, 프로필을 지워달라는 요청이 오면 이전 프로필 이미지 지우기
         if (priorImageName.isPresent() && memberInfoDto.isEmptyProfileImage()) {
-            deleteImageFromS3(priorImageName.get());
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
-            return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntityWithNoProfileImage(memberInfoDto));
+            s3Repository.delete(profileDir, priorImageName.get());
+            memberProfileEntity = MemberProfileEntity.generateWithNoProfileImage(memberInfoDto);
         }
         else if(priorImageName.isPresent()){
-            return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntityKeepingImagePath(memberInfoDto,priorImageName.get()));
+            memberProfileEntity = MemberProfileEntity.generateKeepingImagePath(memberInfoDto,priorImageName.get());
+        } else {
+            memberProfileEntity = MemberProfileEntity.generateWithNoProfileImage(memberInfoDto);
         }
-        memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
-        return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto));
+
+        return updateProfile(userId, memberProfileEntity);
     }
 
-    private IsProfileSavedDto updateMemberProfileWithImage(String userId, MemberInfoDto memberInfoDto) {
+    private IsProfileSavedDto updateMemberProfileWithImage(Long userId, MemberInfoDto memberInfoDto) {
         MultipartFile memberProfileImage = memberInfoDto.getImage();
-        String imageName = generateImageNameOfS3(memberInfoDto, userId);
-        try {
-            Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(Long.valueOf(userId)));
-            if (priorImageName.isPresent()) {
-                deleteImageFromS3(priorImageName.get());
-                memoRepository.updateAuthorProfile(Long.valueOf(userId), null);
-            }
-            uploadImageToS3(memberProfileImage, imageName);
-            memoRepository.updateAuthorProfile(Long.valueOf(userId), getImagePath(imageName));
-            return myRepository.updateProfile(Long.valueOf(userId), generateMemberProfileEntity(memberInfoDto, imageName));
-        } catch (IOException e) {
-            throw new ImageIOException("프로필 이미지 IO Exception 발생", e);
-        }
+        String imageName = S3Utils.generateImageNameOfS3(memberInfoDto, userId);
+
+        Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(userId));
+        priorImageName.ifPresent(s -> s3Repository.delete(profileDir, s));
+
+        String uploadedImageURL = s3Repository.upload(memberProfileImage, profileDir, imageName);
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.generateWithProfileImage(memberInfoDto, uploadedImageURL);
+
+        return updateProfile(userId, memberProfileEntity);
     }
 
-    private void uploadImageToS3(MultipartFile memberProfileImage, String imageName) throws IOException {
-        S3client.putObject(profileDir, imageName, memberProfileImage.getInputStream(), getObjectMetaData(memberProfileImage));
+    private IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
+        memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
+        return myRepository.updateProfile(userId, memberProfileEntity);
     }
 
-    private void deleteImageFromS3(String imageName){
-        String imageNameInS3 = parseImageNameOfS3(imageName);
-        S3client.deleteObject(profileDir,imageNameInS3);
-    }
-    public MemberProfileEntity getMemberProfile(String userId){
-        return myRepository.findProfileByUserId(Long.valueOf(userId));
+    public MemberProfileEntity getMemberProfile(Long userId){
+        return myRepository.findProfileByUserId(userId);
     }
 
     private MemberRepository getMemberRepository(LoginType loginType) {
@@ -200,54 +199,4 @@ public class MemberService {
         return selectedMemberRepository;
     }
 
-    private String parseImageNameOfS3(String imagePathS3){
-        int startIndexOfParsing = imagePathS3.lastIndexOf("/");
-        return imagePathS3.substring(startIndexOfParsing+1);
-    }
-    private String generateImageNameOfS3(MemberInfoDto memberInfoDto,String userId) {
-        if(memberInfoDto.getImage().isEmpty()) return "";
-        String fileName = UUID.randomUUID()+ "-" + userId;
-        return fileName;
-    }
-
-    private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto,String imageName){
-        return MemberProfileEntity.builder()
-                .profileImageFilePath(getImagePath(imageName))
-                .userTags(memberInfoDto.getMemberTags())
-                .nickname(memberInfoDto.getNickname())
-                .introduce(memberInfoDto.getIntroduce())
-                .build();
-    }
-
-    private MemberProfileEntity generateMemberProfileEntityKeepingImagePath(MemberInfoDto memberInfoDto,String imagePath){
-        return MemberProfileEntity.builder()
-                .profileImageFilePath(imagePath)
-                .userTags(memberInfoDto.getMemberTags())
-                .nickname(memberInfoDto.getNickname())
-                .introduce(memberInfoDto.getIntroduce())
-                .build();
-    }
-    private MemberProfileEntity generateMemberProfileEntity(MemberInfoDto memberInfoDto){
-        return MemberProfileEntity.builder()
-                .userTags(memberInfoDto.getMemberTags())
-                .nickname(memberInfoDto.getNickname())
-                .introduce(memberInfoDto.getIntroduce())
-                .build();
-    }
-
-
-    private MemberProfileEntity generateMemberProfileEntityWithNoProfileImage(MemberInfoDto memberInfoDto){
-        return MemberProfileEntity.builder()
-                .profileImageFilePath(null)
-                .userTags(memberInfoDto.getMemberTags())
-                .nickname(memberInfoDto.getNickname())
-                .introduce(memberInfoDto.getIntroduce())
-                .build();
-    }
-    private ObjectMetadata getObjectMetaData(MultipartFile file){
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(file.getContentType());
-        objectMetadata.setContentLength(file.getSize());
-        return objectMetadata;
-    }
 }
