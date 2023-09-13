@@ -30,19 +30,38 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
                                         Authentication authentication) throws IOException {
         String accessToken = tokenProvider.createAccessToken(authentication);
         String refreshToken = tokenProvider.createRefreshToken(authentication);
+        boolean isHttpOnly;
         if(request.getServerName().equals("localhost")){
-            String cookieValue1 = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly";
-            String cookieValue2 = "refreshToken=" + refreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; SameSite=Lax; HttpOnly";
-            response.setHeader("Set-Cookie", cookieValue1);
-            response.setHeader("Set-Cookie", cookieValue2);
+            isHttpOnly = false;
+            String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
+            String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
+            response.setHeader("Set-Cookie", accessCookieString);
+            response.setHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=3600; HttpOnly; SameSite=Lax; Secure";
-            String cookieValue2 = "refreshToken=" + refreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; HttpOnly; SameSite=Lax; Secure";
-            response.setHeader("Set-Cookie",cookieValue);
-            response.setHeader("Set-Cookie", cookieValue2);
+            isHttpOnly =true;
+            String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
+            String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
+            response.setHeader("Set-Cookie",accessCookieString);
+            response.setHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
+        }
+    }
+
+    private String makeAccessCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; Secure";
+        }
+    }
+
+    private String makeRefreshCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; Secure";
         }
     }
 
