@@ -150,7 +150,9 @@ public class MemberController {
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
-        List<String> tagList = convertStringToList(tags);
+
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
         MemberInfoDto memberInfoDto;
         try {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
