@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -109,9 +110,9 @@ public class MemberController {
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
-                                              @RequestPart(value = "tags", required = false) String tags){
-
-        List<String> tagList = convertStringToList(tags);
+                                              @RequestPart(value = "tags", required = true) String tags){
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }

@@ -14,7 +14,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class S3Repository {
 
-
     @Value("${aws.s3.cloudfront-url}")
     private String cloudFrontURL;
     private final AmazonS3 s3Client;
