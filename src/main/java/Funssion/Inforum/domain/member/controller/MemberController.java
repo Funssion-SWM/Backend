@@ -105,7 +105,7 @@ public class MemberController {
     }
 
     @PostMapping("/profile/{id}")
-    public IsProfileSavedDto createProfileImage(@PathVariable("id") String userId,
+    public IsProfileSavedDto createProfileImage(@PathVariable("id") Long userId,
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
@@ -135,7 +135,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/{id}")
-    public MemberProfileEntity getProfile(@PathVariable("id") String userId){
+    public MemberProfileEntity getProfile(@PathVariable("id") Long userId){
         try {
             return memberService.getMemberProfile(userId);
         }catch (EmptyResultDataAccessException e){
@@ -144,7 +144,7 @@ public class MemberController {
     }
 
     @PatchMapping("/profile/{id}")
-    public IsProfileSavedDto updateProfileImage(@PathVariable("id") String userId,
+    public IsProfileSavedDto updateProfileImage(@PathVariable("id") Long userId,
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,

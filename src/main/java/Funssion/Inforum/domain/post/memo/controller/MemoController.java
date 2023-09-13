@@ -55,6 +55,9 @@ public class MemoController {
         memoService.deleteMemo(id);
     }
 
+    @PostMapping("/{id}/image")
+    public void
+
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
