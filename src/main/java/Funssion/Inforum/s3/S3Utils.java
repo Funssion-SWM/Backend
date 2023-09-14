@@ -23,6 +23,10 @@ public abstract class S3Utils{
         return objectMetadata;
     }
 
+    public static String generateNewBucketName(String bucketName, String folderName) {
+        return bucketName + "/" + folderName;
+    }
+
     public static String parseImageNameOfS3(String imagePathS3){
         int startIndexOfParsing = imagePathS3.lastIndexOf("/");
         return imagePathS3.substring(startIndexOfParsing+1);
@@ -30,6 +34,11 @@ public abstract class S3Utils{
 
     public static String generateImageNameOfS3(MemberInfoDto memberInfoDto, Long userId) {
         if(memberInfoDto.getImage().isEmpty()) return "";
+        String fileName = UUID.randomUUID()+ "-" + userId;
+        return fileName;
+    }
+
+    public static String generateImageNameOfS3(Long userId) {
         String fileName = UUID.randomUUID()+ "-" + userId;
         return fileName;
     }
