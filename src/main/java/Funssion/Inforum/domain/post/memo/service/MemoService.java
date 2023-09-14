@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
@@ -197,14 +198,16 @@ public class MemoService {
                 .imagePath(uploadedURL)
                 .build();
     }
-
-
-    public List<MemoListDto> getMemosBy(
+  
+    public List<MemoListDto> searchMemosBy(
             String searchString,
             MemoOrderType orderBy,
             Boolean isTag) {
 
-        if (isTag) throw new BadRequestException("not yet implemented");
+        if (isTag) return memoRepository.findAllByTag(searchString, orderBy)
+                    .stream()
+                    .map(MemoListDto::new)
+                    .toList();
 
         return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
