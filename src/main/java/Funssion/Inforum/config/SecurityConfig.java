@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,6 +45,7 @@ public class SecurityConfig {
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
     private final OAuthAuthenticationSuccessHandler oAuthAuthneticationSuccessHandler;
+    @Value("${jwt.domain}") private String domain;
 
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
     @Bean
@@ -75,6 +77,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
                                 //users 포함한 end point 보안 적용 X
                                 .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.xw
+                                .requestMatchers(HttpMethod.GET,"/tags/**").permitAll()
                                 .requestMatchers("/oauth2/authorization/**").permitAll()
                                 .requestMatchers("/login/oauth2/code/**").permitAll()
                                 .requestMatchers("/users/profile/**").permitAll() // 개인 정보 수정은 권한 필요
@@ -102,7 +105,7 @@ public class SecurityConfig {
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
+                .apply(new JwtSecurityConfig(tokenProvider,domain)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
 
         return httpSecurity.build();
     }

@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -64,7 +65,7 @@ public class TagRepository {
     }
 
 
-    public IsSuccessResponseDto updateTags(Long memoId,List<String> updatedTags) throws SQLException {
+    public IsSuccessResponseDto updateTags(Long memoId,ArrayList<String> updatedTags) throws SQLException {
         List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?", Array.class,memoId));
         comparePriorTagWithUpdateTag(updatedTags, priorTags,memoId);
 
@@ -82,14 +83,14 @@ public class TagRepository {
         return new IsSuccessResponseDto(true,"성공적으로 태그가 삭제 되었습니다.");
     }
 
-    private void comparePriorTagWithUpdateTag(List<String> updatedTags, List<String> priorTags,Long memoId) {
+    private void comparePriorTagWithUpdateTag(ArrayList<String> updatedTags, List<String> priorTags,Long memoId) {
         removePriorTagsComparingWithNewTags(updatedTags, priorTags, memoId);
         for (String updatedTagName : updatedTags){
             saveTagOrUpdateTag(memoId,updatedTagName);
         }
     }
 
-    private void removePriorTagsComparingWithNewTags(List<String> updatedTags, List<String> priorTags, Long memoId) {
+    private void removePriorTagsComparingWithNewTags(ArrayList<String> updatedTags, List<String> priorTags, Long memoId) {
         // 기존 tag 리스트와 update태그 리스트를 비교하면서
         // 기존 태그가 update태그 리스트에 포함되지 않으면, 기존 태그정보를 테이블에서 삭제
         // 포함되면, 어차피 해당 태그정 보는 테이블에 포함되어있으므로,. update태그 리스트에서 해당 태그를 삭제. (업데이트 필요 x)

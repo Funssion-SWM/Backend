@@ -60,10 +60,10 @@ jobs:
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
-            ssh spring sudo docker rm -f $(ssh spring sudo docker ps -qa)
-            ssh spring sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
-            ssh spring sudo docker run -dp 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
-            
+            sudo docker stop backend
+            sudo docker rm backend
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
+            sudo docker run -dp 8080:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
       env:

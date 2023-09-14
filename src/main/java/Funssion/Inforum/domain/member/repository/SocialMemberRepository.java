@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,7 +13,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -31,7 +34,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
 
     @Override
     public Optional<SocialMember> findByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS FROM MEMBER.USER WHERE EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS FROM member.info WHERE EMAIL = ?";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),email);
             return Optional.of(socialMember);
@@ -51,7 +54,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
         String name = member.getUserName();
         String email = member.getUserEmail();
         LoginType loginType = member.getLoginType();
-        String userSql = "insert into member.user(name,email,login_type,created_date) values(?,?,?,?)";
+        String userSql = "insert into member.info(name,email,login_type,created_date) values(?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
@@ -71,7 +74,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
                 .build();
     }
     public IsSuccessResponseDto saveSocialMemberNickname(String nickname,Long userId){
-        String sql ="UPDATE member.user SET name = ? WHERE id = ?";
+        String sql ="UPDATE member.info SET name = ? WHERE id = ?";
         int updatedRow = jdbcTemplate.update(sql, nickname, userId);
         if (updatedRow == 0) {
             throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");
@@ -79,6 +82,12 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
         return new IsSuccessResponseDto(true,"정상적으로 닉네임이 등록되었습니다.");
 
     }
+
+    @Override
+    public String findEmailByNickname(String nickname) {
+        return null;
+    }
+
     private RowMapper<SocialMember> memberRowMapper(){
         return new RowMapper<SocialMember>() {
             @Override

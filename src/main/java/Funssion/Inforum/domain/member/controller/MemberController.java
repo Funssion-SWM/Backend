@@ -6,10 +6,7 @@ import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
-import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
-import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
-import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -29,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -93,20 +91,25 @@ public class MemberController {
                 if ("accessToken".equals(cookie.getName())) {
                     log.info("[Logout] User Id ={},", cookie.getValue());
                 }
+                else if ("refreshToken".equals(cookie.getName())){
+                    log.info("[Logout] refresh token invalidated");
+                }
             }
         }
-        ResponseCookie invalidateCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        response.addHeader("Set-Cookie", invalidateCookie.toString());
+        ResponseCookie invalidateAccessCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie invalidateRefreshCookie = ResponseCookie.from("refreshToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        response.addHeader("Set-Cookie", invalidateAccessCookie.toString());
+        response.addHeader("Set-Cookie",invalidateRefreshCookie.toString());
     }
 
     @PostMapping("/profile/{id}")
-    public IsProfileSavedDto createProfileImage(@PathVariable("id") String userId,
+    public IsProfileSavedDto createProfileImage(@PathVariable("id") Long userId,
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
-                                              @RequestPart(value = "tags", required = false) String tags){
-
-        List<String> tagList = convertStringToList(tags);
+                                              @RequestPart(value = "tags", required = true) String tags){
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }
@@ -130,7 +133,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/{id}")
-    public MemberProfileEntity getProfile(@PathVariable("id") String userId){
+    public MemberProfileEntity getProfile(@PathVariable("id") Long userId){
         try {
             return memberService.getMemberProfile(userId);
         }catch (EmptyResultDataAccessException e){
@@ -139,18 +142,26 @@ public class MemberController {
     }
 
     @PatchMapping("/profile/{id}")
-    public IsProfileSavedDto updateProfileImage(@PathVariable("id") String userId,
+    public IsProfileSavedDto updateProfileImage(@PathVariable("id") Long userId,
                                                 @RequestPart(value = "isEmptyProfileImage", required = true) String isEmptyProfileImage,
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
-        List<String> tagList = convertStringToList(tags);
+
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
         MemberInfoDto memberInfoDto;
         try {
-            memberInfoDto = MemberInfoDto.createMemberInfo(B:wqoolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
+            memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
         }catch(NoSuchElementException e){
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
+    }
+
+    @GetMapping("/find-email-by")
+    public EmailDto findEmailByNickname(@RequestParam String nickname){
+        String decodedNickname = URLDecoder.decode(nickname, StandardCharsets.UTF_8);
+        return memberService.findEmailByNickname(decodedNickname);
     }
 }

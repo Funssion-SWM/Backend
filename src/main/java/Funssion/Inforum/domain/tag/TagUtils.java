@@ -3,9 +3,11 @@ package Funssion.Inforum.domain.tag;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Array;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TagUtils {
@@ -20,12 +22,10 @@ public class TagUtils {
         }
     }
     public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
-        Array stringArray = null;
-        try {
-            stringArray = template.getDataSource().getConnection().createArrayOf("varchar", tags.toArray());
+        try (Connection con = Objects.requireNonNull(template.getDataSource()).getConnection()) {
+            return con.createArrayOf("varchar", tags.toArray());
         } catch (SQLException e) {
             throw new SQLException(e);
         }
-        return stringArray;
     }
 }

@@ -28,16 +28,40 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        String accessToken = tokenProvider.createToken(authentication);
+        String accessToken = tokenProvider.createAccessToken(authentication);
+        String refreshToken = tokenProvider.createRefreshToken(authentication);
+        boolean isHttpOnly;
         if(request.getServerName().equals("localhost")){
-            String cookieValue = "accessToken=" + accessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; SameSite=Lax; HttpOnly";
-            response.setHeader("Set-Cookie", cookieValue);
+            isHttpOnly = false;
+            String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
+            String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
+            response.setHeader("Set-Cookie", accessCookieString);
+            response.addHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
         }
         else{
-            String cookieValue = "accessToken="+accessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=Lax; Secure";
-            response.setHeader("Set-Cookie",cookieValue);
+            isHttpOnly =true;
+            String accessCookieString = makeAccessCookieString(accessToken,isHttpOnly);
+            String refreshCookieString = makeRefreshCookieString(refreshToken,isHttpOnly);
+            response.setHeader("Set-Cookie",accessCookieString);
+            response.addHeader("Set-Cookie", refreshCookieString);
             response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
+        }
+    }
+
+    private String makeAccessCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; Secure";
+        }
+    }
+
+    private String makeRefreshCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; Secure";
         }
     }
 
