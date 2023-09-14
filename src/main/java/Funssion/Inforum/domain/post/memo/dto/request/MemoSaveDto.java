@@ -19,6 +19,7 @@ public class MemoSaveDto {
     private String memoText;
     @NotBlank(message = "색을 지정해주세요")
     private String memoColor;
+
     private List<String> memoTags;
     @Builder.Default
     private Boolean isTemporary = false;

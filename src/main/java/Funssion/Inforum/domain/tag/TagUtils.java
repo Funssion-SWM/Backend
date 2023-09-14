@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.tag;
 
+import Funssion.Inforum.common.exception.ArrayToListException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Array;
@@ -18,14 +19,14 @@ public class TagUtils {
                     .map(arrayElement -> String.valueOf(arrayElement))
                     .collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Array에서 List로 바꿀 때 생기는 문제",e);
         }
     }
     public static Array createSqlArray(JdbcTemplate template, List<String> tags) throws SQLException {
         try (Connection con = Objects.requireNonNull(template.getDataSource()).getConnection()) {
             return con.createArrayOf("varchar", tags.toArray());
         } catch (SQLException e) {
-            throw new SQLException(e);
+            throw new ArrayToListException("Array형태로 바꿀떄 생기는 문제",e);
         }
     }
 }
