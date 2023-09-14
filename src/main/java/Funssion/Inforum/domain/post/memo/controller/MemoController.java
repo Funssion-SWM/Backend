@@ -6,6 +6,7 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -55,6 +57,14 @@ public class MemoController {
         memoService.deleteMemo(id);
     }
 
+    @PostMapping("/{id}/image")
+    public ImageDto uploadImageInMemo(
+            @PathVariable @Min(1) Long id,
+            @RequestPart MultipartFile image
+    ) {
+        return memoService.uploadImageInMemo(id, image);
+    }
+
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
@@ -77,10 +87,4 @@ public class MemoController {
     public List<MemoListDto> getDraftMemos() {
         return memoService.getDraftMemos();
     }
-
-//    @GetMapping("/comments")
-//    public List<CommentListDto> getMemoComments(
-//
-//    )
-
 }
