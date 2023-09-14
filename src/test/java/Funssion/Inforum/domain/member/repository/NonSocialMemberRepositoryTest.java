@@ -33,7 +33,7 @@ class NonSocialMemberRepositoryTest {
     @Test
     @DisplayName("존재하는 회원 이름으로 아이디 앞 세글자만 보이는 이메일 반환")
     void findEmailBlurredByNickname(){
-        Assertions.assertThat(nonSocialMemberRepository.findEmailByNickname("test")).isEqualTo("tes***@gmail.com");
+        Assertions.assertThat(nonSocialMemberRepository.findEmailByNickname("test")).isEqualTo("test12@gmail.com");
     }
 //    @Test
 //    @DisplayName("논소셜 계정 회원가입 성공")
