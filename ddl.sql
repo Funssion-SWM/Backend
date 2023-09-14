@@ -90,8 +90,8 @@ CREATE TABLE member.like  (
     created timestamp DEFAULT current_timestamp
 );
 
-CREATE TABLE member.user (
-    id bigserial PRIMARY KEY,
+CREATE TABLE member.info (
+    id serial PRIMARY KEY,
     name varchar(15) NOT NULL,
     email varchar(60) NOT NULL,
     login_type int8 NOT NULL DEFAULT 0,

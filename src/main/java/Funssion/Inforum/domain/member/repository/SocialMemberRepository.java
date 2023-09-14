@@ -34,7 +34,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
 
     @Override
     public Optional<SocialMember> findByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS FROM MEMBER.USER WHERE EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS FROM member.info WHERE EMAIL = ?";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,memberRowMapper(),email);
             return Optional.of(socialMember);
@@ -54,7 +54,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
         String name = member.getUserName();
         String email = member.getUserEmail();
         LoginType loginType = member.getLoginType();
-        String userSql = "insert into member.user(name,email,login_type,created_date) values(?,?,?,?)";
+        String userSql = "insert into member.info(name,email,login_type,created_date) values(?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
@@ -74,7 +74,7 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
                 .build();
     }
     public IsSuccessResponseDto saveSocialMemberNickname(String nickname,Long userId){
-        String sql ="UPDATE member.user SET name = ? WHERE id = ?";
+        String sql ="UPDATE member.info SET name = ? WHERE id = ?";
         int updatedRow = jdbcTemplate.update(sql, nickname, userId);
         if (updatedRow == 0) {
             throw new NotFoundException("해당 회원정보를 찾을 수 없습니다");

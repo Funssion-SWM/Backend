@@ -43,7 +43,7 @@ public class AuthCodeRepository {
     public void insertEmailCodeForVerification(String beVerifiedEmail,String code){
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
 
-        //----------------- member.user 테이블 insert -----------------//
+        //----------------- member.info 테이블 insert -----------------//
         String sql = "insert into member.auth_code(email,code,due_date) values(?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         try {

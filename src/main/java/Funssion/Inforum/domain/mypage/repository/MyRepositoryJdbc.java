@@ -36,7 +36,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public MemberProfileEntity findProfileByUserId(Long userId) {
-        String sql = "select name,introduce,tags,image_path from member.user where id = ?";
+        String sql = "select name,introduce,tags,image_path from member.info where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
     }
     private RowMapper<History> historyRowMapper() {
@@ -88,7 +88,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public IsProfileSavedDto createProfile(Long userId, MemberProfileEntity MemberProfileEntity) {
-        String sql = "update member.user set introduce = ?, tags = ?, image_path = ? where id = ?";
+        String sql = "update member.info set introduce = ?, tags = ?, image_path = ? where id = ?";
         int updatedRow = 0;
         try {
             updatedRow = template.update(sql, MemberProfileEntity.getIntroduce(), TagUtils.createSqlArray(template,MemberProfileEntity.getUserTags()), MemberProfileEntity.getProfileImageFilePath(),userId);
@@ -105,7 +105,7 @@ public class MyRepositoryJdbc implements MyRepository {
     }
 
     private IsProfileSavedDto patchMemberProfile(Long userId, MemberProfileEntity memberProfileEntity) {
-        StringBuilder sqlBuilder = new StringBuilder("UPDATE member.user SET ");
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE member.info SET ");
         List<Object> params = new ArrayList<>();
 
         if (memberProfileEntity.getIntroduce() != null) {
@@ -152,7 +152,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public String findProfileImageNameById(Long userId) {
-        String sql = "select image_path from member.user where id =?";
+        String sql = "select image_path from member.info where id =?";
 
         return template.queryForObject(sql, (rs, rowNum) -> rs.getString("image_path"), userId);
     }
