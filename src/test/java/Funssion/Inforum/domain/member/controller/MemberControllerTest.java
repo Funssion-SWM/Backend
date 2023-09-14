@@ -1,6 +1,53 @@
 package Funssion.Inforum.domain.member.controller;
 
+import Funssion.Inforum.domain.member.dto.response.EmailDto;
+import Funssion.Inforum.domain.member.service.MailService;
+import Funssion.Inforum.domain.member.service.MemberService;
+import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(MemberController.class)
 class MemberControllerTest {
+    @Autowired
+    MockMvc mvc;
+    @MockBean
+    MemberService memberService;
+    @MockBean
+    MailService mailService;
+    @Test
+    @WithMockUser
+    @DisplayName("닉네임으로 가입한 이메일 정보 가져오기")
+    void getEmailByNickname() throws Exception {
+        //given
+        String nickname = "test_nickname";
+
+        when(memberService.findEmailByNickname(nickname)).
+                thenReturn(new EmailDto("tes**@gmail.com","해당 닉네임으로 등록된 이메일 정보입니다."));
+        //when
+        MvcResult result = mvc.
+                perform(get("/users/find-email-by")
+                        .param("nickname", nickname))
+                .andExpect(status().isOk())
+                .andReturn();
+        String responseBody = result.getResponse().getContentAsString();
+        String email = JsonPath.read(responseBody, "$.email");
+        assertThat(email).isEqualTo("tes**@gmail.com");
+
+    }
+
+
 
     /*
      * <회원가입>

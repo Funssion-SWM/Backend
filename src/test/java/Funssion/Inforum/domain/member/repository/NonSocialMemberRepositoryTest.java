@@ -2,45 +2,39 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.service.MemberService;
-import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mockito.Mockito.when;
-
-@ExtendWith(MockitoExtension.class)
+import javax.sql.DataSource;
+@SpringBootTest
+@Transactional
 class NonSocialMemberRepositoryTest {
-    HashMap<LoginType, String> loginTypeMap = new HashMap<>();
-    {
-        loginTypeMap.put(LoginType.NON_SOCIAL,"nonSocialMemberRepository");
-        loginTypeMap.put(LoginType.SOCIAL, "socialMemberRepository");
-    }
-    @Mock
-    Map<String,MemberRepository> repositoryMap;
-    @Mock
-    MemberRepository nonSocialMemberRepository;
-
-    @Mock
-    MemberRepository socialMemberRepository;
-    @Mock
-    MyRepository myRepository;
-
-    @InjectMocks
-    private MemberService memberService;
+    @Autowired
+    DataSource dataSource;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+    @Autowired
+    NonSocialMemberRepository nonSocialMemberRepository;
 
     @BeforeEach
     void setUp() {
-        when(repositoryMap.get("nonSocialMemberRepository")).thenReturn(nonSocialMemberRepository);
-//        when(repositoryMap.get("socialMemberRepository")).thenReturn(socialMemberRepository);
+        nonSocialMemberRepository.save(
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("test", LoginType.NON_SOCIAL, "test12@gmail.com", "a1234567!"))
+                );
     }
-
+    @Test
+    @DisplayName("존재하는 회원 이름으로 아이디 앞 세글자만 보이는 이메일 반환")
+    void findEmailBlurredByNickname(){
+        Assertions.assertThat(nonSocialMemberRepository.findEmailByNickname("test")).isEqualTo("test12@gmail.com");
+    }
 //    @Test
 //    @DisplayName("논소셜 계정 회원가입 성공")
 //    void joinWithNonSocialLoginType() throws NoSuchAlgorithmException {

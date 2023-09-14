@@ -33,6 +33,7 @@ public class SearchHistoryService {
                         .searchText(searchString)
                         .isTag(isTag)
                         .userId(userId)
+                        .accessTime(LocalDateTime.now())
                         .build());
     }
 

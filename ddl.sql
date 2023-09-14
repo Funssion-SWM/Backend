@@ -90,8 +90,8 @@ CREATE TABLE member.like  (
     created timestamp DEFAULT current_timestamp
 );
 
-CREATE TABLE member.user (
-    id bigserial PRIMARY KEY,
+CREATE TABLE member.info (
+    id serial PRIMARY KEY,
     name varchar(15) NOT NULL,
     email varchar(60) NOT NULL,
     login_type int8 NOT NULL DEFAULT 0,
@@ -139,5 +139,6 @@ CREATE TABLE post.search_history (
     id bigserial primary key,
     user_id int8 not null,
     search_text text,
+    access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
 );

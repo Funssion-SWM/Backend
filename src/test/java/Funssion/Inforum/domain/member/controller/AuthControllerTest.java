@@ -39,7 +39,7 @@ class AuthControllerTest {
         NonSocialMemberLoginDto nonSocialMemberLoginDto = new NonSocialMemberLoginDto("test@gmail.com","a1234567!");
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setServerName("server-example");
-        TokenDto expectedTokenDto = new TokenDto("token-value-example",1L);
+        TokenDto expectedTokenDto = new TokenDto("token-value-example","refreshtoken-value-example",1L);
         when(authService.makeTokenInfo(nonSocialMemberLoginDto)).thenReturn(expectedTokenDto);
 
         //when
@@ -51,7 +51,7 @@ class AuthControllerTest {
         HttpHeaders httpHeaders = responseEntity.getHeaders();
         String cookieHeader = httpHeaders.getFirst(HttpHeaders.SET_COOKIE);
         String tokenValue = cookieHeader.substring(12).split(";")[0];
-        Assertions.assertThat(tokenValue).isEqualTo(expectedTokenDto.getToken());
+        Assertions.assertThat(tokenValue).isEqualTo(expectedTokenDto.getAccessToken());
     }
 
 
