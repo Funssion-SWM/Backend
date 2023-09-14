@@ -34,7 +34,7 @@ class MemberControllerTest {
         String nickname = "test_nickname";
 
         when(memberService.findEmailByNickname(nickname)).
-                thenReturn(new EmailDto("test1@gmail.com","해당 닉네임으로 등록된 이메일 정보입니다."));
+                thenReturn(new EmailDto("tes**@gmail.com","해당 닉네임으로 등록된 이메일 정보입니다."));
         //when
         MvcResult result = mvc.
                 perform(get("/users/find-email-by")

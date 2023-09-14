@@ -139,5 +139,6 @@ CREATE TABLE post.search_history (
     id bigserial primary key,
     user_id int8 not null,
     search_text text,
+    access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
 );
