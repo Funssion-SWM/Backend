@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.entity.Member;
 
 import java.util.Optional;
 
@@ -16,4 +16,6 @@ public interface MemberRepository<T extends Member> {
     Optional<T> findByName(String Name);
 
     IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId);
+
+    String findEmailByNickname(String nickname);
 }

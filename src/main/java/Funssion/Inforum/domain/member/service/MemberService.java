@@ -1,13 +1,14 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.ImageIOException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
+import Funssion.Inforum.domain.member.dto.response.EmailDto;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -122,6 +123,21 @@ public class MemberService {
         return memberInfoDto.getImage() != null
                 ? updateMemberProfileWithImage(userId, memberInfoDto)
                 : updateMemberProfileWithoutImage(userId, memberInfoDto);
+    }
+
+    public EmailDto findEmailByNickname(String nickname){
+        MemberRepository memberRepository = getMemberRepository(LoginType.NON_SOCIAL);
+        String emailFoundByNickname = memberRepository.findEmailByNickname(nickname);
+        return new EmailDto(blur(emailFoundByNickname),"해당 닉네임으로 등록된 이메일 정보입니다.");
+    }
+    private String blur(String email){
+        int startOfDomainIndex = email.indexOf("@");
+        char blurChar = '*';
+        char[] charEmailArray = email.toCharArray();
+        for(int i =3; i<startOfDomainIndex; i++){
+            charEmailArray[i] = blurChar;
+        }
+        return new String(charEmailArray);
     }
     private IsProfileSavedDto createMemberProfileWithoutImage(String userId, MemberInfoDto memberInfoDto) {
 

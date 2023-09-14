@@ -6,10 +6,7 @@ import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
-import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
-import Funssion.Inforum.domain.member.dto.response.ValidMemberDto;
-import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -157,5 +154,11 @@ public class MemberController {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
+    }
+
+    @GetMapping("/find-email-by")
+    public EmailDto findEmailByNickname(@RequestParam String nickname){
+        String decodedNickname = URLDecoder.decode(nickname, StandardCharsets.UTF_8);
+        return memberService.findEmailByNickname(decodedNickname);
     }
 }

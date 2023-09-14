@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -13,7 +13,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -79,6 +82,12 @@ public class SocialMemberRepository implements MemberRepository<SocialMember> {
         return new IsSuccessResponseDto(true,"정상적으로 닉네임이 등록되었습니다.");
 
     }
+
+    @Override
+    public String findEmailByNickname(String nickname) {
+        return null;
+    }
+
     private RowMapper<SocialMember> memberRowMapper(){
         return new RowMapper<SocialMember>() {
             @Override

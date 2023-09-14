@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.member.repository;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.domain.member.dto.response.EmailDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +71,16 @@ public class NonSocialMemberRepository implements MemberRepository<NonSocialMemb
     @Override
     public IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId) {
         return null;
+    }
+
+    @Override
+    public String findEmailByNickname(String nickname) {
+        String sql ="select email from member.user where name = ?";
+        try{
+            return jdbcTemplate.queryForObject(sql, String.class, nickname);
+        }catch(EmptyResultDataAccessException e){
+            throw new NotFoundException("요청하신 닉네임정보로 등록된 이메일이 존재하지 않습니다.");
+        }
     }
 
     public String findNameById(Long id) {
