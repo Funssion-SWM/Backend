@@ -44,7 +44,7 @@ public class SecurityConfig {
     //OAuth2LoginConfig에서 @Configuration으로 등록된 bean 주입
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
-    private final OAuthAuthenticationSuccessHandler oAuthAuthneticationSuccessHandler;
+    private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
     @Value("${jwt.domain}") private String domain;
 
     // PasswordEncoder는 BCryptPasswordEncoder를 사용
@@ -101,7 +101,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository)
                         .userInfoEndpoint(it -> it.userService(oAuthService))
-                        .successHandler(oAuthAuthneticationSuccessHandler))
+                        .successHandler(oAuthAuthenticationSuccessHandler))
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))

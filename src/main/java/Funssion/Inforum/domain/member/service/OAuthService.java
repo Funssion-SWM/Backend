@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.member.service;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.member.repository.SocialMemberRepository;
+import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
-    private final SocialMemberRepository socialMemberRepository;
+    private final MemberRepositoryImpl memberRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -38,13 +38,13 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
 //        Role role = Role.ROLE_USER;
 
 
-        Optional<SocialMember> socialMember = socialMemberRepository.findByEmail(email);
+        Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 
         if(socialMember.isEmpty()){
             SocialMember savedSocialMember = SocialMember.createSocialMember(email, nickname);
-            SaveMemberResponseDto savedResponse = socialMemberRepository.save(savedSocialMember);
+            SaveMemberResponseDto savedResponse = memberRepository.save(savedSocialMember);
             authorities.add(new SimpleGrantedAuthority("ROLE_FIRST_JOIN"));
             User savedUser = new User (String.valueOf(savedResponse.getId()),password,authorities);
             return new CustomUserDetails(String.valueOf(savedResponse.getId()),authorities,savedUser,oAuth2User.getAttributes());

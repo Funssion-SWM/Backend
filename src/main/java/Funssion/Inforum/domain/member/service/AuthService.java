@@ -4,7 +4,7 @@ import Funssion.Inforum.domain.member.dto.request.NonSocialMemberLoginDto;
 import Funssion.Inforum.domain.member.dto.response.TokenDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
-import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
+import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
 import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class AuthService implements UserDetailsService {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final NonSocialMemberRepository nonSocialMemberRepository;
+    private final MemberRepositoryImpl nonSocialMemberRepository;
 
     public TokenDto makeTokenInfo(NonSocialMemberLoginDto nonSocialMemberLoginDto){
         UsernamePasswordAuthenticationToken authenticationToken =
@@ -39,7 +39,7 @@ public class AuthService implements UserDetailsService {
     }
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        NonSocialMember member = nonSocialMemberRepository.findByEmail(userEmail)
+        NonSocialMember member = nonSocialMemberRepository.findNonSocialMemberByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with userEmail: " + userEmail));
         // non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. -> 토큰의 getName의 user_id가 들어갑니다.
         return new CustomUserDetails(member.getUserId(), member.getUserEmail(), member.getUserPw(), true, false);

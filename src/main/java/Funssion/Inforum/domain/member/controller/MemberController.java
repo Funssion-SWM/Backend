@@ -4,7 +4,6 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -52,10 +51,19 @@ public class MemberController {
     @PostMapping("/authenticate-email")
     public IsSuccessResponseDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
         String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
-        if (memberService.isValidEmail(decodedEmail, LoginType.NON_SOCIAL).isValid()) {
+        if (memberService.isValidEmail(decodedEmail).isValid()) {
             return mailService.sendEmailCode(emailDto.getEmail());
         } else {
             return new IsSuccessResponseDto(false, "이미 등록된 이메일입니다.");
+        }
+    }
+    @PostMapping("/authenticate-email/find")
+    public IsSuccessResponseDto mailSendToUpdatePassword(@RequestBody @Valid EmailRequestDto emailDto){
+        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
+        if (memberService.isRegisteredEmail(decodedEmail).isValid()) {
+            return mailService.sendEmailCode(emailDto.getEmail());
+        } else {
+            return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
         }
     }
 
@@ -66,7 +74,7 @@ public class MemberController {
 
     @GetMapping("/check-duplication")
     public ValidatedDto isValidName(@RequestParam(value = "name", required = true) String name) {
-        return memberService.isValidName(name, LoginType.NON_SOCIAL); //로그인 타입은 상관없음 리팩토링 예정
+        return memberService.isValidName(name); //로그인 타입은 상관없음 리팩토링 예정
     }
     @PostMapping("/nickname/{id}")
     public IsSuccessResponseDto registerName(@PathVariable("id") String userId,@RequestBody NicknameRequestDto nicknameRequestDto){
@@ -158,6 +166,8 @@ public class MemberController {
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
     }
+
+
 
     @GetMapping("/find-email-by")
     public EmailDto findEmailByNickname(@RequestParam String nickname){
