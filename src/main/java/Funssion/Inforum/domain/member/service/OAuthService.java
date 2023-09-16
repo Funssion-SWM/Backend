@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.member.service;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
+import Funssion.Inforum.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,7 +25,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
-    private final MemberRepositoryImpl memberRepository;
+    private final MemberRepository memberRepository;
+
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -55,5 +56,4 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
             return new CustomUserDetails(savedUser.getUsername(),authorities,savedUser,oAuth2User.getAttributes());
         }
     }
-
 }
