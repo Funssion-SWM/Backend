@@ -22,4 +22,6 @@ public interface MemoRepository {
     Memo updateLikesInMemo(Long likes, Long memoId);
     void updateAuthorProfile(Long authorId, String authorProfileImagePath);
     void delete(Long id);
+
+    public void updateCommentsCount(Long id, boolean isDelete);
 }
