@@ -121,8 +121,7 @@ public class MemberController {
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
                                               @RequestPart(value = "tags", required = true) String tags){
-        List<String> tagList = new ArrayList<>();
-        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        List<String> tagList = exceptionHandleOfList(tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }
@@ -133,6 +132,12 @@ public class MemberController {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.createMemberProfile(userId,memberInfoDto);
+    }
+
+    private List<String> exceptionHandleOfList(String tags) {
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        return tagList;
     }
 
     private List<String> convertStringToList(String tags) {
@@ -161,8 +166,7 @@ public class MemberController {
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
 
-        List<String> tagList = new ArrayList<>();
-        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        List<String> tagList = exceptionHandleOfList(tags);
         MemberInfoDto memberInfoDto;
         try {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);

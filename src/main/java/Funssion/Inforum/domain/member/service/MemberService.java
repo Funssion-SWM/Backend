@@ -14,6 +14,7 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.s3.S3Repository;
@@ -35,6 +36,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
+    private final CommentRepository commentRepository;
     private final S3Repository s3Repository;
 
     @Value("${aws.s3.profile-dir}")
@@ -175,6 +177,8 @@ public class MemberService {
 
     private IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
         memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
+        commentRepository.updateProfileImageOfComment(userId, memberProfileEntity.getProfileImageFilePath());
+        commentRepository.updateProfileImageOfReComment(userId,memberProfileEntity.getProfileImageFilePath() );
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 

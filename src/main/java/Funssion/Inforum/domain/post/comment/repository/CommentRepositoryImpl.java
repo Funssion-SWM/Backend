@@ -59,6 +59,22 @@ public class CommentRepositoryImpl implements CommentRepository{
         return keyHolder.getKey().longValue();
     }
 
+    public void updateProfileImageOfComment(Long userId, String authorProfileImagePath){
+        String sql = "update comment.info " +
+                "set author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql, authorProfileImagePath, userId);
+    }
+
+    public void updateProfileImageOfReComment(Long userId, String authorProfileImagePath){
+        String sql = "update comment.re_comments " +
+                "set author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql, authorProfileImagePath, userId);
+    }
+
     @Override
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
         String sql = "update comment.info set comment_text = ?, updated_date = ? where id = ?";
