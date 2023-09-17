@@ -1,4 +1,4 @@
-package Funssion.Inforum.common.constant.memo;
+package Funssion.Inforum.common.constant;
 
 import Funssion.Inforum.common.exception.BadRequestException;
 
@@ -22,5 +22,15 @@ public enum DateType {
         }
 
         throw new BadRequestException("Invalid Date Type");
+    }
+
+
+
+    public static DateType of(String period) {
+        try {
+            return DateType.valueOf(period.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid Date Type", e);
+        }
     }
 }

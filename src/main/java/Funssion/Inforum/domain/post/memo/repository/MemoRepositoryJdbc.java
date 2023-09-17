@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
@@ -95,13 +95,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
 
     @Override
-    public List<Memo> findAllBySearchQuery(List<String> searchStringList, MemoOrderType orderType) {
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
         String sql = getSql(searchStringList, orderType);
 
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
 
-    private static String getSql(List<String> searchStringList, MemoOrderType orderType) {
+    private static String getSql(List<String> searchStringList, OrderType orderType) {
         String sql = "select * from memo.info where is_temporary = false and ";
 
         for (int i = 0; i < searchStringList.size() ; i++) {
@@ -126,20 +126,20 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, MemoOrderType orderType) {
+    public List<Memo> findAllByTag(String tagText, OrderType orderType) {
         String sql = "select * from memo.info where is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
 
         return template.query(sql, memoRowMapper(), tagText);
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, Long userId, MemoOrderType orderType) {
+    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType) {
         String sql = "select * from memo.info where author_id = ? and is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
 
         return template.query(sql, memoRowMapper(), userId, tagText);
     }
 
-    private static String getOrderBySql(MemoOrderType orderType) {
+    private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
                 return  " order by likes desc, memo_id desc";

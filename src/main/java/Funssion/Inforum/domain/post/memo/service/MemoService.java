@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.constant.memo.DateType;
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.constant.DateType;
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -31,7 +31,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
@@ -52,31 +51,14 @@ public class MemoService {
     private final S3Repository s3Repository;
 
     @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosForMainPage(DateType date, String orderBy) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
 
         Integer days = DateType.toNumOfDays(date) ;
 
-        MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
-
-        return getMemos(memoOrderType, days);
+        return getMemos(orderBy, days);
     }
 
-    private static Long getDays(String period) {
-
-        DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
-        long days = 0L;
-
-        switch (dateType) {
-            case DAY -> days = 1L;
-            case WEEK -> days = 7L;
-            case MONTH -> days = 31L;
-            case YEAR -> days = 365L;
-        }
-
-        return days;
-    }
-
-    private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Integer days) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById()
@@ -202,7 +184,7 @@ public class MemoService {
     public List<MemoListDto> searchMemosBy(
             String searchString,
             Long userId,
-            MemoOrderType orderBy,
+            OrderType orderBy,
             Boolean isTag) {
 
         if (isTag)
@@ -214,7 +196,7 @@ public class MemoService {
                 .toList();
     }
 
-    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, MemoOrderType orderBy) {
+    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, OrderType orderBy) {
         List<Memo> result;
         if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
             result = memoRepository.findAllByTag(searchString, orderBy);
