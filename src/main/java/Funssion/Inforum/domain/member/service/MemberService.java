@@ -12,8 +12,9 @@ import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
-import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
+import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -31,8 +32,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
-    private final MemberRepositoryImpl memberRepository;
+    private final MemberRepository memberRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
@@ -99,7 +99,7 @@ public class MemberService {
         String emailFoundByNickname = memberRepository.findEmailByNickname(nickname);
         return new EmailDto(blur(emailFoundByNickname),"해당 닉네임으로 등록된 이메일 정보입니다.");
     }
-    private String blur(String email){
+    public String blur(String email){
         int startOfDomainIndex = email.indexOf("@");
         char blurChar = '*';
         char[] charEmailArray = email.toCharArray();
@@ -182,4 +182,8 @@ public class MemberService {
         return myRepository.findProfileByUserId(userId);
     }
 
+    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String usersTemporaryCode) {
+        String email = memberRepository.findEmailByAuthCode(usersTemporaryCode);
+        return memberRepository.findAndChangePassword(passwordUpdateDto,email);
+    }
 }

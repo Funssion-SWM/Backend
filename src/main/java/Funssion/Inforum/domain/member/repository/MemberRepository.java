@@ -5,6 +5,7 @@ import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 
 import java.util.Optional;
 
@@ -21,4 +22,8 @@ public interface MemberRepository {
     IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId);
 
     String findEmailByNickname(String nickname);
+
+    IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String email);
+
+    String findEmailByAuthCode(String usersTemporaryCode);
 }

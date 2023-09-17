@@ -1,14 +1,18 @@
 package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.DuplicateException;
+import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -101,6 +105,26 @@ public class MemberRepositoryImpl implements MemberRepository {
             return jdbcTemplate.queryForObject(sql, String.class, nickname);
         }catch(EmptyResultDataAccessException e){
             throw new NotFoundException("요청하신 닉네임정보로 등록된 이메일이 존재하지 않습니다.");
+        }
+    }
+
+    @Override
+    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String email) {
+        String sql = "update member.auth as auth set password = ? from member.info as memberInfo where memberInfo.email = ?";
+        int updatedRow = jdbcTemplate.update(sql, passwordEncoder.encode(passwordUpdateDto.getUserPw()), email);
+        if (updatedRow == 0) throw new UpdateFailException("비밀번호가 수정되지 않았습니다.");
+        return new IsSuccessResponseDto(true, "비밀번호가 수정되었습니다.");
+    }
+
+    @Override
+    public String findEmailByAuthCode(String usersTemporaryCode) {
+        String sql = "select email from member.auth_code where code = ? and expiration = false";
+        try{
+            return jdbcTemplate.queryForObject(sql,String.class,usersTemporaryCode);
+        }catch (EmptyResultDataAccessException e){
+            throw new NotFoundException("이미 만료된 이메일 인증 링크입니다.");
+        }catch (IncorrectResultSizeDataAccessException e){
+            throw new DuplicateException("중복 링크가 존재합니다. 다시 시도해 주세요");
         }
     }
 
