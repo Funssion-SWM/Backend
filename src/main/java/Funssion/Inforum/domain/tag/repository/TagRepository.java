@@ -86,7 +86,7 @@ public class TagRepository {
     public List<String> findAllOrderByCountDesc(Long userId) {
         String sql = "select t.tag_name " +
                 "from memo.info m, tag.memo_to_tag mtt, tag.info t " +
-                "where m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
+                "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
                 "group by t.tag_name " +
                 "order by count(1) desc ";
 

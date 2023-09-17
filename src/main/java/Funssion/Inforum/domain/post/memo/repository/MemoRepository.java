@@ -10,7 +10,7 @@ import java.util.List;
 public interface MemoRepository {
 
     Memo create(Memo memo);
-    List<Memo> findAllByDaysOrderByLikes(Long days);
+    List<Memo> findAllByDaysOrderByLikes(Integer days);
     List<Memo> findAllOrderById();
     List<Memo> findAllByUserIdOrderById(Long userId);
     List<Memo> findAllLikedMemosByUserId(Long userId);

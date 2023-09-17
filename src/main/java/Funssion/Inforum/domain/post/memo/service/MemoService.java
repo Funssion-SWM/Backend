@@ -52,9 +52,9 @@ public class MemoService {
     private final S3Repository s3Repository;
 
     @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, String orderBy) {
 
-        Long days = getDays(period);
+        Integer days = DateType.toNumOfDays(date) ;
 
         MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
 
@@ -76,7 +76,7 @@ public class MemoService {
         return days;
     }
 
-    private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Long days) {
+    private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Integer days) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById()

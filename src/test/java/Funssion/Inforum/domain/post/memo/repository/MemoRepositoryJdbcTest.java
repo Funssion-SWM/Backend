@@ -208,7 +208,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
         void findAllByDaysOrderByLikesTest() {
-            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1L);
+            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1);
 
             assertThat(memoListCreatedAtToday.size()).isEqualTo(3);
             assertThat(memoListCreatedAtToday.get(0)).isEqualTo(createdMemo3);
