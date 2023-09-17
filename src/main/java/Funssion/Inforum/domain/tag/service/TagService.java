@@ -18,13 +18,7 @@ public class TagService {
         return tagRepository.getDefaultTags();
     }
 
-    public List<String> getUserMostUsedTags(Long userId) {
-        List<String> mostUsedTags = tagRepository.findMostUsedTagsByUserTop2(userId);
-
-        if (mostUsedTags.size() < 2) {
-            throw new NotFoundException("This user has fewer than 2 tags");
-        }
-
-        return mostUsedTags;
+    public List<String> getUserTags(Long userId) {
+        return tagRepository.findAllOrderByCountDesc(userId);
     }
 }

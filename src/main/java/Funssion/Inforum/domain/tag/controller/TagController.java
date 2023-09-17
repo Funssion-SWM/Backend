@@ -21,8 +21,8 @@ public class TagController {
         return tagService.getDefaultTags();
     }
 
-    @GetMapping("/most/{userId}")
-    public List<String> getUserMostUsedTags(@PathVariable Long userId) {
-        return tagService.getUserMostUsedTags(userId);
+    @GetMapping("/{userId}")
+    public List<String> getUserTags(@PathVariable Long userId) {
+        return tagService.getUserTags(userId);
     }
 }
