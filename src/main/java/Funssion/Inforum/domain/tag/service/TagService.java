@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.tag.service;
 
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,5 +16,9 @@ public class TagService {
 
     public List<String> getDefaultTags() {
         return tagRepository.getDefaultTags();
+    }
+
+    public List<String> getUserTags(Long userId) {
+        return tagRepository.findAllOrderByCountDesc(userId);
     }
 }
