@@ -131,6 +131,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), tagText);
     }
 
+    @Override
+    public List<Memo> findAllByTag(String tagText, Long userId, MemoOrderType orderType) {
+        String sql = "select * from memo.info where author_id = ? and is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, memoRowMapper(), userId, tagText);
+    }
+
     private static String getOrderBySql(MemoOrderType orderType) {
         switch (orderType) {
             case HOT -> {

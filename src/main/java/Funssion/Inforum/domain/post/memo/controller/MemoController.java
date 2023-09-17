@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.controller;
 
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,11 +70,12 @@ public class MemoController {
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
+            @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANNONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam String orderBy,
             @RequestParam Boolean isTag
     ) {
         return memoService.searchMemosBy(
-                searchString, toMemoOrderType(orderBy), isTag);
+                searchString, userId, toMemoOrderType(orderBy), isTag);
     }
 
     private static MemoOrderType toMemoOrderType(String orderBy) {
