@@ -60,7 +60,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Long days) {
+    public List<Memo> findAllByDaysOrderByLikes(Integer days) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
                 "order by likes desc, memo_id desc";
         return template.query(sql, memoRowMapper(), days);

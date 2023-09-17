@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
+import Funssion.Inforum.common.constant.memo.DateType;
 import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -33,14 +34,14 @@ public class MemoController {
     public List<MemoListDto> getMemos(
             @RequestParam(required = false, defaultValue = "MONTH") String period,
             @RequestParam(required = false, defaultValue = "HOT") String orderBy) {
-        log.info("pr = {}, or = {}", period, orderBy);
-        return memoService.getMemosForMainPage(period, orderBy);
+
+        DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
+        return memoService.getMemosForMainPage(dateType, orderBy);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
-        log.info("tagList = {}",memoSaveDto.getMemoTags());
         return memoService.createMemo(memoSaveDto);
     }
 
