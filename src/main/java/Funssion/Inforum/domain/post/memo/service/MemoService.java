@@ -201,16 +201,26 @@ public class MemoService {
   
     public List<MemoListDto> searchMemosBy(
             String searchString,
+            Long userId,
             MemoOrderType orderBy,
             Boolean isTag) {
 
-        if (isTag) return memoRepository.findAllByTag(searchString, orderBy)
-                    .stream()
-                    .map(MemoListDto::new)
-                    .toList();
+        if (isTag)
+            return getMemoListDtosSearchedByTag(searchString, userId, orderBy);
 
         return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
+    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, MemoOrderType orderBy) {
+        List<Memo> result;
+        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
+            result = memoRepository.findAllByTag(searchString, orderBy);
+        else result = memoRepository.findAllByTag(searchString, userId, orderBy);
+
+        return result.stream()
                 .map(MemoListDto::new)
                 .toList();
     }

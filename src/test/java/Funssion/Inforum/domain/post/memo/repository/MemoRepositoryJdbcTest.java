@@ -285,5 +285,23 @@ class MemoRepositoryJdbcTest {
 
             assertThat(foundByJWTTag).contains(createdMemo3);
         }
+
+        @Test
+        @DisplayName("메모 태그와 유저 ID로 검색")
+        void findAllByTagAndUserID() {
+            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", 9999L, NEW);
+
+            assertThat(foundByJavaTagAndUser).contains(createdMemo, createdMemo2);
+
+            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", 9999L,NEW);
+            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", 9999L,NEW);
+
+            assertThat(foundByJavaTagAndUser).isEqualTo(foundByLowerCaseJavaTagAndUser);
+            assertThat(foundByJavaTagAndUser).isEqualTo(foundByUpperCaseJavaTagAndUser);
+
+            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", 10000L,NEW);
+
+            assertThat(foundByJWTTagAndUser).contains(createdMemo3);
+        }
     }
 }
