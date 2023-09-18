@@ -3,10 +3,7 @@ package Funssion.Inforum.domain.tag.controller;
 import Funssion.Inforum.domain.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,7 +19,7 @@ public class TagController {
     }
 
     @GetMapping("/{userId}")
-    public List<String> getUserTags(@PathVariable Long userId) {
-        return tagService.getUserTags(userId);
+    public List<String> getUserTags(@PathVariable Long userId, @RequestParam Integer tagCnt) {
+        return tagService.getUserTags(userId, tagCnt);
     }
 }

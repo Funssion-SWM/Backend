@@ -87,6 +87,28 @@ class MemoControllerTest {
                         .param("period", "DAY")
                         .param("orderBy", "HOT"))
                 .andExpect(status().isOk());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAY")
+                        .param("orderBy", "HOT")
+                        .param("tagCnt", "0"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAYE")
+                        .param("orderBy", "HOT"))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAY")
+                        .param("orderBy", "HOTT"))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAY")
+                        .param("orderBy", "HOT")
+                        .param("tagCnt", "-1"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
