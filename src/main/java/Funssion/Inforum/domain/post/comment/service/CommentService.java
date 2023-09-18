@@ -11,6 +11,7 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
+import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
@@ -42,7 +43,7 @@ public class CommentService {
         commentRepository.createComment(new Comment(
             authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)
         );
-        memoRepository.updateCommentsCount(commentSaveDto.getPostId(),false);
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostId());
 
         return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
     }
@@ -52,7 +53,8 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        memoRepository.updateCommentsCount(commentId,true);
+        PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
+        commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
         return commentRepository.deleteComment(commentId);
     }
 

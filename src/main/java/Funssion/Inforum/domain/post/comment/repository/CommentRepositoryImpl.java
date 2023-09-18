@@ -5,14 +5,16 @@ import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.CreateFailException;
 import Funssion.Inforum.common.exception.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
+import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.exception.DuplicateLikeException;
+import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -73,6 +75,12 @@ public class CommentRepositoryImpl implements CommentRepository{
                 "where author_id = ?";
 
         template.update(sql, authorProfileImagePath, userId);
+    }
+
+    @Override
+    public PostIdAndTypeInfo getPostIdByCommentId(Long commentId) {
+        String sql = "select post_id, post_type from comment.info where id = ?";
+        return template.queryForObject(sql,postIdAndPostTypeRowMapper(),commentId);
     }
 
     @Override
@@ -208,6 +216,21 @@ public class CommentRepositoryImpl implements CommentRepository{
         return new LikeResponseDto(false,howManyLikesAfterCancelLike);
     }
 
+    @Override
+    public void plusCommentsCountOfPost(Long id) {
+        String sql = "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
+        if (template.update(sql, id) == 0) throw new NotFoundException("댓글 수 업데이트 실패 (댓글 또는 메모가 존재하지 않음)");
+    }
+
+    @Override
+    public void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo) {
+        String sql = "";
+        switch(postIdAndTypeInfo.getPostType()){
+            case MEMO -> sql = "update memo.info set replies_count = replies_count - 1 where memo_id = ?";
+            case QUESTION -> throw new NotYetImplementException("아직 구현 안됨. 구현 예정");
+        }
+        if (template.update(sql,postIdAndTypeInfo.getPostId()) == 0) throw new NotFoundException("댓글 수 업데이트 실패 (댓글 또는 메모가 존재하지 않음)");
+    }
 
     private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
         Long currentLikes = getLikesOfComment(commentId, isReComment); // 현재 좋아요 수
@@ -284,6 +307,19 @@ public class CommentRepositoryImpl implements CommentRepository{
             throw new NotFoundException("comment not found",e);
         }
     }
+
+    private RowMapper<PostIdAndTypeInfo> postIdAndPostTypeRowMapper() {
+        return ((rs,rowNum)->
+        {
+            PostIdAndTypeInfo postIdAndTypeInfo = new PostIdAndTypeInfo(
+                    rs.getLong("post_id"),
+                    PostType.valueOf(rs.getString("post_type"))
+            );
+            return postIdAndTypeInfo;
+        }
+
+        );
+    };
     private RowMapper<CommentListDto> commentRowMapper() {
         return ((rs,rowNum)->
                 CommentListDto.builder()
@@ -341,4 +377,5 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .isLike(rs.getBoolean("is_liked"))
                         .build());
     };
+
 }

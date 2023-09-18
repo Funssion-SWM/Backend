@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
+import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 
@@ -40,4 +41,9 @@ public interface CommentRepository {
     void updateProfileImageOfComment(Long userId, String authorProfileImagePath);
 
     void updateProfileImageOfReComment(Long userId, String authorProfileImagePath);
+
+    PostIdAndTypeInfo getPostIdByCommentId(Long commentId);
+
+    void plusCommentsCountOfPost(Long postId);
+    void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo);
 }
