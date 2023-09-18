@@ -4,12 +4,12 @@ package Funssion.Inforum.domain.member.controller;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
+import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,11 +52,24 @@ public class MemberController {
     @PostMapping("/authenticate-email")
     public IsSuccessResponseDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {
         String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
-        if (memberService.isValidEmail(decodedEmail, LoginType.NON_SOCIAL).isValid()) {
+        if (memberService.isValidEmail(decodedEmail).isValid()) {
             return mailService.sendEmailCode(emailDto.getEmail());
         } else {
             return new IsSuccessResponseDto(false, "이미 등록된 이메일입니다.");
         }
+    }
+    @PostMapping("/authenticate-email/find")
+    public IsSuccessResponseDto mailSendToFindPassword(@RequestBody @Valid EmailRequestDto emailDto){
+        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
+        if (memberService.isRegisteredEmail(decodedEmail).isValid()) {
+            return mailService.sendEmailLink(emailDto.getEmail());
+        } else {
+            return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
+        }
+    }
+    @PutMapping("/password/{usersTemporaryCode}")
+    public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto, @PathVariable String usersTemporaryCode ){
+        return memberService.findAndChangePassword(passwordUpdateDto,usersTemporaryCode);
     }
 
     @PostMapping("/authenticate-code")
@@ -66,7 +79,7 @@ public class MemberController {
 
     @GetMapping("/check-duplication")
     public ValidatedDto isValidName(@RequestParam(value = "name", required = true) String name) {
-        return memberService.isValidName(name, LoginType.NON_SOCIAL); //로그인 타입은 상관없음 리팩토링 예정
+        return memberService.isValidName(name); //로그인 타입은 상관없음 리팩토링 예정
     }
     @PostMapping("/nickname/{id}")
     public IsSuccessResponseDto registerName(@PathVariable("id") String userId,@RequestBody NicknameRequestDto nicknameRequestDto){
@@ -108,8 +121,7 @@ public class MemberController {
                                                 @RequestPart(value = "image", required = false) Optional<MultipartFile> image,
                                               @RequestPart(value = "introduce", required = false)String introduce,
                                               @RequestPart(value = "tags", required = true) String tags){
-        List<String> tagList = new ArrayList<>();
-        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        List<String> tagList = exceptionHandleOfList(tags);
         if (isEmptyProfileImage.equals("true") && image.isPresent() || isEmptyProfileImage.equals("false") && image.isEmpty()){
             throw new BadRequestException("image 첨부 유무와 첨부 유무를 나타내는 키-밸류값이 모순");
         }
@@ -120,6 +132,12 @@ public class MemberController {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), null, introduce, tagList);
         }
         return memberService.createMemberProfile(userId,memberInfoDto);
+    }
+
+    private List<String> exceptionHandleOfList(String tags) {
+        List<String> tagList = new ArrayList<>();
+        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        return tagList;
     }
 
     private List<String> convertStringToList(String tags) {
@@ -148,8 +166,7 @@ public class MemberController {
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
 
-        List<String> tagList = new ArrayList<>();
-        if (!tags.equals("[]")) tagList = convertStringToList(tags);
+        List<String> tagList = exceptionHandleOfList(tags);
         MemberInfoDto memberInfoDto;
         try {
             memberInfoDto = MemberInfoDto.createMemberInfo(Boolean.valueOf(isEmptyProfileImage), image.get(), introduce, tagList);
@@ -158,6 +175,8 @@ public class MemberController {
         }
         return memberService.updateMemberProfile(userId,memberInfoDto);
     }
+
+
 
     @GetMapping("/find-email-by")
     public EmailDto findEmailByNickname(@RequestParam String nickname){
