@@ -122,9 +122,9 @@ public class MemoServiceTest {
             when(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(1)))
                     .thenReturn(List.of(memo2, memo3));
 
-            List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(DateType.WEEK, OrderType.NEW, 2);
-            List<MemoListDto> memosForMainPageOrderByLikesByMonth = memoService.getMemosForMainPage(DateType.MONTH, OrderType.HOT, 2);
-            List<MemoListDto> memosForMainPageOrderByLikesByDay = memoService.getMemosForMainPage(DateType.DAY, OrderType.HOT, 2);
+            List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(DateType.WEEK, OrderType.NEW);
+            List<MemoListDto> memosForMainPageOrderByLikesByMonth = memoService.getMemosForMainPage(DateType.MONTH, OrderType.HOT);
+            List<MemoListDto> memosForMainPageOrderByLikesByDay = memoService.getMemosForMainPage(DateType.DAY, OrderType.HOT);
 
 
             assertThat(memosForMainPageOrderByDays).containsExactly(memoListDto3, memoListDto2, memoListDto1);

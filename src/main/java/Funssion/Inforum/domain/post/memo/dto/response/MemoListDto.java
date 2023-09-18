@@ -41,12 +41,8 @@ public class MemoListDto {
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
-    }
 
-    public static MemoListDto getInstanceWithNTags(Memo memo, Integer n) {
-        MemoListDto memoListDto = new MemoListDto(memo);
-        memoListDto.setMemoTagsLimit(n);
-        return memoListDto;
+        setMemoTagsLimit(2);
     }
 
     private void setMemoTagsLimit(Integer count) {
