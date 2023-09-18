@@ -51,25 +51,25 @@ public class MemoService {
     private final S3Repository s3Repository;
 
     @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Integer tagCnt) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
 
         Integer days = DateType.toNumOfDays(date);
 
-        return getMemos(orderBy, days, tagCnt);
+        return getMemos(orderBy, days);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days, Integer tagCnt) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById()
                         .stream()
-                        .map((memo -> MemoListDto.getInstanceWithNTags(memo, tagCnt)))
+                        .map((MemoListDto::new))
                         .toList();
             }
             case HOT -> {
                 return memoRepository.findAllByDaysOrderByLikes(days)
                         .stream()
-                        .map((memo -> MemoListDto.getInstanceWithNTags(memo, tagCnt)))
+                        .map(MemoListDto::new)
                         .toList();
             }
             default -> throw new BadRequestException("orderBy is undefined value");
