@@ -221,12 +221,4 @@ public class MemoRepositoryJdbc implements MemoRepository{
         String sql = "select replies_count from memo.info where memo_id = ?";
         return template.queryForObject(sql,Long.class,id);
     }
-    public void updateCommentsCount(Long id, boolean isDelete){
-        String sql = "";
-        sql = isDelete ? "update memo.info set replies_count = replies_count - 1 where memo_id = ?" :
-                "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
-
-        if (template.update(sql, id) == 0) throw new MemoNotFoundException("댓글 수 업데이트 실패");
-
-    }
 }
