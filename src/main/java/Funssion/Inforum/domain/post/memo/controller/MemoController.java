@@ -31,9 +31,10 @@ public class MemoController {
     @GetMapping
     public List<MemoListDto> getMemos(
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
-            @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy) {
+            @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy,
+            @RequestParam(required = false, defaultValue = "2") @Min(0) Integer tagCnt) {
 
-        return memoService.getMemosForMainPage(period, orderBy);
+        return memoService.getMemosForMainPage(period, orderBy, tagCnt);
     }
 
     @ResponseStatus(HttpStatus.CREATED)

@@ -18,7 +18,7 @@ public class TagService {
         return tagRepository.getDefaultTags();
     }
 
-    public List<String> getUserTags(Long userId) {
-        return tagRepository.findAllOrderByCountDesc(userId);
+    public List<String> getUserTags(Long userId, Integer tagCnt) {
+        return tagRepository.findAllOrderByCountDesc(userId, tagCnt);
     }
 }
