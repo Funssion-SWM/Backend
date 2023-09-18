@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.constant.memo.DateType;
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.constant.DateType;
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
 import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -51,36 +51,19 @@ public class MemoService {
     private final S3Repository s3Repository;
 
     @Transactional(readOnly = true)
-    public List<MemoListDto> getMemosForMainPage(String period, String orderBy) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
 
-        Long days = getDays(period);
+        Integer days = DateType.toNumOfDays(date);
 
-        MemoOrderType memoOrderType = Enum.valueOf(MemoOrderType.class, orderBy.toUpperCase());
-
-        return getMemos(memoOrderType, days);
+        return getMemos(orderBy, days);
     }
 
-    private static Long getDays(String period) {
-
-        DateType dateType = Enum.valueOf(DateType.class, period.toUpperCase());
-        long days = 0L;
-
-        switch (dateType) {
-            case DAY -> days = 1L;
-            case WEEK -> days = 7L;
-            case MONTH -> days = 31L;
-            case YEAR -> days = 365L;
-        }
-
-        return days;
-    }
-
-    private List<MemoListDto> getMemos(MemoOrderType memoOrderType, Long days) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById()
                         .stream()
-                        .map(MemoListDto::new)
+                        .map((MemoListDto::new))
                         .toList();
             }
             case HOT -> {
@@ -197,17 +180,29 @@ public class MemoService {
                 .imagePath(uploadedURL)
                 .build();
     }
-
-
-    public List<MemoListDto> getMemosBy(
+  
+    public List<MemoListDto> searchMemosBy(
             String searchString,
-            MemoOrderType orderBy,
+            Long userId,
+            OrderType orderBy,
             Boolean isTag) {
 
-        if (isTag) throw new BadRequestException("not yet implemented");
+        if (isTag)
+            return getMemoListDtosSearchedByTag(searchString, userId, orderBy);
 
         return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
                 .stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
+    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, OrderType orderBy) {
+        List<Memo> result;
+        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
+            result = memoRepository.findAllByTag(searchString, orderBy);
+        else result = memoRepository.findAllByTag(searchString, userId, orderBy);
+
+        return result.stream()
                 .map(MemoListDto::new)
                 .toList();
     }

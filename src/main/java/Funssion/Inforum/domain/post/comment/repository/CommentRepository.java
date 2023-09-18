@@ -36,4 +36,8 @@ public interface CommentRepository {
     LikeResponseDto cancelLikeComment(Long commentId, Boolean isReComment,Long userId);
 
     Long findAuthorIdByCommentId(Long commentId, Boolean isReComment);
+
+    void updateProfileImageOfComment(Long userId, String authorProfileImagePath);
+
+    void updateProfileImageOfReComment(Long userId, String authorProfileImagePath);
 }

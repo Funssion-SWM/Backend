@@ -40,7 +40,7 @@ class LikeControllerTest {
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memodsfsd/1/like"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -65,7 +65,7 @@ class LikeControllerTest {
 
         mvc.perform(post("/memodsfsd/1/like")
                         .with(csrf()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -90,6 +90,6 @@ class LikeControllerTest {
 
         mvc.perform(post("/memodsfsd/1/unlike")
                         .with(csrf()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
     }
 }

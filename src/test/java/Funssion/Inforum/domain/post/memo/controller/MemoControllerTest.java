@@ -87,6 +87,16 @@ class MemoControllerTest {
                         .param("period", "DAY")
                         .param("orderBy", "HOT"))
                 .andExpect(status().isOk());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAYE")
+                        .param("orderBy", "HOT"))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(get("/memos")
+                        .param("period", "DAY")
+                        .param("orderBy", "HOTT"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -190,6 +200,13 @@ class MemoControllerTest {
 
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
+                        .param("userId", "1")
+                        .param("orderBy", "hot")
+                        .param("isTag", "true"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/memos/search")
+                        .param("searchString", "JPA")
                         .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
 
@@ -214,6 +231,13 @@ class MemoControllerTest {
                         .param("searchString", "JPA")
                         .param("orderBy", "hot")
                         .param("isTag", "true!"))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(get("/memos/search")
+                        .param("searchString", "JPA")
+                        .param("userId", "-1")
+                        .param("orderBy", "hot")
+                        .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
     }
 

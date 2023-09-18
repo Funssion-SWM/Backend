@@ -21,7 +21,7 @@ class NonSocialMemberRepositoryTest {
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
-    NonSocialMemberRepository nonSocialMemberRepository;
+    MemberRepositoryImpl nonSocialMemberRepository;
 
     @BeforeEach
     void setUp() {

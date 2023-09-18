@@ -2,11 +2,10 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
-import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static Funssion.Inforum.common.constant.OrderType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,6 +54,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(0L)
+            .memoTags(List.of("JPA", "Java"))
             .build();
     Memo memo2 = Memo.builder()
             .title(form2.getMemoTitle())
@@ -68,6 +69,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(1L)
+            .memoTags(List.of("JDK", "Java"))
             .build();
     Memo memo3 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -82,6 +84,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
             .likes(9999L)
+            .memoTags(List.of("JWT", "JAVA"))
             .build();
     Memo memo4 = Memo.builder()
             .title(form3.getMemoTitle())
@@ -96,6 +99,7 @@ class MemoRepositoryJdbcTest {
             .updatedDate(LocalDateTime.now())
             .isTemporary(true)
             .likes(9999L)
+            .memoTags(List.of("JWT", "Java"))
             .build();
 
     @Nested
@@ -204,7 +208,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
         void findAllByDaysOrderByLikesTest() {
-            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1L);
+            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1);
 
             assertThat(memoListCreatedAtToday.size()).isEqualTo(3);
             assertThat(memoListCreatedAtToday.get(0)).isEqualTo(createdMemo3);
@@ -246,13 +250,13 @@ class MemoRepositoryJdbcTest {
         }
 
         @Test
-        @DisplayName("메모 검색")
+        @DisplayName("메모 텍스트로 검색")
         void findAllBySearchQueryTest() {
             List<String> searchStringList = new ArrayList<>();
             searchStringList.add("%JPA란?%"); // memo1
             searchStringList.add("%JDK란?%"); // memo2
 
-            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, MemoOrderType.NEW);
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW);
 
             assertThat(foundMemoList.size()).isEqualTo(2);
 
@@ -263,5 +267,40 @@ class MemoRepositoryJdbcTest {
             assertThat(memo2).isEqualTo(createdMemo2);
         }
 
+        @Test
+        @DisplayName("메모 태그로 검색")
+        void findAllByTag() {
+            List<Memo> foundByJavaTag = repository.findAllByTag("Java", NEW);
+
+            assertThat(foundByJavaTag).contains(createdMemo, createdMemo2, createdMemo3);
+
+            List<Memo> foundByLowerCaseJavaTag = repository.findAllByTag("java", NEW);
+            List<Memo> foundByUpperCaseJavaTag = repository.findAllByTag("JAVA", NEW);
+
+            assertThat(foundByJavaTag).isEqualTo(foundByLowerCaseJavaTag);
+            assertThat(foundByJavaTag).isEqualTo(foundByUpperCaseJavaTag);
+
+            List<Memo> foundByJWTTag = repository.findAllByTag("JWT", NEW);
+
+            assertThat(foundByJWTTag).contains(createdMemo3);
+        }
+
+        @Test
+        @DisplayName("메모 태그와 유저 ID로 검색")
+        void findAllByTagAndUserID() {
+            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", 9999L, NEW);
+
+            assertThat(foundByJavaTagAndUser).contains(createdMemo, createdMemo2);
+
+            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", 9999L,NEW);
+            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", 9999L,NEW);
+
+            assertThat(foundByJavaTagAndUser).isEqualTo(foundByLowerCaseJavaTagAndUser);
+            assertThat(foundByJavaTagAndUser).isEqualTo(foundByUpperCaseJavaTagAndUser);
+
+            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", 10000L,NEW);
+
+            assertThat(foundByJWTTagAndUser).contains(createdMemo3);
+        }
     }
 }

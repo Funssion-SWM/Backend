@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.memo.dto.response;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode
 @Builder
 public class MemoListDto {
     private Long memoId;
@@ -21,6 +23,7 @@ public class MemoListDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private Long repliesCount;
     private Long likes;
     private Boolean isLike;
     private List<String> memoTags;
@@ -36,9 +39,17 @@ public class MemoListDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.repliesCount = memo.getRepliesCount();
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
+
+        setMemoTagsLimit(2);
+    }
+
+    private void setMemoTagsLimit(Integer count) {
+        int listSize = Integer.min(this.memoTags.size(), count);
+        this.memoTags = this.memoTags.subList(0, listSize);
     }
 
     public void setIsLike(Boolean isLike) {

@@ -1,7 +1,8 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.ArrayToListException;
+import Funssion.Inforum.common.exception.BadRequestException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -59,7 +60,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Long days) {
+    public List<Memo> findAllByDaysOrderByLikes(Integer days) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
                 "order by likes desc, memo_id desc";
         return template.query(sql, memoRowMapper(), days);
@@ -94,13 +95,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
 
     @Override
-    public List<Memo> findAllBySearchQuery(List<String> searchStringList, MemoOrderType orderType) {
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
         String sql = getSql(searchStringList, orderType);
 
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
-
-    private static String getSql(List<String> searchStringList, MemoOrderType orderType) {
+    private static String getSql(List<String> searchStringList, OrderType orderType) {
         String sql = "select * from memo.info where is_temporary = false and ";
 
         for (int i = 0; i < searchStringList.size() ; i++) {
@@ -112,10 +112,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             if (i != searchStringList.size() - 1) sql += "or ";
         }
 
-        switch (orderType) {
-            case HOT -> sql += "order by likes desc, memo_id desc";
-            case NEW -> sql += "order by memo_id desc";
-        }
+        sql += getOrderBySql(orderType);
 
         return sql;
     }
@@ -125,6 +122,32 @@ public class MemoRepositoryJdbc implements MemoRepository{
         params.addAll(searchStringList);
         params.addAll(searchStringList);
         return params.stream().toArray();
+    }
+
+    @Override
+    public List<Memo> findAllByTag(String tagText, OrderType orderType) {
+        String sql = "select * from memo.info where is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, memoRowMapper(), tagText);
+    }
+
+    @Override
+    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType) {
+        String sql = "select * from memo.info where author_id = ? and is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, memoRowMapper(), userId, tagText);
+    }
+
+    private static String getOrderBySql(OrderType orderType) {
+        switch (orderType) {
+            case HOT -> {
+                return  " order by likes desc, memo_id desc";
+            }
+            case NEW -> {
+                return  " order by memo_id desc";
+            }
+        }
+        throw new BadRequestException("Invalid orderType value");
     }
 
     @Override
@@ -144,6 +167,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .repliesCount(rs.getLong("replies_count"))
                         .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
@@ -191,5 +215,18 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+    }
+
+    public Long getCommentsCount(Long id){
+        String sql = "select replies_count from memo.info where memo_id = ?";
+        return template.queryForObject(sql,Long.class,id);
+    }
+    public void updateCommentsCount(Long id, boolean isDelete){
+        String sql = "";
+        sql = isDelete ? "update memo.info set replies_count = replies_count - 1 where memo_id = ?" :
+                "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
+
+        if (template.update(sql, id) == 0) throw new MemoNotFoundException("댓글 수 업데이트 실패");
+
     }
 }

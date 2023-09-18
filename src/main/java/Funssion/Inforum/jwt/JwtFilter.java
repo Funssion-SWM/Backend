@@ -36,23 +36,30 @@ public class JwtFilter extends OncePerRequestFilter {
             }
             else {
                 log.debug("유효한 JWT 토큰이 없습니다, uri: {}", requestURI);
+                makeRTRLogin(request, response, requestURI);
             }
         }catch(ExpiredJwtException e){
             log.info("jwt 토큰 refresh로 갱신");
-            String refreshToken = resolveRefreshToken(request);
-            try {
-                if (StringUtils.hasText(refreshToken) && tokenProvider.validateRefreshToken(refreshToken)){
-                    Authentication authentication = makeNewAccessAndRefreshTokenForRTR(request, response, refreshToken);
-                    log.debug("RTR방식 사용, access token, refresh 토큰 갱신 및, 사용자 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
-
-                }
-            }catch(ExpiredJwtException error){
-                log.info("RTR 로그인방식 적용 안됨");
-                response.sendRedirect("https://www.inforum.me/login");
-            }
+            makeRTRLogin(request, response, requestURI);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void makeRTRLogin(HttpServletRequest request, HttpServletResponse response, String requestURI) throws IOException {
+        String refreshToken = resolveRefreshToken(request);
+        try {
+            if (StringUtils.hasText(refreshToken) && tokenProvider.validateRefreshToken(refreshToken)){
+                Authentication authentication = makeNewAccessAndRefreshTokenForRTR(request, response, refreshToken);
+                log.debug("RTR방식 사용, access token, refresh 토큰 갱신 및, 사용자 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
+            }
+            else{
+                log.debug("유효한 Refresh JWT 토큰이 없습니다, uri: {}", requestURI);
+            }
+        }catch(ExpiredJwtException error){
+            log.info("RTR 로그인방식 적용 안됨");
+            response.sendRedirect("https://www.inforum.me/login");
+        }
     }
 
     private Authentication makeNewAccessAndRefreshTokenForRTR(HttpServletRequest request, HttpServletResponse response, String refreshToken) {

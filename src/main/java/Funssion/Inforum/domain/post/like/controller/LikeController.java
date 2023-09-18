@@ -21,29 +21,21 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    // postType values = {memos, blogs, qnas}
-
     @GetMapping("/{postType}/{postId}/like")
-    public LikeResponseDto getLikeInfo(@PathVariable String postType, @PathVariable @Min(1) Long postId) {
-        return likeService.getLikeInfo(parseToEnumType(postType), postId);
+    public LikeResponseDto getLikeInfo(
+            @PathVariable PostType postType,
+            @PathVariable @Min(1) Long postId
+    ) {
+        return likeService.getLikeInfo(postType, postId);
     }
 
     @PostMapping("/{postType}/{postId}/like")
-    public void like(@PathVariable String postType, @PathVariable @Min(1) Long postId) {
-        likeService.likePost(parseToEnumType(postType), postId);
+    public void like(@PathVariable PostType postType, @PathVariable @Min(1) Long postId) {
+        likeService.likePost(postType, postId);
     }
 
     @PostMapping("/{postType}/{postId}/unlike")
-    public void unlike(@PathVariable String postType, @PathVariable @Min(1) Long postId) {
-        likeService.unlikePost(parseToEnumType(postType), postId);
-    }
-
-    private PostType parseToEnumType(String postType) {
-        try {
-            // remove last 's' and parse
-            return PostType.valueOf(postType.substring(0, postType.length() - 1).toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new UrlNotFoundException();
-        }
+    public void unlike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId) {
+        likeService.unlikePost(postType, postId);
     }
 }

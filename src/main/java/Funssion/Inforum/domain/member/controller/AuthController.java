@@ -30,7 +30,7 @@ public class AuthController {
             TokenDto tokenDto = authService.makeTokenInfo(nonSocialMemberLoginDto);
             HttpHeaders httpHeaders = new HttpHeaders();
             boolean isHttpOnly;
-            if(request.getServerName().equals("localhost")){
+            if(request.getServerName().equals("localhost") || request.getServerName().equals("dev.inforum.me")){
                 isHttpOnly = false;
                 addAccessAndRefreshCookieOnHeader(tokenDto, httpHeaders,isHttpOnly);
             }
@@ -49,8 +49,8 @@ public class AuthController {
             httpHeaders.add("Set-Cookie", "accessToken=" + tokenDto.getAccessToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=3600; SameSite=Lax; HttpOnly; Secure");
             httpHeaders.add("Set-Cookie", "refreshToken=" + tokenDto.getRefreshToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=864000; SameSite=Lax; HttpOnly; Secure");
         } else {
-            httpHeaders.add("Set-Cookie", "accessToken=" + tokenDto.getAccessToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=3600; SameSite=Lax; Secure");
-            httpHeaders.add("Set-Cookie", "refreshToken=" + tokenDto.getRefreshToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=864000; SameSite=Lax; Secure");
+            httpHeaders.add("Set-Cookie", "accessToken=" + tokenDto.getAccessToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=3600;");
+            httpHeaders.add("Set-Cookie", "refreshToken=" + tokenDto.getRefreshToken() + "; " + "Path=/; " + "Domain=" + domain + "; " + "Max-Age=864000");
         }
     }
 

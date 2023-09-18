@@ -1,7 +1,8 @@
 package Funssion.Inforum.domain.post.memo.controller;
 
-import Funssion.Inforum.common.constant.memo.MemoOrderType;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.constant.DateType;
+import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
@@ -29,16 +30,15 @@ public class MemoController {
 
     @GetMapping
     public List<MemoListDto> getMemos(
-            @RequestParam(required = false, defaultValue = "MONTH") String period,
-            @RequestParam(required = false, defaultValue = "HOT") String orderBy) {
-        log.info("pr = {}, or = {}", period, orderBy);
+            @RequestParam(required = false, defaultValue = "MONTH") DateType period,
+            @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy) {
+
         return memoService.getMemosForMainPage(period, orderBy);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
-        log.info("tagList = {}",memoSaveDto.getMemoTags());
         return memoService.createMemo(memoSaveDto);
     }
 
@@ -68,19 +68,12 @@ public class MemoController {
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
-            @RequestParam String orderBy,
+            @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANNONYMOUS_USER_ID_STRING) @Min(0) Long userId,
+            @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
-        return memoService.getMemosBy(
-                searchString, getOrderBy(orderBy), isTag);
-    }
-
-    private static MemoOrderType getOrderBy(String orderBy) {
-        try {
-            return MemoOrderType.valueOf(orderBy.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException(e.getMessage(), e);
-        }
+        return memoService.searchMemosBy(
+                searchString, userId, orderBy, isTag);
     }
 
     @GetMapping("/drafts")

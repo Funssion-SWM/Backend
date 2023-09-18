@@ -83,6 +83,28 @@ public class TagRepository {
         return new IsSuccessResponseDto(true,"성공적으로 태그가 삭제 되었습니다.");
     }
 
+    public List<String> findAllOrderByCountDesc(Long userId) {
+        String sql = "select t.tag_name " +
+                "from memo.info m, tag.memo_to_tag mtt, tag.info t " +
+                "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
+                "group by t.tag_name " +
+                "order by count(1) desc";
+
+        return template.queryForList(sql, String.class ,userId);
+    }
+
+    public List<String> findAllOrderByCountDesc(Long userId, Integer tagCnt) {
+        String sql = "select t.tag_name " +
+                "from memo.info m, tag.memo_to_tag mtt, tag.info t " +
+                "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
+                "group by t.tag_name " +
+                "order by count(1) desc " +
+                "limit ?";
+
+        return template.queryForList(sql, String.class ,userId, tagCnt);
+    }
+
+
     private void comparePriorTagWithUpdateTag(ArrayList<String> updatedTags, List<String> priorTags,Long memoId) {
         removePriorTagsComparingWithNewTags(updatedTags, priorTags, memoId);
         for (String updatedTagName : updatedTags){
