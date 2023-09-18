@@ -68,7 +68,7 @@ public class MemoController {
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam @NotBlank String searchString,
-            @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANNONYMOUS_USER_ID_STRING) @Min(0) Long userId,
+            @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
