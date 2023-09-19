@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 //users 포함한 end point 보안 적용 X
                                 .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.xw
                                 .requestMatchers(HttpMethod.GET,"/tags/**").permitAll()
+                                .requestMatchers("/users/check").authenticated()
                                 .requestMatchers("/oauth2/authorization/**").permitAll()
                                 .requestMatchers("/login/oauth2/code/**").permitAll()
                                 .requestMatchers("/users/profile/**").permitAll() // 개인 정보 수정은 권한 필요

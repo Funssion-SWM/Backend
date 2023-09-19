@@ -69,7 +69,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String newRefreshToken = tokenProvider.createRefreshToken(authentication);
         if(request.getServerName().equals("localhost")){
             String cookieValue1 = "accessToken=" + newAccessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; SameSite=Lax; HttpOnly";
-            String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; SameSite=Lax; HttpOnly";
+            String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly";
             response.addHeader("Set-Cookie", cookieValue1);
             response.addHeader("Set-Cookie", cookieValue2);
             log.info("domain = {}",domain);
@@ -77,7 +77,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         else{
             String cookieValue1 = "accessToken="+newAccessToken+"; "+"Path=/; "+"Domain="+domain+"; "+"Max-Age=1800; HttpOnly; SameSite=Lax; Secure";
-            String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Domain=" + domain + "; Max-Age=86400; HttpOnly; SameSite=Lax; Secure";
+            String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Domain=" + domain + "; Max-Age=864000; HttpOnly; SameSite=Lax; Secure";
             response.addHeader("Set-Cookie",cookieValue1);
             response.addHeader("Set-Cookie", cookieValue2);
         }
