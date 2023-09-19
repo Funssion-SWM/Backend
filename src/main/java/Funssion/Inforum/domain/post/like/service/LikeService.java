@@ -30,7 +30,7 @@ public class LikeService {
 
         } catch (LikeNotFoundException e) {
             return new LikeResponseDto(false, memoRepository.findById(postId).getLikes());
-        }회
+        }
     }
 
     @Transactional
