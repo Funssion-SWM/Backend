@@ -168,7 +168,7 @@ public class MemoService {
     }
 
     public ImageDto uploadImageInMemo(Long id, MultipartFile image) {
-        Long userId = SecurityContextUtils.getUserId();
+        Long userId = AuthUtils.getUserId(UPDATE);
 
         String imageName = S3Utils.generateImageNameOfS3(userId);
 

@@ -1,12 +1,14 @@
 package Funssion.Inforum.domain.post.memo.dto.response;
 
 import Funssion.Inforum.domain.post.memo.domain.Memo;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
+@EqualsAndHashCode(exclude = {"isMine"})
 public class MemoDto {
     private Long memoId;
     private Long authorId;
