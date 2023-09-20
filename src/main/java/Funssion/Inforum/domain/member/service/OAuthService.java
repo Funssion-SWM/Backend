@@ -30,14 +30,14 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+
         OAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
-        log.info("oauth2user = {}",oAuth2User);
         String email = oAuth2User.getAttribute("email");
         String nickname = UUID.randomUUID().toString().substring(0,15);
         String password = "default";
 //        Role role = Role.ROLE_USER;
-
+        log.info("why");
 
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
@@ -53,6 +53,7 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         else{
             authorities.add(new SimpleGrantedAuthority("ROLE_EXIST_USER"));
             User savedUser = new User (String.valueOf(socialMember.get().getUserId()),password,authorities);
+            log.info("check for signin");
             return new CustomUserDetails(savedUser.getUsername(),authorities,savedUser,oAuth2User.getAttributes());
         }
     }
