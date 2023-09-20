@@ -85,7 +85,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
         if(isHttpOnly){
             return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly; Secure";
         }else{
-            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; Secure";
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600;";
         }
     }
 
@@ -93,7 +93,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
         if(isHttpOnly){
             return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly; Secure";
         }else{
-            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; Secure";
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000;";
         }
     }
 

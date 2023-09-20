@@ -89,6 +89,7 @@ public class MemberController {
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
+        log.info("user id = {}",userId);
         Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
         boolean isLogin = !userId.equals("anonymousUser");
         return new ValidMemberDto(loginId, isLogin);

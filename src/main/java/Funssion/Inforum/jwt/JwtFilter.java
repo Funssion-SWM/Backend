@@ -30,7 +30,6 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = resolveToken(request, ACCESS_TOKEN);
-
         if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {
             Authentication authentication = tokenProvider.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -73,17 +72,15 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void setCookieForLocal(HttpServletResponse response, String newAccessToken, String newRefreshToken) {
-        String cookieValue1 = "accessToken=" + newAccessToken + "; Path=/; Domain=" + domain + "; Max-Age=1800; SameSite=Lax; HttpOnly";
-        String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly";
+        String cookieValue1 = "accessToken=" + newAccessToken + "; Path=/; Max-Age=1800;";
+        String cookieValue2 = "refreshToken=" + newRefreshToken + "; Path=/; Max-Age=864000; ";
         response.addHeader("Set-Cookie", cookieValue1);
         response.addHeader("Set-Cookie", cookieValue2);
     }
 
     private String resolveToken(HttpServletRequest request, Token token){
         Cookie[] cookies = request.getCookies();
-
         if (Objects.isNull(cookies)) return "";
-
         for (Cookie cookie : cookies) {
             if (token.getType().equals(cookie.getName())) {
                 return cookie.getValue();
