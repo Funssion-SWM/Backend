@@ -102,7 +102,7 @@ public class TokenProvider implements InitializingBean {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException e) {
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             throw new BadTokenException("잘못된 JWT 서명입니다.", e);
         } catch (ExpiredJwtException e ){
             return false;
