@@ -4,6 +4,8 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @Getter
 @SuperBuilder
 public class SocialMember extends Member {
@@ -13,6 +15,7 @@ public class SocialMember extends Member {
                 .userEmail(email)
                 .userName(nickname)
                 .loginType(LoginType.SOCIAL)
+                .createdDate(LocalDateTime.now())
                 .build();
     }
 }
