@@ -37,7 +37,6 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         String nickname = UUID.randomUUID().toString().substring(0,15);
         String password = "default";
 //        Role role = Role.ROLE_USER;
-        log.info("why");
 
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
