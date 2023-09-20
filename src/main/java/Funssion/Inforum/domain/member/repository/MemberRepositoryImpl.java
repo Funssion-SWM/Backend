@@ -160,7 +160,7 @@ public class MemberRepositoryImpl implements MemberRepository {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
             user_psmt.setString(1, name);
             user_psmt.setString(2, email);
-            user_psmt.setInt(3, loginType.getValue());
+            user_psmt.setInt(3, LoginType.SOCIAL.getValue());
             user_psmt.setTimestamp(4, Timestamp.valueOf(createdDate));
             return user_psmt;
         },userKeyHolder);
