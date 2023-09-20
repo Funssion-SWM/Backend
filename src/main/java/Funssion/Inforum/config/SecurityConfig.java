@@ -33,16 +33,17 @@ import java.util.Set;
 
 @Slf4j
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final TokenProvider tokenProvider;
+    private final NonSocialLoginFailureHandler nonSocialLoginFailureHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     //OAuth2LoginConfig에서 @Configuration으로 등록된 bean 주입
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
-    private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
+    private final AuthenticationSuccessHandler authenticationSuccessHandler;
     @Value("${jwt.domain}") private String domain;
 
 
@@ -52,15 +53,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 // token을 사용하는 방식이기 때문에 csrf를 disable합니다.
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling((exceptionHandling) -> //컨트롤러의 예외처리를 담당하는 exception handler와는 다름.
-                        exceptionHandling
-                                .accessDeniedHandler(jwtAccessDeniedHandler)
-                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                )
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .formLogin((formLogin) -> formLogin.disable())
                 // enable h2-console
                 .headers((headers) ->
                         headers.contentTypeOptions(contentTypeOptionsConfig ->
@@ -69,7 +64,8 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
                                 //users 포함한 end point 보안 적용 X
-                                .requestMatchers("/users/**").permitAll() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.xw
+                                .requestMatchers("/users/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
                                 .requestMatchers(HttpMethod.GET,"/tags/**").permitAll()
                                 .requestMatchers("/oauth2/authorization/**").permitAll()
                                 .requestMatchers("/login/oauth2/code/**").permitAll()
@@ -94,7 +90,11 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository)
                         .userInfoEndpoint(it -> it.userService(oAuthService))
-                        .successHandler(oAuthAuthenticationSuccessHandler))
+                        .successHandler(authenticationSuccessHandler))
+                .formLogin((formLogin) -> formLogin
+                        .loginProcessingUrl("/users/login")
+                        .failureHandler(nonSocialLoginFailureHandler)
+                        .successHandler(authenticationSuccessHandler).permitAll())
                 .exceptionHandling((exceptionHandling) -> exceptionHandling
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))

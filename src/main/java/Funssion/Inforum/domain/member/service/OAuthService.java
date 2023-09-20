@@ -38,7 +38,6 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         String password = "default";
 //        Role role = Role.ROLE_USER;
 
-
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
