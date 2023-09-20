@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.entity;
 
+import Funssion.Inforum.domain.member.constant.LoginType;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -13,6 +14,7 @@ public class SocialMember extends Member {
         return SocialMember.builder()
                 .userEmail(email)
                 .userName(nickname)
+                .loginType(LoginType.SOCIAL)
                 .createdDate(LocalDateTime.now())
                 .build();
     }
