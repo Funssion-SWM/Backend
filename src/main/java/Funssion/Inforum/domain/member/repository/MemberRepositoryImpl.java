@@ -44,14 +44,14 @@ public class MemberRepositoryImpl implements MemberRepository {
     //DAO 의 Member 객체로 정의
     public SaveMemberResponseDto save(NonSocialMember member) {
         // USER - AUTH 테이블은 참조관계이므로, 다음과 같이 작성
-        SaveMemberResponseDto savedMember = saveMemberInUserTable(member);
+        SaveMemberResponseDto savedMember = saveNonSocialMemberInUserTable(member);
         saveMemberInAuthTable(member,savedMember.getId());
 
         return savedMember;
     }
 
     public SaveMemberResponseDto save(SocialMember member) {
-        SaveMemberResponseDto savedMember = saveMemberInUserTable(member);
+        SaveMemberResponseDto savedMember = saveSocialMemberInUserTable(member);
 
         return savedMember;
     }
@@ -148,8 +148,7 @@ public class MemberRepositoryImpl implements MemberRepository {
             return auth_psmt;
         },authKeyHolder);
     }
-
-    private SaveMemberResponseDto saveMemberInUserTable(Member member) {
+    private SaveMemberResponseDto saveNonSocialMemberInUserTable(NonSocialMember member) {
         LocalDateTime createdDate = LocalDateTime.now();
         String name = member.getUserName();
         String email = member.getUserEmail();
@@ -160,7 +159,32 @@ public class MemberRepositoryImpl implements MemberRepository {
             PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
             user_psmt.setString(1, name);
             user_psmt.setString(2, email);
-            user_psmt.setInt(3, LoginType.SOCIAL.getValue());
+            user_psmt.setInt(3, loginType.getValue());
+            user_psmt.setTimestamp(4, Timestamp.valueOf(createdDate));
+            return user_psmt;
+        },userKeyHolder);
+        long savedUserId = userKeyHolder.getKey().longValue();
+        return SaveMemberResponseDto.builder()
+                .id(savedUserId)
+                .name(name)
+                .createdDate(createdDate)
+                .email(email)
+                .loginType(loginType)
+                .build();
+    }
+
+    private SaveMemberResponseDto saveSocialMemberInUserTable(SocialMember member) {
+        LocalDateTime createdDate = LocalDateTime.now();
+        String name = member.getUserName();
+        String email = member.getUserEmail();
+        LoginType loginType = member.getLoginType();
+        String userSql = "insert into member.info(name,email,login_type,created_date) values(?,?,?,?)";
+        KeyHolder userKeyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(con-> {
+            PreparedStatement user_psmt = con.prepareStatement(userSql, new String[]{"id"});
+            user_psmt.setString(1, name);
+            user_psmt.setString(2, email);
+            user_psmt.setInt(3, loginType.getValue());
             user_psmt.setTimestamp(4, Timestamp.valueOf(createdDate));
             return user_psmt;
         },userKeyHolder);
