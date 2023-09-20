@@ -81,6 +81,7 @@ public class MemberService {
         throw new InvalidParameterException("회원가입 로직중 잘못된 파라미터가 전달되었습니다.");
     }
 
+    @Transactional
     public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
         MemberRepository memberRepository = getMemberRepository(LoginType.SOCIAL);
         ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname(), LoginType.SOCIAL);
@@ -111,7 +112,7 @@ public class MemberService {
 
     @Transactional
     public IsProfileSavedDto createMemberProfile(Long userId, MemberInfoDto memberInfoDto){
-        return memberInfoDto.isEmptyProfileImage() == false
+        return !memberInfoDto.isEmptyProfileImage()
                 ? createMemberProfileWithImage(userId, memberInfoDto)
                 : createMemberProfileWithoutImage(userId, memberInfoDto);
     }

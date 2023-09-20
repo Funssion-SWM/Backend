@@ -21,6 +21,7 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final MemoRepository memoRepository;
 
+    @Transactional(readOnly = true)
     public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
 

@@ -19,7 +19,6 @@ public class MyService {
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final NonSocialMemberRepository memberRepository;
-    private final LikeRepository likeRepository;
 
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()
@@ -35,8 +34,7 @@ public class MyService {
     }
 
     public List<MemoListDto> getMyMemos(Long userId) {
-        return memoRepository.findAllByUserIdOrderById(userId)
-                .stream()
+        return memoRepository.findAllByUserIdOrderById(userId).stream()
                 .map(MemoListDto::new)
                 .toList();
     }

@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
@@ -35,6 +34,7 @@ public class CommentService {
      * 로그인된 유저의 정보를 가져와
      * 이를 활용하여 profile을 가져옵니다.
      */
+    @Transactional
     public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         commentRepository.createComment(new Comment(
@@ -43,18 +43,22 @@ public class CommentService {
         return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
     }
 
+    @Transactional
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
         return commentRepository.updateComment(commentUpdateDto,commentId);
     }
 
+    @Transactional
     public IsSuccessResponseDto deleteComment(Long commentId) {
         return commentRepository.deleteComment(commentId);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId,Long userId){
         return commentRepository.getCommentsAtPost(postType, postId,userId);
     }
 
+    @Transactional
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
