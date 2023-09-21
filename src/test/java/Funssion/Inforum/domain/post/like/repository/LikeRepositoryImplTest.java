@@ -50,12 +50,11 @@ class LikeRepositoryImplTest {
     @DisplayName("좋아요 정보 아이디랑 게시물 정보로 불러오기")
     void findByUserIdAndPostInfo() {
         Like saved = likeRepository.create(like1);
-        Like found = likeRepository.findByUserIdAndPostInfo(saved.getUserId(), saved.getPostType(), saved.getPostId());
+        Like found = likeRepository.findByUserIdAndPostInfo(saved.getUserId(), saved.getPostType(), saved.getPostId()).get();
 
         assertThat(saved).isEqualTo(found);
-
-        assertThatThrownBy(() -> likeRepository.findByUserIdAndPostInfo(like2.getUserId(), like2.getPostType(), like2.getPostId()))
-                .isInstanceOf(NotFoundException.class);
+        assertThat(likeRepository.findByUserIdAndPostInfo(like2.getUserId(), like2.getPostType(), like2.getPostId()).isPresent())
+                .isFalse();
     }
 
     @Test

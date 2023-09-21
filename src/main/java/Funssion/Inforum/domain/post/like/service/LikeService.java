@@ -11,10 +11,12 @@ import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LikeService {
 
@@ -25,32 +27,32 @@ public class LikeService {
     public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
 
-        try {
-            likeRepository.findByUserIdAndPostInfo(userId, postType, postId);
-            return new LikeResponseDto(true, memoRepository.findById(postId).getLikes());
-
-        } catch (LikeNotFoundException e) {
-            return new LikeResponseDto(false, memoRepository.findById(postId).getLikes());
-        }
+        return likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
+                .map(like -> new LikeResponseDto(true, memoRepository.findById(postId).getLikes()))
+                .orElse(new LikeResponseDto(false, memoRepository.findById(postId).getLikes()));
     }
 
     @Transactional
     public void likePost(PostType postType, Long postId) {
-
-        updateLikesInPost(postType, postId, Sign.PLUS);
-
         Long userId = SecurityContextUtils.getUserId();
 
+        likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
+                .ifPresent(like -> {
+                    throw new BadRequestException("you have already liked this post");
+                });
+
+        updateLikesInPost(postType, postId, Sign.PLUS);
         likeRepository.create(new Like(userId, postType, postId));
     }
 
     @Transactional
     public void unlikePost(PostType postType, Long postId) {
-
-        updateLikesInPost(postType, postId, Sign.MINUS);
-
         Long userId = SecurityContextUtils.getUserId();
 
+        likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
+                .orElseThrow(() -> new BadRequestException("you haven't liked this post"));
+
+        updateLikesInPost(postType, postId, Sign.MINUS);
         likeRepository.delete(userId, postType, postId);
     }
 
