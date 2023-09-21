@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class LikeRepositoryImpl implements LikeRepository {
@@ -48,11 +49,12 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public Like findByUserIdAndPostInfo(Long userId, PostType postType, Long postId) {
+    public Optional<Like> findByUserIdAndPostInfo(Long userId, PostType postType, Long postId) {
         String sql = "select * from member.like where user_id = ? and post_type = ? and post_id = ?";
 
-        return template.query(sql, likeRowMapper(), userId, postType.toString(), postId).stream().findAny()
-                .orElseThrow(() -> new LikeNotFoundException());
+        return template.query(sql, likeRowMapper(), userId, postType.toString(), postId)
+                .stream()
+                .findAny();
     }
 
     @Override

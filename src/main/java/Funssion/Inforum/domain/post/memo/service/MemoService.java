@@ -50,7 +50,6 @@ public class MemoService {
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
 
-    @Transactional(readOnly = true)
     public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
 
         Integer days = DateType.toNumOfDays(date);
@@ -111,7 +110,6 @@ public class MemoService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
     public MemoDto getMemoBy(Long memoId) {
 
         Memo memo = memoRepository.findById(memoId);
@@ -167,6 +165,7 @@ public class MemoService {
             myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
     }
 
+
     public ImageDto uploadImageInMemo(Long id, MultipartFile image) {
         Long userId = AuthUtils.getUserId(UPDATE);
 
@@ -180,7 +179,7 @@ public class MemoService {
                 .imagePath(uploadedURL)
                 .build();
     }
-  
+
     public List<MemoListDto> searchMemosBy(
             String searchString,
             Long userId,

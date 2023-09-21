@@ -57,6 +57,7 @@ public class MemberService {
         return savedMember;
     }
 
+    @Transactional
     public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
         ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname());
         if (isValidName.isValid()){
@@ -86,7 +87,7 @@ public class MemberService {
 
     @Transactional
     public IsProfileSavedDto createMemberProfile(Long userId, MemberInfoDto memberInfoDto){
-        return memberInfoDto.isEmptyProfileImage() == false
+        return !memberInfoDto.isEmptyProfileImage()
                 ? createMemberProfileWithImage(userId, memberInfoDto)
                 : createMemberProfileWithoutImage(userId, memberInfoDto);
     }
