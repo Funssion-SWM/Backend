@@ -11,9 +11,11 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
+import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
+    private final MemoRepository memoRepository;
     private final MyRepository myRepository;
 
     /*
@@ -40,6 +43,8 @@ public class CommentService {
         commentRepository.createComment(new Comment(
             authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)
         );
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostId());
+
         return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
     }
 
@@ -50,6 +55,8 @@ public class CommentService {
 
     @Transactional
     public IsSuccessResponseDto deleteComment(Long commentId) {
+        PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
+        commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
         return commentRepository.deleteComment(commentId);
     }
 

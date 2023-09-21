@@ -23,6 +23,7 @@ public class MemoListDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private Long repliesCount;
     private Long likes;
     private Boolean isLike;
     private List<String> memoTags;
@@ -38,6 +39,7 @@ public class MemoListDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.repliesCount = memo.getRepliesCount();
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();

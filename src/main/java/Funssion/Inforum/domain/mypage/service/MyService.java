@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.mypage.service;
 
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
-import Funssion.Inforum.domain.member.repository.NonSocialMemberRepository;
+import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
@@ -18,7 +18,7 @@ public class MyService {
 
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
-    private final NonSocialMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()

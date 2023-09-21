@@ -2,10 +2,6 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.BadRequestException;
-import Funssion.Inforum.common.exception.ImageIOException;
-import Funssion.Inforum.s3.S3Repository;
-import Funssion.Inforum.s3.S3Utils;
-import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
@@ -16,11 +12,13 @@ import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
-import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
+import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
-import com.amazonaws.services.s3.AmazonS3;
+import Funssion.Inforum.s3.S3Repository;
+import Funssion.Inforum.s3.S3Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.security.InvalidParameterException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
@@ -39,52 +33,33 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
-    //생성자로 같은 타입의 클래스(MemberRepository) 다수 조회 후, Map으로 조회
-    private final Map<String,MemberRepository> repositoryMap;
+    private final MemberRepository memberRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
+    private final CommentRepository commentRepository;
     private final S3Repository s3Repository;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
 
-    HashMap<LoginType, String> loginTypeMap = new HashMap<>();
-    {
-        loginTypeMap.put(LoginType.NON_SOCIAL,"nonSocialMemberRepository");
-        loginTypeMap.put(LoginType.SOCIAL, "socialMemberRepository");
-    }
-
     @Transactional
     public SaveMemberResponseDto requestMemberRegistration (MemberSaveDto memberSaveDto){
-        LoginType loginType = memberSaveDto.getLoginType();
-        log.debug("Save Member Email = {}, loginType = {}",memberSaveDto.getUserEmail(), loginType);
         //중복 처리 한번더 검증
-        if(!isValidEmail(memberSaveDto.getUserEmail(),loginType).isValid()){
+        if(!isValidEmail(memberSaveDto.getUserEmail()).isValid()){
             throw new DuplicateMemberException("이미 가입된 회원 이메일입니다.");
         }
-        if(!isValidName(memberSaveDto.getUserName(),loginType).isValid()){
+        if(!isValidName(memberSaveDto.getUserName()).isValid()){
             throw new DuplicateMemberException("이미 가입된 닉네임입니다.");
         }
 
-        switch (loginType) {
-            case NON_SOCIAL:
-                MemberRepository selectedMemberRepository = repositoryMap.get(loginTypeMap.get(loginType));
-                NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
-                SaveMemberResponseDto savedMember = selectedMemberRepository.save(member);
-                return savedMember;
-            case SOCIAL: //social 회원가입의 경우 -> 요청 필요 -
-                // ---------- 의미 없어짐 ----------- //
-            {
-                throw new NotYetImplementException("해당 요청은 아직 구현되지 않았습니다.");
-            }
-        }
-        throw new InvalidParameterException("회원가입 로직중 잘못된 파라미터가 전달되었습니다.");
+        NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
+        SaveMemberResponseDto savedMember = memberRepository.save(member);
+        return savedMember;
     }
 
     @Transactional
     public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
-        MemberRepository memberRepository = getMemberRepository(LoginType.SOCIAL);
-        ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname(), LoginType.SOCIAL);
+        ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname());
         if (isValidName.isValid()){
             return memberRepository.saveSocialMemberNickname(nicknameRequestDto.getNickname(), userId);
         }
@@ -92,22 +67,22 @@ public class MemberService {
             return new IsSuccessResponseDto(false,"닉네임 저장에 실패하였습니다.");
         }
     }
-    public ValidatedDto isValidName(String username, LoginType loginType) {
-        MemberRepository selectedMemberRepository = getMemberRepository(loginType);
-        log.debug("selected repository = {}", selectedMemberRepository);
-
-        boolean isNameAvailable = selectedMemberRepository.findByName(username).isEmpty();
+    public ValidatedDto isValidName(String username) {
+        boolean isNameAvailable = memberRepository.findByName(username).isEmpty();
         String message = isNameAvailable ? "사용 가능한 닉네임입니다." : "이미 사용 중인 닉네임입니다.";
         return new ValidatedDto(isNameAvailable, message);
     }
-    /* NonSocial만 해도 생관 없음 수정해야하는 부분  -> repository 분기가 의미가 없어짐 */
-    public ValidatedDto isValidEmail(String email, LoginType loginType){
-        MemberRepository selectedMemberRepository = getMemberRepository(loginType);
-        log.debug("selected repository = {}",selectedMemberRepository);
+    public ValidatedDto isValidEmail(String email){
 
-        boolean isEmailAvailable = selectedMemberRepository.findByEmail(email).isEmpty();
+        boolean isEmailAvailable = memberRepository.findNonSocialMemberByEmail(email).isEmpty();
         String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return new ValidatedDto(isEmailAvailable,message);
+    }
+    public ValidatedDto isRegisteredEmail(String email){
+
+        boolean isEmailRegistered = memberRepository.findNonSocialMemberByEmail(email).isPresent();
+        String message = isEmailRegistered ? "해당 이메일로 코드를 전송하겠습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
+        return new ValidatedDto(isEmailRegistered,message);
     }
 
     @Transactional
@@ -124,11 +99,10 @@ public class MemberService {
     }
 
     public EmailDto findEmailByNickname(String nickname){
-        MemberRepository memberRepository = getMemberRepository(LoginType.NON_SOCIAL);
         String emailFoundByNickname = memberRepository.findEmailByNickname(nickname);
         return new EmailDto(blur(emailFoundByNickname),"해당 닉네임으로 등록된 이메일 정보입니다.");
     }
-    private String blur(String email){
+    public String blur(String email){
         int startOfDomainIndex = email.indexOf("@");
         char blurChar = '*';
         char[] charEmailArray = email.toCharArray();
@@ -204,6 +178,8 @@ public class MemberService {
 
     private IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
         memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
+        commentRepository.updateProfileImageOfComment(userId, memberProfileEntity.getProfileImageFilePath());
+        commentRepository.updateProfileImageOfReComment(userId,memberProfileEntity.getProfileImageFilePath() );
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 
@@ -211,9 +187,8 @@ public class MemberService {
         return myRepository.findProfileByUserId(userId);
     }
 
-    private MemberRepository getMemberRepository(LoginType loginType) {
-        MemberRepository selectedMemberRepository = repositoryMap.get(loginTypeMap.get(loginType));
-        return selectedMemberRepository;
+    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String usersTemporaryCode) {
+        String email = memberRepository.findEmailByAuthCode(usersTemporaryCode);
+        return memberRepository.findAndChangePassword(passwordUpdateDto,email);
     }
-
 }

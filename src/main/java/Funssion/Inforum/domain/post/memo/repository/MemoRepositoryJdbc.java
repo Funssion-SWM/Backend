@@ -100,7 +100,6 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
-
     private static String getSql(List<String> searchStringList, OrderType orderType) {
         String sql = "select * from memo.info where is_temporary = false and ";
 
@@ -168,6 +167,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .repliesCount(rs.getLong("replies_count"))
                         .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
@@ -215,5 +215,10 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+    }
+
+    public Long getCommentsCount(Long id){
+        String sql = "select replies_count from memo.info where memo_id = ?";
+        return template.queryForObject(sql,Long.class,id);
     }
 }
