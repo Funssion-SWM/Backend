@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.mypage.service;
 
+import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;

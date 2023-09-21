@@ -128,6 +128,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
 
+    @Override
     public String findNameById(Long id) {
         String sql = "select name from member.info where id = ?";
         try {

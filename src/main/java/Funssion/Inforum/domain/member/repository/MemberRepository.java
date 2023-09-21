@@ -17,6 +17,7 @@ public interface MemberRepository {
     Optional<NonSocialMember> findNonSocialMemberByEmail(String email);
     Optional<SocialMember> findSocialMemberByEmail(String email);
     Optional<Member> findByName(String Name);
+    String findNameById(Long id);
 
     IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId);
 
