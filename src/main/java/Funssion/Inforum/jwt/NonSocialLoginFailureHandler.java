@@ -20,7 +20,7 @@ public class NonSocialLoginFailureHandler implements AuthenticationFailureHandle
 
     private void makeFailureResponseBody(HttpServletResponse response) throws IOException {
         String failureResponse = convertFailureObjectToString();
-        response.setStatus(response.SC_FORBIDDEN);
+        response.setStatus(response.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
         response.getWriter().write(failureResponse);

@@ -16,4 +16,6 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         response.sendError(HttpServletResponse.SC_FORBIDDEN,"유효하지 않은 사용자 정보입니다.");
         //sendError를 통해 WAS 에서 오류임을 알게됨. 이후, WAS -> Filter -> Servlet -> Interceptor -> Controller로 오류 요청 이동
     }
+
+
 }
