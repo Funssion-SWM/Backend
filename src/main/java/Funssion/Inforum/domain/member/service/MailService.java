@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
@@ -34,9 +35,11 @@ public class MailService {
     @Transactional
     public IsSuccessResponseDto sendEmailCode(String beVerifiedEmail){
         try {
+            LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
+
             String generatedCode = makeRandomString();
             authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
-            authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
+            authCodeRepository.insertEmailCodeForVerification(dueDate,beVerifiedEmail, generatedCode);
             sendEmailForRegistration(beVerifiedEmail,generatedCode);
         }catch(DataAccessException e){
             return new IsSuccessResponseDto(false,"오류 발생");
@@ -45,14 +48,13 @@ public class MailService {
     }
     @Transactional
     public IsSuccessResponseDto sendEmailLink(String beVerifiedEmail){
-        try {
-            String generatedCode = makeRandomString();
-            authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
-            authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
-            sendEmailForUpdatingPassword(beVerifiedEmail,generatedCode);
-        }catch(DataAccessException e){
-            return new IsSuccessResponseDto(false,"오류 발생");
-        }
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
+
+        String generatedCode = makeRandomString();
+        authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
+        authCodeRepository.insertEmailCodeForVerification(dueDate, beVerifiedEmail, generatedCode);
+        sendEmailForUpdatingPassword(beVerifiedEmail,generatedCode);
+
         return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 비밀번호 수정 링크를 전송하였습니다!");
     }
     public ValidatedDto isAuthorizedEmail(CodeCheckDto requestCodeDto){

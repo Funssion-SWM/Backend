@@ -1,8 +1,12 @@
 package Funssion.Inforum.domain.member.controller;
 
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.response.EmailDto;
+import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,13 +19,18 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MemberController.class)
 class MemberControllerTest {
     @Autowired
     MockMvc mvc;
+    @Autowired
+    ObjectMapper objectMapper;
     @MockBean
     MemberService memberService;
     @MockBean
@@ -32,9 +41,9 @@ class MemberControllerTest {
     void getEmailByNickname() throws Exception {
         //given
         String nickname = "test_nickname";
-
+        String returnEmail = "tes**@gmail.com";
         when(memberService.findEmailByNickname(nickname)).
-                thenReturn(new EmailDto("tes**@gmail.com","해당 닉네임으로 등록된 이메일 정보입니다."));
+                thenReturn(new EmailDto(returnEmail,"해당 닉네임으로 등록된 이메일 정보입니다."));
         //when
         MvcResult result = mvc.
                 perform(get("/users/find-email-by")
@@ -43,8 +52,43 @@ class MemberControllerTest {
                 .andReturn();
         String responseBody = result.getResponse().getContentAsString();
         String email = JsonPath.read(responseBody, "$.email");
-        assertThat(email).isEqualTo("tes**@gmail.com");
 
+        //then
+        assertThat(email).isEqualTo(returnEmail);
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("비밀번호 수정을 위해 비밀번호 수정 페이지 링크 담긴 이메일 전송하기")
+    void sendEmailCodeForPassword() throws Exception {
+        EmailRequestDto validEmailRequestDto = new EmailRequestDto("test_valid@gmail.com");
+        EmailRequestDto inValidEmailRequestDto = new EmailRequestDto("test_invalid@gmail.com");
+        String validEmailRequest = objectMapper.writeValueAsString(validEmailRequestDto);
+        String inValidEmailRequest = objectMapper.writeValueAsString(inValidEmailRequestDto);
+        when(memberService.isRegisteredEmail(validEmailRequestDto.getEmail())).thenReturn(new ValidatedDto(true,"유효함"));
+        when(memberService.isRegisteredEmail(inValidEmailRequestDto.getEmail())).thenReturn(new ValidatedDto(false,"유효하지 않음"));
+        when(mailService.sendEmailLink(validEmailRequestDto.getEmail())).thenReturn(new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 비밀번호 수정 링크를 전송하였습니다!"));
+
+        MvcResult validResult = mvc.perform(post("/users/authenticate-email/find")
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(validEmailRequest))
+                .andExpect(status().isOk())
+                .andReturn();
+        String successResponseBody = validResult.getResponse().getContentAsString();
+        Boolean success = JsonPath.read(successResponseBody, "$.isSuccess");
+
+        MvcResult inValidResult = mvc.perform(post("/users/authenticate-email/find")
+                        .with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content(inValidEmailRequest))
+                .andExpect(status().isOk())
+                .andReturn();
+        String responseBody = inValidResult.getResponse().getContentAsString();
+        Boolean fail = JsonPath.read(responseBody, "$.isSuccess");
+
+        assertThat(success).isEqualTo(true);
+        assertThat(fail).isEqualTo(false);
     }
 
 

@@ -60,8 +60,7 @@ public class MemberController {
     }
     @PostMapping("/authenticate-email/find")
     public IsSuccessResponseDto mailSendToFindPassword(@RequestBody @Valid EmailRequestDto emailDto){
-        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
-        if (memberService.isRegisteredEmail(decodedEmail).isValid()) {
+        if (memberService.isRegisteredEmail(emailDto.getEmail()).isValid()) {
             return mailService.sendEmailLink(emailDto.getEmail());
         } else {
             return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
@@ -181,7 +180,6 @@ public class MemberController {
 
     @GetMapping("/find-email-by")
     public EmailDto findEmailByNickname(@RequestParam String nickname){
-        String decodedNickname = URLDecoder.decode(nickname, StandardCharsets.UTF_8);
-        return memberService.findEmailByNickname(decodedNickname);
+        return memberService.findEmailByNickname(nickname);
     }
 }

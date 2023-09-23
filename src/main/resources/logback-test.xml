@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}%highlight([%-5level]) ${PID:-} : %msg%n</pattern>
-        </layout>
-    </appender>
-    <logger name="Funssion.Inforum" level="DEBUG" />
-    <logger name="org.springframework.security" level="DEBUG" />
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
