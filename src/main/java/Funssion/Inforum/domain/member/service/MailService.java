@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
+import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
@@ -47,7 +48,7 @@ public class MailService {
         return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 코드를 전송하였습니다!");
     }
     @Transactional
-    public IsSuccessResponseDto sendEmailLink(String beVerifiedEmail){
+    public GenCodeResponse sendEmailLink(String beVerifiedEmail){
         LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
 
         String generatedCode = makeRandomString();
@@ -55,7 +56,7 @@ public class MailService {
         authCodeRepository.insertEmailCodeForVerification(dueDate, beVerifiedEmail, generatedCode);
         sendEmailForUpdatingPassword(beVerifiedEmail,generatedCode);
 
-        return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 비밀번호 수정 링크를 전송하였습니다!");
+        return new GenCodeResponse(generatedCode);
     }
     public ValidatedDto isAuthorizedEmail(CodeCheckDto requestCodeDto){
         boolean isAuthorized = authCodeRepository.checkRequestCode(requestCodeDto);

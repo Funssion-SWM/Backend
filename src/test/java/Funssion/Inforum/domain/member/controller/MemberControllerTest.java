@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.member.controller;
 
-import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.response.EmailDto;
+import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
@@ -67,7 +67,7 @@ class MemberControllerTest {
         String inValidEmailRequest = objectMapper.writeValueAsString(inValidEmailRequestDto);
         when(memberService.isRegisteredEmail(validEmailRequestDto.getEmail())).thenReturn(new ValidatedDto(true,"유효함"));
         when(memberService.isRegisteredEmail(inValidEmailRequestDto.getEmail())).thenReturn(new ValidatedDto(false,"유효하지 않음"));
-        when(mailService.sendEmailLink(validEmailRequestDto.getEmail())).thenReturn(new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 비밀번호 수정 링크를 전송하였습니다!"));
+        when(mailService.sendEmailLink(validEmailRequestDto.getEmail())).thenReturn(new GenCodeResponse("123456"));
 
         MvcResult validResult = mvc.perform(post("/users/authenticate-email/find")
                         .with(csrf())
@@ -90,7 +90,6 @@ class MemberControllerTest {
         assertThat(success).isEqualTo(true);
         assertThat(fail).isEqualTo(false);
     }
-
 
 
     /*

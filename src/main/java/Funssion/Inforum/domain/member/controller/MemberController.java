@@ -61,7 +61,8 @@ public class MemberController {
     @PostMapping("/authenticate-email/find")
     public IsSuccessResponseDto mailSendToFindPassword(@RequestBody @Valid EmailRequestDto emailDto){
         if (memberService.isRegisteredEmail(emailDto.getEmail()).isValid()) {
-            return mailService.sendEmailLink(emailDto.getEmail());
+            mailService.sendEmailLink(emailDto.getEmail());
+            return new IsSuccessResponseDto(true, "해당 이메일로 인증번호 링크를 전송하였습니다.");
         } else {
             return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
         }

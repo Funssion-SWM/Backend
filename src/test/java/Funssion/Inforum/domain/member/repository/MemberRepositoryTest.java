@@ -15,17 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 @SpringBootTest
 @Transactional
-class NonSocialMemberRepositoryTest {
+class MemberRepositoryTest {
     @Autowired
     DataSource dataSource;
     @Autowired
     PasswordEncoder passwordEncoder;
     @Autowired
-    MemberRepositoryImpl nonSocialMemberRepository;
+    MemberRepositoryImpl memberRepository;
 
     @BeforeEach
     void setUp() {
-        nonSocialMemberRepository.save(
+        memberRepository.save(
                 NonSocialMember.createNonSocialMember(
                         new MemberSaveDto("test", LoginType.NON_SOCIAL, "test12@gmail.com", "a1234567!"))
                 );
@@ -33,21 +33,23 @@ class NonSocialMemberRepositoryTest {
     @Test
     @DisplayName("존재하는 회원 이름으로 아이디 앞 세글자만 보이는 이메일 반환")
     void findEmailBlurredByNickname(){
-        Assertions.assertThat(nonSocialMemberRepository.findEmailByNickname("test")).isEqualTo("test12@gmail.com");
+        Assertions.assertThat(memberRepository.findEmailByNickname("test")).isEqualTo("test12@gmail.com");
     }
+
+
 //    @Test
 //    @DisplayName("논소셜 계정 회원가입 성공")
 //    void joinWithNonSocialLoginType() throws NoSuchAlgorithmException {
 //        Long joinResult = memberService.requestMemberRegistration(joinNonSocialMember);
 //        assertEquals(1L, joinResult);
-//        verify(nonSocialMemberRepository, times(1)).save(any());
+//        verify(memberRepository, times(1)).save(any());
 //        verify(myRepository, times(1)).createHistory(1L);
 //    }
 
 //    @Test
 //    @DisplayName("논소셜 계정 회원가입 실패")
 //    void joinWithNonSocialLoginTypeFail() throws NoSuchAlgorithmException {
-//        when(nonSocialMemberRepository.save(any())).thenReturn(1L);
+//        when(memberRepository.save(any())).thenReturn(1L);
 //
 //        memberService.join(joinNonSocialMemberFail);
 //
@@ -61,11 +63,11 @@ class NonSocialMemberRepositoryTest {
 //    @DisplayName("중복 이메일 회원가입 체크")
 //    void duplicationEmail() throws NoSuchAlgorithmException {
 //        // NON_SOCIAL 로그인 타입에 대한 모의 동작 설정
-//        when(nonSocialMemberRepository.save(any())).thenReturn(1L);
+//        when(memberRepository.save(any())).thenReturn(1L);
 //
 //        Long joinResult = memberService.join(joinNonSocialMember);
 //        assertEquals(1L, joinResult);
-//        verify(nonSocialMemberRepository, times(1)).save(any());
+//        verify(memberRepository, times(1)).save(any());
 //        verify(myRepository, times(1)).createHistory(1L);
 //    }
 
