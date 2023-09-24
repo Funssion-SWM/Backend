@@ -88,7 +88,7 @@ public class MailService {
         String content =
                 " 반갑습니다!" + "<br>" + "Inforum 비밀번호 업데이트를 위한 이메일 입니다." +    //html 형식으로 작성 !
                         "<br><br>" +
-                        "비밀번호 인증을 위한 링크는 <a href='https://www.inforum.me/users/password/'" + code + "> 비밀번호 수정 링크</a>입니다." +
+                        "비밀번호 인증을 위한 확인 코드는 <span style='color :blue;'>"  + code + "</span> 입니다." +
                         "<br>" +
                         "해당 링크를 클릭하여 비밀번호를 변경해주세요." +
                         "<br>" +

@@ -9,7 +9,7 @@ import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -109,18 +109,18 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String email) {
+    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {
         String sql = "update member.auth as auth set password = ? from member.info as memberInfo where memberInfo.email = ?";
-        int updatedRow = jdbcTemplate.update(sql, passwordEncoder.encode(passwordUpdateDto.getUserPw()), email);
+        int updatedRow = jdbcTemplate.update(sql, passwordEncoder.encode(passwordUpdateDto.getUserPw()), passwordUpdateDto.getEmail());
         if (updatedRow == 0) throw new UpdateFailException("비밀번호가 수정되지 않았습니다.");
         return new IsSuccessResponseDto(true, "비밀번호가 수정되었습니다.");
     }
 
     @Override
-    public String findEmailByAuthCode(String usersTemporaryCode) {
+    public String findEmailByAuthCode(String code) {
         String sql = "select email from member.auth_code where code = ? and expiration = false";
         try{
-            return jdbcTemplate.queryForObject(sql,String.class,usersTemporaryCode);
+            return jdbcTemplate.queryForObject(sql,String.class,code);
         }catch (EmptyResultDataAccessException e){
             throw new NotFoundException("이미 만료된 이메일 인증 링크입니다.");
         }catch (IncorrectResultSizeDataAccessException e){
