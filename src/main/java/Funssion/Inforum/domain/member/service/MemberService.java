@@ -15,7 +15,7 @@ import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
-import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -187,8 +187,8 @@ public class MemberService {
         return myRepository.findProfileByUserId(userId);
     }
 
-    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto, String usersTemporaryCode) {
-        String email = memberRepository.findEmailByAuthCode(usersTemporaryCode);
-        return memberRepository.findAndChangePassword(passwordUpdateDto,email);
+    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {
+        memberRepository.findEmailByAuthCode(passwordUpdateDto.getCode());
+        return memberRepository.findAndChangePassword(passwordUpdateDto);
     }
 }

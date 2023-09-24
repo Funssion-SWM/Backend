@@ -9,7 +9,7 @@ import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
-import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -66,9 +66,9 @@ public class MemberController {
             return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
         }
     }
-    @PutMapping("/password/{usersTemporaryCode}")
-    public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto, @PathVariable String usersTemporaryCode ){
-        return memberService.findAndChangePassword(passwordUpdateDto,usersTemporaryCode);
+    @PutMapping("/password")
+    public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto ){
+        return memberService.findAndChangePassword(passwordUpdateDto);
     }
 
     @PostMapping("/authenticate-code")
