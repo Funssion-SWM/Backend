@@ -101,14 +101,14 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType) {
-        String sql = "select * from memo.info where is_temporary = false and ";
+        String sql = "select * from (select * from memo.info where is_temporary = false) m where ";
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_title like ? or ";
+            sql += "memo_title ilike ? or ";
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_text::text like ? ";
+            sql += "memo_text::text ilike ? ";
             if (i != searchStringList.size() - 1) sql += "or ";
         }
 
