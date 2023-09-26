@@ -3,6 +3,8 @@ CREATE SCHEMA memo;
 create schema comment;
 create schema post;
 create schema tag;
+create schema question;
+
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
     tag_id bigserial,
@@ -143,3 +145,18 @@ CREATE TABLE post.search_history (
     access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
 );
+
+create table question.info(
+    id bigserial primary key,
+    author_id int8 NOT NULL,
+    author_name varchar,
+    author_image_path varchar,
+    title varchar(255) NOT NULL,
+    text jsonb,
+    likes int8 NOT NULL DEFAULT 0,
+    is_solved boolean NOT NULL DEFAULT false,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    tags varchar array DEFAULT '{}',
+    answers int8 not null default 0
+)
