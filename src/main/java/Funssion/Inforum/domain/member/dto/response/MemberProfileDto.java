@@ -28,6 +28,7 @@ public class MemberProfileDto {
                 .userTags(memberProfileEntity.getUserTags())
                 .followCnt(memberProfileEntity.getFollowCnt())
                 .followerCnt(memberProfileEntity.getFollowerCnt())
+                .isFollowed(Boolean.FALSE)
                 .build();
     }
 
