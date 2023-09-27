@@ -149,6 +149,6 @@ CREATE TABLE post.search_history (
 CREATE TABLE "member".follow (
     id bigserial NOT NULL,
     user_id int8 NOT NULL,
-    follow_id int8 NOT NULL,
+    followed_user_id int8 NOT NULL,
     created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

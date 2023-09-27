@@ -61,12 +61,12 @@ class MemberRepositoryImplTest {
         memberRepository.updateFollowerCnt(saved.getId(), Sign.PLUS);
         NonSocialMember updatedFollowerCntPLUS = memberRepository.findNonSocialMemberByEmail(saved.getEmail()).get();
 
-        assertThat(updatedFollowerCntPLUS.getFollowCnt()).isEqualTo(1L);
+        assertThat(updatedFollowerCntPLUS.getFollowerCnt()).isEqualTo(1L);
 
         memberRepository.updateFollowerCnt(saved.getId(), Sign.MINUS);
         NonSocialMember updatedFollowerCntMINUS = memberRepository.findNonSocialMemberByEmail(saved.getEmail()).get();
 
-        assertThat(updatedFollowerCntMINUS.getFollowCnt()).isEqualTo(0L);
+        assertThat(updatedFollowerCntMINUS.getFollowerCnt()).isEqualTo(0L);
 
         assertThatThrownBy(() -> memberRepository.updateFollowerCnt(saved.getId(), Sign.MINUS))
                 .isInstanceOf(BadRequestException.class);
