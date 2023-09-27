@@ -6,7 +6,9 @@ import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
 class MemberRepositoryImplTest {
 
@@ -41,6 +44,7 @@ class MemberRepositoryImplTest {
 
 
     @Test
+    @DisplayName("팔로우 수 업데이트하기")
     void updateFollowCnt() {
         memberRepository.updateFollowCnt(saved.getId(), Sign.PLUS);
         NonSocialMember updatedFollowCntPLUS = memberRepository.findNonSocialMemberByEmail(saved.getEmail()).get();
@@ -57,6 +61,7 @@ class MemberRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("팔로워 수 업데이트하기")
     void updateFollowerCnt() {
         memberRepository.updateFollowerCnt(saved.getId(), Sign.PLUS);
         NonSocialMember updatedFollowerCntPLUS = memberRepository.findNonSocialMemberByEmail(saved.getEmail()).get();

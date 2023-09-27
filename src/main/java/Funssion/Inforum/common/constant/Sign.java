@@ -1,20 +1,14 @@
 package Funssion.Inforum.common.constant;
 
 import Funssion.Inforum.common.exception.etc.EnumParseException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.TypeMismatchException;
 
+@RequiredArgsConstructor
+@Getter
 public enum Sign {
-    PLUS, MINUS;
+    PLUS(1), MINUS(-1);
 
-    public static int parseInt(Sign sign) {
-        switch (sign) {
-            case PLUS -> {
-                return 1;
-            }
-            case MINUS -> {
-                return -1;
-            }
-        }
-        throw new EnumParseException();
-    }
+    private final int value;
 }

@@ -145,8 +145,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void updateFollowCnt(Long id, Sign sign) {
         String sql = "update member.info set follow_cnt = follow_cnt + ? where id = ? and follow_cnt + ? >= 0";
 
-        int amount = Sign.parseInt(sign);
-        if (jdbcTemplate.update(sql, amount, id, amount) == 0)
+        if (jdbcTemplate.update(sql, sign.getValue(), id, sign.getValue()) == 0)
             throw new BadRequestException("등록된 사용자가 아니거나, 팔로우 수가 0 미만입니다");
     }
 
@@ -154,8 +153,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void updateFollowerCnt(Long id, Sign sign) {
         String sql = "update member.info set follower_cnt = follower_cnt + ? where id = ? and follower_cnt + ? >= 0";
 
-        int amount = Sign.parseInt(sign);
-        if (jdbcTemplate.update(sql, amount, id, amount) == 0)
+        if (jdbcTemplate.update(sql, sign.getValue(), id, sign.getValue()) == 0)
             throw new BadRequestException("등록된 사용자가 아니거나, 팔로워 수가 0 미만입니다");
     }
 
