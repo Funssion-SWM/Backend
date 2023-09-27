@@ -21,7 +21,7 @@ public class FollowService {
     public void follow(Long userIdToFollow) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
 
-        followRepository.findByUserIdAndFollowId(userId, userIdToFollow)
+        followRepository.findByUserIdAndFollowedUserId(userId, userIdToFollow)
                 .ifPresent(follow -> {
                     throw new BadRequestException("이미 팔로우 한 유저입니다.");
                 });
@@ -30,7 +30,6 @@ public class FollowService {
                 .userId(userId)
                 .followedUserId(userIdToFollow)
                 .build());
-
 
         memberRepository.updateFollowCnt(userId, Sign.PLUS);
         memberRepository.updateFollowerCnt(userIdToFollow, Sign.PLUS);
@@ -41,11 +40,10 @@ public class FollowService {
     public void unfollow(Long userIdToUnfollow) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
 
-        followRepository.findByUserIdAndFollowId(userId, userIdToUnfollow)
+        followRepository.findByUserIdAndFollowedUserId(userId, userIdToUnfollow)
                 .orElseThrow(() -> new BadRequestException("아직 팔로우 하지 않은 유저입니다."));
 
         followRepository.delete(userId, userIdToUnfollow);
-
 
         memberRepository.updateFollowCnt(userId, Sign.MINUS);
         memberRepository.updateFollowerCnt(userIdToUnfollow, Sign.MINUS);

@@ -152,7 +152,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/{id}")
-    public MemberProfileEntity getProfile(@PathVariable("id") Long userId){
+    public MemberProfileDto getProfile(@PathVariable("id") Long userId){
         try {
             return memberService.getMemberProfile(userId);
         }catch (EmptyResultDataAccessException e){

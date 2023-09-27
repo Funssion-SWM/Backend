@@ -70,7 +70,7 @@ class FollowServiceTest {
         void followAlreadyFollowed() {
             given(SecurityContextUtils.getAuthorizedUserId())
                     .willReturn(userId1);
-            given(followRepository.findByUserIdAndFollowId(any(), any()))
+            given(followRepository.findByUserIdAndFollowedUserId(any(), any()))
                     .willReturn(Optional.of(follow));
 
             Assertions.assertThatThrownBy(() -> followService.follow(userId2))
@@ -87,7 +87,7 @@ class FollowServiceTest {
         void success() {
             given(SecurityContextUtils.getAuthorizedUserId())
                     .willReturn(userId1);
-            given(followRepository.findByUserIdAndFollowId(any(), any()))
+            given(followRepository.findByUserIdAndFollowedUserId(any(), any()))
                     .willReturn(Optional.of(follow));
 
             followService.unfollow(userId2);

@@ -2,13 +2,12 @@ package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
-import Funssion.Inforum.domain.member.dto.response.EmailDto;
-import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
-import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
+import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
@@ -38,6 +37,7 @@ public class MemberService {
     private final MemoRepository memoRepository;
     private final CommentRepository commentRepository;
     private final S3Repository s3Repository;
+    private final FollowRepository followRepository;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
@@ -183,8 +183,16 @@ public class MemberService {
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 
-    public MemberProfileEntity getMemberProfile(Long userId){
-        return myRepository.findProfileByUserId(userId);
+    @Transactional(readOnly = true)
+    public MemberProfileDto getMemberProfile(Long userId){
+        Long requestUserId = SecurityContextUtils.getUserId();
+        MemberProfileDto memberProfileDto = MemberProfileDto.valueOf(
+                myRepository.findProfileByUserId(userId));
+
+        followRepository.findByUserIdAndFollowedUserId(requestUserId, userId)
+                .ifPresent((follow) -> memberProfileDto.setIsFollowed(Boolean.TRUE));
+
+        return memberProfileDto;
     }
 
     public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {

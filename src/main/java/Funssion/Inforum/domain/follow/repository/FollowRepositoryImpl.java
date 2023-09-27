@@ -36,7 +36,7 @@ public class FollowRepositoryImpl implements FollowRepository {
     }
 
     @Override
-    public Optional<Follow> findByUserIdAndFollowId(Long userId, Long followedUserId) {
+    public Optional<Follow> findByUserIdAndFollowedUserId(Long userId, Long followedUserId) {
         String sql = "select * from member.follow where user_id = ? and followed_user_id = ?";
 
         return template.query(sql, followRowMapper(), userId, followedUserId).stream().findAny();

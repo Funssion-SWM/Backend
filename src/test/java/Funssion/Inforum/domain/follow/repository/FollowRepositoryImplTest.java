@@ -38,7 +38,7 @@ class FollowRepositoryImplTest {
     @Test
     @DisplayName("팔로우 정보 조회하기")
     void findByUserIdAndFollowId() {
-        assertThat(repository.findByUserIdAndFollowId(follow.getUserId(), follow.getFollowedUserId()))
+        assertThat(repository.findByUserIdAndFollowedUserId(follow.getUserId(), follow.getFollowedUserId()))
                 .isPresent()
                 .isEqualTo(Optional.of(follow));
     }
@@ -52,7 +52,7 @@ class FollowRepositoryImplTest {
         void success() {
             repository.delete(follow.getUserId(), follow.getFollowedUserId());
 
-            assertThat(repository.findByUserIdAndFollowId(follow.getUserId(), follow.getFollowedUserId()))
+            assertThat(repository.findByUserIdAndFollowedUserId(follow.getUserId(), follow.getFollowedUserId()))
                     .isNotPresent();
 
             assertThatThrownBy(() -> repository.delete(follow.getUserId(), follow.getFollowedUserId()))
