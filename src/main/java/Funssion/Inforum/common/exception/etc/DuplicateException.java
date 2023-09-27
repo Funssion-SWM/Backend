@@ -1,5 +1,6 @@
-package Funssion.Inforum.common.exception;
+package Funssion.Inforum.common.exception.etc;
 
+import Funssion.Inforum.common.exception.response.ErrorResult;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 @Getter

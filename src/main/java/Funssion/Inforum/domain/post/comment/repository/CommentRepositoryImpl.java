@@ -2,8 +2,8 @@ package Funssion.Inforum.domain.post.comment.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.CreateFailException;
-import Funssion.Inforum.common.exception.UpdateFailException;
+import Funssion.Inforum.common.exception.etc.CreateFailException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.comment.domain.Comment;

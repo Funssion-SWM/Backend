@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;

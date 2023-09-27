@@ -1,11 +1,17 @@
-package Funssion.Inforum.common.exception.controller;
+package Funssion.Inforum.common.exception.handler;
 
-import Funssion.Inforum.common.exception.*;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.DuplicateException;
+import Funssion.Inforum.common.exception.etc.ImageIOException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.common.exception.response.ErrorResult;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestValueException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -55,8 +61,22 @@ public class CustomExceptionHandler {
     }
 
     @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(TypeMismatchException.class)
+    public ErrorResult handleTypeMismatchEx (TypeMismatchException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return new ErrorResult(BAD_REQUEST, e.getMessage());
+    }
+
+    @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
     public ErrorResult handleValidationEx(ValidationException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return new ErrorResult(BAD_REQUEST, e.getMessage());
+    }
+
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(MissingRequestValueException.class)
+    public ErrorResult handleMissingRequestValueEx(MissingRequestValueException e) {
         log.warn("error message={}", e.getMessage(), e);
         return new ErrorResult(BAD_REQUEST, e.getMessage());
     }
@@ -72,6 +92,13 @@ public class CustomExceptionHandler {
     public ErrorResult handleDuplicateEx(DuplicateException e){
         log.warn("error message = {}",e.getMessage());
         return e.getErrorResult();
+    }
+
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Throwable.class)
+    public ErrorResult handleGeneralEx(Throwable e) {
+        log.error("server error occurs, message = {}", e.getMessage(), e);
+        return new ErrorResult(INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
     private Map<String, List<String>> getErrorsMap(List<String> errors) {

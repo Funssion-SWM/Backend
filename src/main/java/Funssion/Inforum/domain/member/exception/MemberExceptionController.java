@@ -1,6 +1,6 @@
 //package Funssion.Inforum.domain.member.exception;
 //
-//import Funssion.Inforum.common.exception.ErrorResult;
+//import Funssion.Inforum.common.exception.response.ErrorResult;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.http.HttpStatus;
 //import org.springframework.http.converter.HttpMessageNotReadableException;

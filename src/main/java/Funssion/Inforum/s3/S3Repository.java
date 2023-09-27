@@ -1,6 +1,6 @@
 package Funssion.Inforum.s3;
 
-import Funssion.Inforum.common.exception.ImageIOException;
+import Funssion.Inforum.common.exception.etc.ImageIOException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;

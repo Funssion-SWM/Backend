@@ -25,4 +25,8 @@ public class Member {
     private String introduce;
 
     private String tags;
+
+    private Long followCnt;
+
+    private Long followerCnt;
 }
