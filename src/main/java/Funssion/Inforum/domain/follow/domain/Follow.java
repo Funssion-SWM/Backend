@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.follow.controller.domain;
+package Funssion.Inforum.domain.follow.domain;
 
 import lombok.Builder;
 import lombok.Getter;

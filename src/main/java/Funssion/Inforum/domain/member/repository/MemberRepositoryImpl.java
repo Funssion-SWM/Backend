@@ -1,8 +1,10 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.DuplicateException;
-import Funssion.Inforum.common.exception.UpdateFailException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.DuplicateException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -57,7 +59,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     public Optional<NonSocialMember> findNonSocialMemberByEmail(String email) {
-        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL FROM member.info AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
+        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL,U.FOLLOW_CNT,U.FOLLOWER_CNT FROM member.info AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,nonSocialmemberRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -66,7 +68,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
     public Optional<SocialMember> findSocialMemberByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS FROM member.info WHERE EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE EMAIL = ?";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,socialMemberRowMapper(),email);
             return Optional.of(socialMember);
@@ -139,7 +141,25 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
 
-    private void saveMemberInAuthTable(NonSocialMember member,Long userId) {
+    @Override
+    public void updateFollowCnt(Long id, Sign sign) {
+        String sql = "update member.info set follow_cnt = follow_cnt + ? where id = ? and follow_cnt + ? >= 0";
+
+        int amount = Sign.parseInt(sign);
+        if (jdbcTemplate.update(sql, amount, id, amount) == 0)
+            throw new BadRequestException("등록된 사용자가 아니거나, 팔로우 수가 0 미만입니다");
+    }
+
+    @Override
+    public void updateFollowerCnt(Long id, Sign sign) {
+        String sql = "update member.info set follower_cnt = follower_cnt + ? where id = ? and follower_cnt + ? >= 0";
+
+        int amount = Sign.parseInt(sign);
+        if (jdbcTemplate.update(sql, amount, id, amount) == 0)
+            throw new BadRequestException("등록된 사용자가 아니거나, 팔로워 수가 0 미만입니다");
+    }
+
+    private void saveMemberInAuthTable(NonSocialMember member, Long userId) {
         String authSql = "insert into member.auth(user_id,password) values(?,?)";
         KeyHolder authKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con->{
@@ -207,6 +227,8 @@ public class MemberRepositoryImpl implements MemberRepository {
                         .authId(rs.getLong("a_id"))
                         .userPw(rs.getString("password"))
                         .userEmail(rs.getString("email"))
+                        .followCnt(rs.getLong("follow_cnt"))
+                        .followerCnt(rs.getLong("follower_cnt"))
                         .build();
                 return member;
             }
@@ -224,6 +246,8 @@ public class MemberRepositoryImpl implements MemberRepository {
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .tags(rs.getString("tags"))
                         .introduce(rs.getString("introduce"))
+                        .followCnt(rs.getLong("follow_cnt"))
+                        .followerCnt(rs.getLong("follower_cnt"))
                         .build();
                 return member;
             }

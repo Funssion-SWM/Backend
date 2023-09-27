@@ -1,10 +1,13 @@
-package Funssion.Inforum.common.exception.controller;
+package Funssion.Inforum.common.exception.handler;
 
-import Funssion.Inforum.common.exception.*;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.DuplicateException;
+import Funssion.Inforum.common.exception.etc.ImageIOException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.common.exception.response.ErrorResult;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;

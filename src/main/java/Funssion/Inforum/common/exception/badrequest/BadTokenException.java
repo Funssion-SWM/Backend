@@ -1,4 +1,6 @@
-package Funssion.Inforum.common.exception;
+package Funssion.Inforum.common.exception.badrequest;
+
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 
 public class BadTokenException extends BadRequestException {
     public BadTokenException(String message) {
