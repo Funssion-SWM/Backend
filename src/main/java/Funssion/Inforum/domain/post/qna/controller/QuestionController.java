@@ -1,7 +1,10 @@
 package Funssion.Inforum.domain.post.qna.controller;
 
 import Funssion.Inforum.common.constant.CRUDType;
-import Funssion.Inforum.domain.post.qna.dto.response.UploadedQuestionDto;
+import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.UnAuthorizedException;
+import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
@@ -11,23 +14,44 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/question")
+@RequestMapping("/questions")
 public class QuestionController {
     private final QuestionService questionService;
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UploadedQuestionDto createQuestion(@RequestBody @Validated QuestionSaveDto questionSaveDto){
+    public IsSuccessResponseDto createQuestion(@RequestBody @Validated QuestionSaveDto questionSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
-        return questionService.createQuestion(questionSaveDto,authorId);
+        questionService.createQuestion(questionSaveDto, authorId);
+        return new IsSuccessResponseDto(true,"성공적으로 질문이 등록되었습니다.");
+    }
+    @PutMapping("/{id}")
+    public IsSuccessResponseDto updateQuestion(@PathVariable(value ="id") Long questionId,@RequestBody @Validated QuestionSaveDto questionSaveDto){
+        Long authorId = checkAuthorization(CRUDType.UPDATE, questionId);
+        questionService.updateQuestion(questionSaveDto, questionId, authorId);
+        return new IsSuccessResponseDto(true,"성공적으로 질문이 수정되었습니다.");
+    }
+    @DeleteMapping("/{id}")
+    public IsSuccessResponseDto deleteQuestion(@PathVariable(value="id") Long questionId){
+        Long authorId = checkAuthorization(CRUDType.DELETE, questionId);
+        return questionService.deleteQuestion(questionId,authorId);
     }
 
-//    private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {
-//        Long userId = AuthUtils.getUserId(crudType);
-//        if (!userId.equals(commentService.getAuthorIdOfComment(commentId,isReComment))) {
-//            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
-//        }
-//    }
+
+    @GetMapping
+    public List<Question> getQuestions(@RequestParam (required = false, defaultValue = "NEW") OrderType orderBy){
+        return questionService.getQuestions(orderBy);
+    }
+
+    private Long checkAuthorization(CRUDType crudType,Long questionId) {
+        Long authorId = AuthUtils.getUserId(crudType);
+        if (!authorId.equals(questionService.getAuthorId(questionId))) {
+            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
+        }
+        return authorId;
+    }
 }

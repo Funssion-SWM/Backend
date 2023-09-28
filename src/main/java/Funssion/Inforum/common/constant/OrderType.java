@@ -3,7 +3,7 @@ package Funssion.Inforum.common.constant;
 import Funssion.Inforum.common.exception.BadRequestException;
 
 public enum OrderType {
-    HOT, NEW;
+    HOT, NEW, ANSWERS, SOLVED;
 
     public static OrderType of (String orderBy) {
         try {

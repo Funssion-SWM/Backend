@@ -4,6 +4,7 @@ import Funssion.Inforum.common.exception.*;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +44,7 @@ public class CustomExceptionHandler {
         return e.getErrorResult();
     }
 
+
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, List<String>> handleValidationEx(MethodArgumentNotValidException e) {
@@ -53,7 +55,11 @@ public class CustomExceptionHandler {
                         .collect(Collectors.toList())
         );
     }
-
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ErrorResult handleDataIntegrityViolationOfJSONB(DataIntegrityViolationException e){
+        return new ErrorResult(BAD_REQUEST,e.getMessage());
+    }
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
     public ErrorResult handleValidationEx(ValidationException e) {
