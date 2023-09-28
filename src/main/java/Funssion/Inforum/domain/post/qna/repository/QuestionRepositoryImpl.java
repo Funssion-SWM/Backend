@@ -31,8 +31,8 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     public Question createQuestion(Question question) {
         List<String> questionTags = question.getTags();
 
-        String sql = "insert into question.info(author_id, author_name, author_image_path, title, text, tags) " +
-                "values(?,?,?,?,?::jsonb,?)";
+        String sql = "insert into question.info(author_id, author_name, author_image_path, title, text, tags, memo_id) " +
+                "values(?,?,?,?,?::jsonb,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con->{
             PreparedStatement psmt = con.prepareStatement(sql,new String[]{"id"});
@@ -42,6 +42,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             psmt.setString(4, question.getTitle());
             psmt.setString(5, question.getText());
             psmt.setArray(6, TagUtils.createSqlArray(template,questionTags));
+            psmt.setLong(7,question.getMemoId());
             return psmt;
         },keyHolder);
         return this.getOneQuestion(keyHolder.getKey().longValue());
@@ -63,7 +64,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public List<Question> getQuestions(OrderType orderBy) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved " +
+        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info ";
         sql += getSortedSql(orderBy);
         return template.query(sql, questionRowMapper());
@@ -78,10 +79,15 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             throw new NotFoundException("수정할 질문 게시글이 이미 삭제되었습니다.",e);
         }
     }
-
+    @Override
+    public List<Question> getQuestionsOfMemo(Long memoId) {
+        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+                "from question.info order by created_date desc";
+        return template.query(sql,questionRowMapper());
+    }
     @Override
     public Question getOneQuestion(Long questionId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved " +
+        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info where id = ?";
         try{
             return template.queryForObject(sql,questionRowMapper(),questionId);
@@ -95,6 +101,8 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         String sql = "delete from question.info where id = ?";
         if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
     }
+
+
 
     private String getSortedSql(OrderType orderBy){
         switch (orderBy){
@@ -125,6 +133,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .answersCount(rs.getLong("answers"))
                         .isSolved(rs.getBoolean("is_solved"))
+                        .memoId(rs.getLong("memo_id"))
                         .build());
     }
 }

@@ -73,6 +73,17 @@ class QuestionControllerTest {
                                 .content(createValidQuestionRequest))
                         .andExpect(status().isCreated());
             }
+            @Test
+            @WithMockUser(username = AUTHORIZED_USER)
+            @DisplayName("로그인한 유저가 특정 메모랑 연관된 올바른 질문을 생성")
+            void createQuestionInMemoByAuthUser() throws Exception {
+                mvc.perform(post("/questions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createValidQuestionRequest)
+                                .param("memoId","1"))
+                        .andExpect(status().isCreated());
+            }
 
             @Test
             //username은 UserDetailsService에서 userId를 username으로 지정하였음.
