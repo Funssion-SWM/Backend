@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.ArrayToListException;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;

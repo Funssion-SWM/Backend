@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.post.qna.controller;
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.UnAuthorizedException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
