@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.post.comment.exception;
 
-import Funssion.Inforum.common.exception.DuplicateException;
+import Funssion.Inforum.common.exception.etc.DuplicateException;
 
 public class DuplicateLikeException extends DuplicateException {
     public DuplicateLikeException(String message) {

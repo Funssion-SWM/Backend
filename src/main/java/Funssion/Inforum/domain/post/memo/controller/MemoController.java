@@ -17,7 +17,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,13 +69,16 @@ public class MemoController {
 
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
-            @RequestParam @NotBlank String searchString,
+            @RequestParam(required = false) String searchString,
             @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
-        return memoService.searchMemosBy(
-                searchString, userId, orderBy, isTag);
+        if (Objects.isNull(searchString) || searchString.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return memoService.searchMemosBy(searchString, userId, orderBy, isTag);
     }
 
     @GetMapping("/drafts")

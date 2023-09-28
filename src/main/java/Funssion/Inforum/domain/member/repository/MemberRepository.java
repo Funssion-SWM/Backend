@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.repository;
 
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
@@ -18,6 +19,9 @@ public interface MemberRepository {
     Optional<SocialMember> findSocialMemberByEmail(String email);
     Optional<Member> findByName(String Name);
     String findNameById(Long id);
+
+    void updateFollowCnt(Long id, Sign sign);
+    void updateFollowerCnt(Long id, Sign sign);
 
     IsSuccessResponseDto saveSocialMemberNickname(String nickname, Long userId);
 

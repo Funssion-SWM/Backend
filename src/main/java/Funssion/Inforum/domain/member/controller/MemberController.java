@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
@@ -152,7 +152,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/{id}")
-    public MemberProfileEntity getProfile(@PathVariable("id") Long userId){
+    public MemberProfileDto getProfile(@PathVariable("id") Long userId){
         try {
             return memberService.getMemberProfile(userId);
         }catch (EmptyResultDataAccessException e){

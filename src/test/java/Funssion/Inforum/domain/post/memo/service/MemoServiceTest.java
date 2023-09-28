@@ -1,12 +1,8 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.CRUDType;
-import Funssion.Inforum.common.constant.DateType;
-import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.ArrayToListException;
-import Funssion.Inforum.common.exception.UnAuthorizedException;
-import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;

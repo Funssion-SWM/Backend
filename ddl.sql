@@ -101,7 +101,9 @@ CREATE TABLE member.info (
     introduce varchar(100),
     tags varchar array DEFAULT '{}',
     image_path varchar(300),
-    created_date timestamp
+    created_date timestamp,
+    follow_cnt int8 not null default 0,
+    follower_cnt int8 not null default 0,
 );
 
 create table comment.info(
@@ -160,3 +162,9 @@ create table question.info(
     tags varchar array DEFAULT '{}',
     answers int8 not null default 0
 )
+CREATE TABLE "member".follow (
+    id bigserial NOT NULL,
+    user_id int8 NOT NULL,
+    followed_user_id int8 NOT NULL,
+    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

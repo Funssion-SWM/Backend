@@ -1,4 +1,4 @@
-package Funssion.Inforum.common.exception;
+package Funssion.Inforum.common.exception.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

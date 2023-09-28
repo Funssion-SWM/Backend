@@ -1,6 +1,6 @@
 package Funssion.Inforum.common.constant;
 
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 
 public enum DateType {
     DAY, WEEK, MONTH, YEAR;
