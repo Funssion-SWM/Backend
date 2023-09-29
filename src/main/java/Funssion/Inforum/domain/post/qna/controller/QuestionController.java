@@ -50,7 +50,7 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public Question getQuestion(@PathVariable Long id){
-        return questionService.getQuestion(id);
+        return questionService.getOneQuestion(id);
     }
 
     @GetMapping("/memo")

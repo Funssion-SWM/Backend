@@ -21,5 +21,4 @@ public interface QuestionRepository {
 
     List<Question> getQuestionsOfMemo(Long memoId);
 
-    Question getQuestion(Long id);
 }

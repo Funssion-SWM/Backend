@@ -88,17 +88,6 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public Question getQuestion(Long id) {
-        String sql =  "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
-                "from question.info where id = ?";
-        try {
-            return template.queryForObject(sql, questionRowMapper(), id);
-        }catch(EmptyResultDataAccessException e){
-            throw new QuestionNotFoundException("해당 질문 글을 찾을 수 없습니다.");
-        }
-    }
-
-    @Override
     public Question getOneQuestion(Long questionId) {
         String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info where id = ?";

@@ -79,10 +79,6 @@ public class QuestionServiceImpl implements QuestionService {
         return questionRepository.getQuestionsOfMemo(memoId);
     }
 
-    @Override
-    public Question getQuestion(Long id) {
-        return questionRepository.getQuestion(id);
-    }
 
     @Override
     public Question getOneQuestion(Long questionId) {

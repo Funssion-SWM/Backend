@@ -20,5 +20,4 @@ public interface QuestionService {
 
     List<Question> getQuestionsOfMemo(Long questionId);
 
-    Question getQuestion(Long id);
 }

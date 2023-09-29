@@ -52,6 +52,13 @@ class QuestionIntegrationTest {
     static QuestionSaveDto secondQuestionSaveDto;
     static QuestionSaveDto thirdQuestionSaveDto;
 
+    private static QuestionSaveDto saveQuestion(){
+       return QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
+                .text("질문 내용")
+                .tags(List.of("tag1", "tag2"))
+                .description("질문 내용 요약")
+                .build();
+    }
     @BeforeEach
     void init() {
         saveUser();
@@ -83,14 +90,10 @@ class QuestionIntegrationTest {
     @DisplayName("일반 질문 생성")
     @Transactional
     void createQuestion(){
-        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
-                .text("질문 내용")
-                .tags(List.of("tag1", "tag2"))
-                .description("질문 내용 요약")
-                .build();
+        QuestionSaveDto questionSaveDto = saveQuestion();
 
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-        assertThat(question.getTitle()).isEqualTo("테스트 제목 생성");
+        assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
         List<History> monthlyHistoryByUserId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
@@ -109,11 +112,8 @@ class QuestionIntegrationTest {
     void createQuestionInMemo() {
         Memo memo = createMemo();
 
-        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
-                .text("질문 내용")
-                .tags(List.of("tag1", "tag2"))
-                .description("질문 내용 요약")
-                .build();
+        QuestionSaveDto questionSaveDto = saveQuestion();
+
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
         assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
     }
@@ -123,16 +123,21 @@ class QuestionIntegrationTest {
     void getQuestionsOfMemo(){
         Memo memo = createMemo();
 
-        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
-                .text("질문 내용")
-                .tags(List.of("tag1", "tag2"))
-                .description("질문 내용 요약")
-                .build();
+        QuestionSaveDto questionSaveDto = saveQuestion();
+
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
 
         List<Question> questionsOfMemo = questionRepository.getQuestionsOfMemo(memo.getId());
         assertThat(questionsOfMemo).hasSize(1);
         assertThat(questionsOfMemo.get(0).getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
+    }
+    @Test
+    @DisplayName("특정 질문을 id로 열람하기")
+    @Transactional
+    void getOneQuestion(){
+        QuestionSaveDto questionSaveDto = saveQuestion();
+        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+        questionService.getOneQuestion(question.getId());
     }
 
     private Memo createMemo() {
