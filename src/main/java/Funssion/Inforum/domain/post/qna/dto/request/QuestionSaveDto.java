@@ -14,12 +14,13 @@ public class QuestionSaveDto{
     private String title;
     @NotBlank(message="내용을 입력해주세요")
     private String text;
-
+    private String description;
     private List<String> tags;
     @Builder
-    public QuestionSaveDto(String title, String text, List<String> tags) {
+    public QuestionSaveDto(String title, String text, String description, List<String> tags) {
         this.title = title;
         this.text = text;
+        this.description = description;
         this.tags = tags;
     }
 

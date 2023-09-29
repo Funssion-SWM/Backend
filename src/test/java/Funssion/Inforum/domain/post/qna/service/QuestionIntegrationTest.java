@@ -86,6 +86,7 @@ class QuestionIntegrationTest {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
                 .text("질문 내용")
                 .tags(List.of("tag1", "tag2"))
+                .description("질문 내용 요약")
                 .build();
 
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
@@ -111,6 +112,7 @@ class QuestionIntegrationTest {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
                 .text("질문 내용")
                 .tags(List.of("tag1", "tag2"))
+                .description("질문 내용 요약")
                 .build();
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
         assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
@@ -124,6 +126,7 @@ class QuestionIntegrationTest {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
                 .text("질문 내용")
                 .tags(List.of("tag1", "tag2"))
+                .description("질문 내용 요약")
                 .build();
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
 
@@ -162,16 +165,19 @@ class QuestionIntegrationTest {
             firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
                     .text("질문 내용")
                     .tags(List.of("tag1", "tag2"))
+                    .description("질문 내용 요약")
                     .build();
 
             secondQuestionSaveDto = QuestionSaveDto.builder().title("두번째 질문")
                     .text("질문 내용")
                     .tags(List.of("tag1", "tag2"))
+                    .description("질문 내용 요약")
                     .build();
 
             thirdQuestionSaveDto = QuestionSaveDto.builder().title("세번째 질문")
                     .text("질문 내용")
                     .tags(List.of("tag1", "tag2"))
+                    .description("질문 내용 요약")
                     .build();
             //@Transactional 처리했음. 순서 보장
             questionService.createQuestion(firstQuestionSaveDto,saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION));
@@ -204,11 +210,13 @@ class QuestionIntegrationTest {
         QuestionSaveDto saveQuestionDto = QuestionSaveDto.builder().title("저장된 질문")
                 .text("저장된 질문 내용")
                 .tags(List.of("tag1", "tag2"))
+                .description("질문 내용 요약")
                 .build();
 
         QuestionSaveDto updateQuestionDto = QuestionSaveDto.builder().title("수정된 질문")
                 .text("수정된 질문 내용")
                 .tags(List.of("tag3", "tag4"))
+                .description("질문 내용 요약")
                 .build();
         @Test
         @DisplayName("수정할 질문이 존재하지 않을때 예외처리")

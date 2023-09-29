@@ -19,4 +19,6 @@ public interface QuestionService {
     IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId);
 
     List<Question> getQuestionsOfMemo(Long questionId);
+
+    Question getQuestion(Long id);
 }

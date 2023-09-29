@@ -48,6 +48,11 @@ public class QuestionController {
         return questionService.getQuestions(orderBy);
     }
 
+    @GetMapping("/{id}")
+    public Question getQuestion(@PathVariable Long id){
+        return questionService.getQuestion(id);
+    }
+
     @GetMapping("/memo")
     public List<Question> getQuestionsOfMemo(@RequestParam Long memoId){
         return questionService.getQuestionsOfMemo(memoId);

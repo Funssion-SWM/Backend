@@ -78,6 +78,12 @@ public class QuestionServiceImpl implements QuestionService {
     public List<Question> getQuestionsOfMemo(Long memoId) {
         return questionRepository.getQuestionsOfMemo(memoId);
     }
+
+    @Override
+    public Question getQuestion(Long id) {
+        return questionRepository.getQuestion(id);
+    }
+
     @Override
     public Question getOneQuestion(Long questionId) {
         return questionRepository.getOneQuestion(questionId);
@@ -93,11 +99,9 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
 
-
     private Question addAuthor(QuestionSaveDto questionSaveDto, Long authorId, MemberProfileEntity authorProfile, Long memoId) {
-        Long defaultLikesCount = 0L;
         Long defaultAnswersCount = 0L;
         boolean isSolved = false;
-        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getText(), questionSaveDto.getTags(),defaultAnswersCount,defaultLikesCount,isSolved,memoId);
+        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultAnswersCount,isSolved,memoId);
     }
 }

@@ -31,8 +31,8 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     public Question createQuestion(Question question) {
         List<String> questionTags = question.getTags();
 
-        String sql = "insert into question.info(author_id, author_name, author_image_path, title, text, tags, memo_id) " +
-                "values(?,?,?,?,?::jsonb,?,?)";
+        String sql = "insert into question.info(author_id, author_name, author_image_path, title, text, tags, memo_id, description) " +
+                "values(?,?,?,?,?::jsonb,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con->{
             PreparedStatement psmt = con.prepareStatement(sql,new String[]{"id"});
@@ -43,6 +43,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             psmt.setString(5, question.getText());
             psmt.setArray(6, TagUtils.createSqlArray(template,questionTags));
             psmt.setLong(7,question.getMemoId());
+            psmt.setString(8,question.getDescription());
             return psmt;
         },keyHolder);
         return this.getOneQuestion(keyHolder.getKey().longValue());
@@ -51,9 +52,9 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId) {
         String sql = "update question.info " +
-                "set title = ?, text = ?::jsonb, tags = ? where id = ?";
+                "set title = ?, text = ?::jsonb, tags = ?, description = ? where id = ?";
         try {
-            if(template.update(sql, questionSaveDto.getTitle(), questionSaveDto.getText(), TagUtils.createSqlArray(template,questionSaveDto.getTags()),questionId)==0){
+            if(template.update(sql, questionSaveDto.getTitle(), questionSaveDto.getText(), TagUtils.createSqlArray(template,questionSaveDto.getTags()),questionSaveDto.getDescription(), questionId)==0){
                 throw new QuestionNotFoundException("update question fail");
             }
         }catch (SQLException e){
@@ -64,7 +65,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public List<Question> getQuestions(OrderType orderBy) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info ";
         sql += getSortedSql(orderBy);
         return template.query(sql, questionRowMapper());
@@ -81,13 +82,25 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
     @Override
     public List<Question> getQuestionsOfMemo(Long memoId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info order by created_date desc";
         return template.query(sql,questionRowMapper());
     }
+
+    @Override
+    public Question getQuestion(Long id) {
+        String sql =  "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+                "from question.info where id = ?";
+        try {
+            return template.queryForObject(sql, questionRowMapper(), id);
+        }catch(EmptyResultDataAccessException e){
+            throw new QuestionNotFoundException("해당 질문 글을 찾을 수 없습니다.");
+        }
+    }
+
     @Override
     public Question getOneQuestion(Long questionId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
                 "from question.info where id = ?";
         try{
             return template.queryForObject(sql,questionRowMapper(),questionId);
@@ -127,6 +140,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .authorImagePath(rs.getString("author_image_path"))
                         .title(rs.getString("title"))
                         .text(rs.getString("text"))
+                        .description(rs.getString("description"))
                         .likes(rs.getLong("likes"))
                         .tags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())

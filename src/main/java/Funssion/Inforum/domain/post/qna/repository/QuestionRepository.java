@@ -20,4 +20,6 @@ public interface QuestionRepository {
     void deleteQuestion(Long questionId);
 
     List<Question> getQuestionsOfMemo(Long memoId);
+
+    Question getQuestion(Long id);
 }

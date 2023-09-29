@@ -154,6 +154,7 @@ create table question.info(
     author_name varchar,
     author_image_path varchar,
     title varchar(255) NOT NULL,
+    description text null,
     text jsonb,
     likes int8 NOT NULL DEFAULT 0,
     is_solved boolean NOT NULL DEFAULT false,
