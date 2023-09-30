@@ -199,8 +199,8 @@ public class FollowIntegrationTest {
         void getFollowingUserProfiles() throws Exception {
             mvc.perform(get("/follows")
                     .param("userId", testUserId1))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember2.getName()))))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember3.getName()))));
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember2.getId())))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember3.getId())));
 
             mvc.perform(get("/follows")
                             .param("userId", testUserId2))
@@ -208,7 +208,7 @@ public class FollowIntegrationTest {
 
             mvc.perform(get("/follows")
                             .param("userId", testUserId3))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember2.getName()))));
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember2.getId())));
         }
 
         @Test
@@ -220,12 +220,12 @@ public class FollowIntegrationTest {
 
             mvc.perform(get("/followers")
                             .param("userId", testUserId2))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember1.getName()))))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember3.getName()))));
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember1.getId())))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember3.getId())));
 
             mvc.perform(get("/followers")
                             .param("userId", testUserId3))
-                    .andExpect(content().string(containsString("\"nickname\":" + toJsonString(savedMember1.getName()))));
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember1.getId())));
         }
     }
 

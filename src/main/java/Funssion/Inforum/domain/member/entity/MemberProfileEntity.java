@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberProfileEntity {
+    private Long userId;
     private String profileImageFilePath;
     private String nickname;
     private String introduce;
@@ -33,6 +34,7 @@ public class MemberProfileEntity {
     public static RowMapper<MemberProfileEntity> MemberInfoRowMapper() {
         return ((rs, rowNum) ->
                 MemberProfileEntity.builder()
+                        .userId(rs.getLong("id"))
                         .introduce(rs.getString("introduce"))
                         .nickname(rs.getString("name"))
                         .profileImageFilePath(rs.getString("image_path"))

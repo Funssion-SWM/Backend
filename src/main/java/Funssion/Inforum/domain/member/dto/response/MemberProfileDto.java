@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @Builder
 public class MemberProfileDto {
+    private final Long userId;
     private final String profileImageFilePath;
     private final String nickname;
     private final String introduce;
