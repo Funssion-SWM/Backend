@@ -73,6 +73,7 @@ public class SecurityConfig {
                                 .requestMatchers("/error/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/memos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/questions/**").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/answers/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/comments/**").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/v2/api-docs",

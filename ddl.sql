@@ -140,7 +140,7 @@ CREATE TABLE comment.re_comments (
 
 CREATE TABLE post.search_history (
     id bigserial primary key,
-    user_id int8 not null,
+    user_id int8 not null,r
     search_text text,
     access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
@@ -160,3 +160,18 @@ create table question.info(
     tags varchar array DEFAULT '{}',
     answers int8 not null default 0
 )
+
+create table question.answer(
+    id bigserial primary key,
+    question_id int8 not null,
+    author_id int8 NOT NULL,
+    author_name varchar,
+    author_image_path varchar,
+    text jsonb,
+    likes int8 NOT NULL DEFAULT 0,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    is_selected boolean not null default false,
+    replies_count int8 not null default 0
+)
+

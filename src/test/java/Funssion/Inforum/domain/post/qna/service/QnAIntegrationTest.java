@@ -9,9 +9,12 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
+import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
+import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +31,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
-class QuestionIntegrationTest {
+class QnAIntegrationTest {
     @Autowired
     QuestionRepository questionRepository;
     @Autowired
+    AnswerRepository answerRepository;
+    @Autowired
     MyRepository myRepository;
+    @Autowired
+    AnswerService answerService;
     @Autowired
     QuestionService questionService;
     @Autowired
@@ -46,19 +53,19 @@ class QuestionIntegrationTest {
 
     @BeforeEach
     void init() {
-        saveUser();
+        saveUser("user");
     }
 
 
-    private void saveUser() {
+    private void saveUser(String name) {
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()
-                .userName("taehoon")
+                .userName(name)
                 .loginType(LoginType.NON_SOCIAL)
                 .userPw("a1234567!")
                 .userEmail("test@gmail.com")
                 .build();
         MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
-                .nickname("taehoon")
+                .nickname(name)
                 .profileImageFilePath("taehoon-image")
                 .introduce("introduce of taehoon")
                 .userTags(List.of("tag1", "tag2"))
@@ -68,6 +75,54 @@ class QuestionIntegrationTest {
         saveMemberId = saveMemberResponseDto.getId();
         myRepository.createProfile(saveMemberId, memberProfileEntity);
     }
+    @Test
+    @DisplayName("질문과 연관된 답변 생성")
+    @Transactional
+    void createAnswer(){
+        Question question = makeQuestion();
+
+        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                .userName("answer_user")
+                .loginType(LoginType.NON_SOCIAL)
+                .userPw("a1234567!")
+                .userEmail("test@gmail.com")
+                .build();
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                .nickname("answer_user")
+                .profileImageFilePath("taehoon-image")
+                .introduce("introduce of taehoon")
+                .userTags(List.of("tag1", "tag2"))
+                .build();
+
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("답변 텍스트")
+                .description("답변 요약")
+                .build();
+
+        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+        Long answerAuthorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+        assertThat(answerOfQuestion.getDescription()).isEqualTo("답변 요약");
+
+        LocalDateTime appliedDateTime = question.getCreatedDate();
+        List<History> monthlyHistoryOfQuestionAuthorId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
+        List<History> monthlyHistoryOfAnswerAuthorId = myRepository.findMonthlyHistoryByUserId(answerAuthorId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
+
+        assertThat(monthlyHistoryOfQuestionAuthorId).hasSize(1);
+        assertThat(monthlyHistoryOfAnswerAuthorId).hasSize(1);
+
+        History historyOfQuestionOwner = monthlyHistoryOfQuestionAuthorId.get(0);
+        History historyOfAnswerOwner = monthlyHistoryOfAnswerAuthorId.get(0);
+        assertThat(historyOfQuestionOwner.getUserId()).isEqualTo(saveMemberId);
+        assertThat(historyOfAnswerOwner.getUserId()).isEqualTo(answerAuthorId);
+        assertThat(historyOfQuestionOwner.getQuestionCnt()).isEqualTo(1L);
+        assertThat(historyOfQuestionOwner.getMemoCnt()).isEqualTo(0L);
+        assertThat(historyOfAnswerOwner.getQuestionCnt()).isEqualTo(1L);
+        assertThat(historyOfAnswerOwner.getMemoCnt()).isEqualTo(0L);
+
+    }
 
 
 
@@ -75,12 +130,7 @@ class QuestionIntegrationTest {
     @DisplayName("질문 생성")
     @Transactional
     void createQuestion(){
-        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
-                .text("질문 내용")
-                .tags(List.of("tag1", "tag2"))
-                .build();
-
-        Question question = questionService.createQuestion(questionSaveDto, saveMemberId);
+        Question question = makeQuestion();
         assertThat(question.getTitle()).isEqualTo("테스트 제목 생성");
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
@@ -93,6 +143,16 @@ class QuestionIntegrationTest {
         assertThat(history.getMemoCnt()).isEqualTo(0L);
 
     }
+
+    private Question makeQuestion() {
+        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
+                .text("질문 내용")
+                .tags(List.of("tag1", "tag2"))
+                .build();
+
+        return questionService.createQuestion(questionSaveDto, saveMemberId);
+    }
+
     @Nested
     @DisplayName("파라미터에 알맞는 정렬된 메모 리스트 가져오기")
     class getOrderedQuestions{
