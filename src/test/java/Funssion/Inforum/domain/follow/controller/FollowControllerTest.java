@@ -78,4 +78,30 @@ class FollowControllerTest {
                         .param("userId", "0"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser
+    @DisplayName("팔로우한 유저 조회하기")
+    void getFollowUsersInfo() throws Exception {
+        mvc.perform(get("/follows")
+                .param("userId", "1"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/follows")
+                .param("userId", "0"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    @DisplayName("팔로워 유저 조회하기")
+    void getFollowerUsersInfo() throws Exception {
+        mvc.perform(get("/followers")
+                        .param("userId", "1"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/followers")
+                        .param("userId", "0"))
+                .andExpect(status().isBadRequest());
+    }
 }
