@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -99,46 +100,52 @@ class MemoControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @WithMockUser
+
+    @Nested
     @DisplayName("메모 등록하기")
-    void addMemo() throws Exception {
+    class addMemo {
+        @Test
+        @WithMockUser
+        @DisplayName("정상 케이스")
+        void addMemo() throws Exception {
 
-        mvc.perform(post("/memos")
-                        .contentType(APPLICATION_JSON)
-                        .content(rightRequest)
-                        .with(csrf()))
-                .andExpect(status().isCreated());
-    }
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(rightRequest)
+                            .with(csrf()))
+                    .andExpect(status().isCreated());
 
-    @Test
-    @WithMockUser
-    @DisplayName("잘못된 메모 등록하기")
-    void badMemoRequest() throws Exception {
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(noDescriptionRequest)
+                            .with(csrf()))
+                    .andExpect(status().isCreated());
+        }
 
-        mvc.perform(post("/memos")
-                        .contentType(APPLICATION_JSON)
-                        .content(noTitleRequest)
-                        .with(csrf()))
-                .andExpect(status().isBadRequest());
+        @Test
+        @WithMockUser
+        @DisplayName("비정상 케이스")
+        void badMemoRequest() throws Exception {
 
-        mvc.perform(post("/memos")
-                        .contentType(APPLICATION_JSON)
-                        .content(noDescriptionRequest)
-                        .with(csrf()))
-                .andExpect(status().isBadRequest());
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(noTitleRequest)
+                            .with(csrf()))
+                    .andExpect(status().isBadRequest());
 
-        mvc.perform(post("/memos")
-                        .contentType(APPLICATION_JSON)
-                        .content(noTextRequest)
-                        .with(csrf()))
-                .andExpect(status().isBadRequest());
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(noTextRequest)
+                            .with(csrf()))
+                    .andExpect(status().isBadRequest());
 
-        mvc.perform(post("/memos")
-                        .contentType(APPLICATION_JSON)
-                        .content(noColorRequest)
-                        .with(csrf()))
-                .andExpect(status().isBadRequest());
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(noColorRequest)
+                            .with(csrf()))
+                    .andExpect(status().isBadRequest());
+        }
+
     }
 
     @Test
@@ -206,6 +213,17 @@ class MemoControllerTest {
                 .andExpect(status().isOk());
 
         mvc.perform(get("/memos/search")
+                        .param("searchString", "")
+                        .param("orderBy", "hot")
+                        .param("isTag", "true"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/memos/search")
+                        .param("orderBy", "hot")
+                        .param("isTag", "true"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
                         .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
@@ -213,12 +231,6 @@ class MemoControllerTest {
         mvc.perform(get("/memos/search")
                         .param("searchString", "JPA")
                         .param("orderBy", "hot"))
-                .andExpect(status().isBadRequest());
-
-        mvc.perform(get("/memos/search")
-                        .param("searchString", "")
-                        .param("orderBy", "hot")
-                        .param("isTag", "true"))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(get("/memos/search")

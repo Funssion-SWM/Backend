@@ -20,6 +20,15 @@ public class MemberProfileEntity {
     private String nickname;
     private String introduce;
     private List<String> userTags;
+    private Long followCnt;
+    private Long followerCnt;
+
+    public MemberProfileEntity(String profileImageFilePath, String nickname, String introduce, List<String> userTags) {
+        this.profileImageFilePath = profileImageFilePath;
+        this.nickname = nickname;
+        this.introduce = introduce;
+        this.userTags = userTags;
+    }
 
     public static RowMapper<MemberProfileEntity> MemberInfoRowMapper() {
         return ((rs, rowNum) ->
@@ -28,6 +37,8 @@ public class MemberProfileEntity {
                         .nickname(rs.getString("name"))
                         .profileImageFilePath(rs.getString("image_path"))
                         .userTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
+                        .followCnt(rs.getLong("follow_cnt"))
+                        .followerCnt(rs.getLong("follower_cnt"))
                         .build()
         );
     }

@@ -49,7 +49,6 @@ class MemoRepositoryJdbcTest {
             .authorId(9999L)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
-            .memoTags(form1.getMemoTags())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -64,7 +63,6 @@ class MemoRepositoryJdbcTest {
             .authorId(9999L)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
-            .memoTags(form2.getMemoTags())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -79,7 +77,6 @@ class MemoRepositoryJdbcTest {
             .authorId(10000L)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
-            .memoTags(form3.getMemoTags())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -94,7 +91,6 @@ class MemoRepositoryJdbcTest {
             .authorId(10000L)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
-            .memoTags(form3.getMemoTags())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(true)
@@ -255,16 +251,11 @@ class MemoRepositoryJdbcTest {
             List<String> searchStringList = new ArrayList<>();
             searchStringList.add("%JPA란?%"); // memo1
             searchStringList.add("%JDK란?%"); // memo2
+            searchStringList.add("%jwt란?%"); // memo3
 
             List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW);
 
-            assertThat(foundMemoList.size()).isEqualTo(2);
-
-            Memo memo1 = foundMemoList.get(1);
-            Memo memo2 = foundMemoList.get(0);
-
-            assertThat(memo1).isEqualTo(createdMemo);
-            assertThat(memo2).isEqualTo(createdMemo2);
+            assertThat(foundMemoList).containsExactly(createdMemo3, createdMemo2, createdMemo);
         }
 
         @Test

@@ -1,6 +1,6 @@
 package Funssion.Inforum.jwt;
 
-import Funssion.Inforum.common.exception.BadTokenException;
+import Funssion.Inforum.common.exception.badrequest.BadTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.controller;
 
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -71,6 +73,17 @@ class QuestionControllerTest {
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(createValidQuestionRequest))
+                        .andExpect(status().isCreated());
+            }
+            @Test
+            @WithMockUser(username = AUTHORIZED_USER)
+            @DisplayName("로그인한 유저가 특정 메모랑 연관된 올바른 질문을 생성")
+            void createQuestionInMemoByAuthUser() throws Exception {
+                mvc.perform(post("/questions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(createValidQuestionRequest)
+                                .param("memoId","1"))
                         .andExpect(status().isCreated());
             }
 
@@ -134,6 +147,32 @@ class QuestionControllerTest {
                                     .param("orderBy","SOLVED"))
                             .andExpect(status().isOk());
                 }
+            }
+            @Test
+            @WithMockUser
+            @DisplayName("질문 id로 받아오기")
+            void getQuestionById() throws Exception {
+                Long questionId = 1L;
+                when(questionService.getOneQuestion(questionId))
+                        .thenReturn(Question.builder()
+                                .title("제목")
+                                .createdDate(LocalDateTime.now())
+                                .updatedDate(LocalDateTime.now())
+                                .description("요약")
+                                .answersCount(1L)
+                                .authorName("작성자이름")
+                                .authorImagePath("image-path")
+                                .authorId(1L)
+                                .isSolved(false)
+                                .memoId(0L)
+                                .likes(0L)
+                                .tags(List.of("tags1","tag2"))
+                                .text("내용")
+                                .id(questionId)
+                                .build());
+
+                mvc.perform(get("/questions/"+questionId))
+                        .andExpect(status().isOk());
             }
         }
         @Nested

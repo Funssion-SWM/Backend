@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
@@ -51,8 +52,8 @@ public class SecurityConfig {
         httpSecurity
                 .cors(Customizer.withDefaults())
                 // token을 사용하는 방식이기 때문에 csrf를 disable합니다.
-//                .csrf
-//                        (AbstractHttpConfigurer::disable)
+                .csrf
+                        (AbstractHttpConfigurer::disable)
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -76,6 +77,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,"/answers/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/comments/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/search/**").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/v2/api-docs",
                                         "/swagger-resources",
                                         "/swagger-resources/**",

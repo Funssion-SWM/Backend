@@ -18,4 +18,7 @@ public interface QuestionRepository {
     Question getOneQuestion(Long questionId);
 
     void deleteQuestion(Long questionId);
+
+    List<Question> getQuestionsOfMemo(Long memoId);
+
 }

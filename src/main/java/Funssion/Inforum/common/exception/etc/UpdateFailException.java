@@ -1,5 +1,6 @@
-package Funssion.Inforum.common.exception;
+package Funssion.Inforum.common.exception.etc;
 
+import Funssion.Inforum.common.exception.response.ErrorResult;
 import org.springframework.http.HttpStatus;
 
 public class UpdateFailException extends RuntimeException{

@@ -60,8 +60,9 @@ jobs:
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
-            sudo docker stop backend
-            sudo docker rm backend
+            docker stop backend
+            docker rm backend
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
             sudo docker run -dp 8080:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
     - name: Notify Slack

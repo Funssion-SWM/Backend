@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.ArrayToListException;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -101,27 +101,27 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType) {
-        String sql = "select * from memo.info where is_temporary = false and ";
+        StringBuilder sql = new StringBuilder("select * from (select * from memo.info where is_temporary = false) m where ");
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_title like ? or ";
+            sql.append("memo_title ilike ? or ");
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_text::text like ? ";
-            if (i != searchStringList.size() - 1) sql += "or ";
+            sql.append("memo_text::text ilike ? ");
+            if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
-        sql += getOrderBySql(orderType);
+        sql.append(getOrderBySql(orderType));
 
-        return sql;
+        return sql.toString();
     }
 
     private static Object[] getParams(List<String> searchStringList) {
         ArrayList<String> params = new ArrayList<>();
         params.addAll(searchStringList);
         params.addAll(searchStringList);
-        return params.stream().toArray();
+        return params.toArray();
     }
 
     @Override

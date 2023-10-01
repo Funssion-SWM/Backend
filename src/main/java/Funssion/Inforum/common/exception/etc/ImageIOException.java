@@ -1,17 +1,19 @@
-package Funssion.Inforum.common.exception;
+package Funssion.Inforum.common.exception.etc;
 
+import Funssion.Inforum.common.exception.response.ErrorResult;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
-
-public class CreateFailException extends RuntimeException{
+@Getter
+public class ImageIOException extends RuntimeException{
     private ErrorResult errorResult;
     private String message;
 
-    public CreateFailException(String message) {
+    public ImageIOException(String message) {
         this.message = message;
         this.errorResult = new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message);
     }
 
-    public CreateFailException(String message, Throwable cause) {
+    public ImageIOException(String message, Throwable cause) {
         super(cause);
         this.message = message;
         this.errorResult = new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message);
