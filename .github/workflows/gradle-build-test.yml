@@ -58,11 +58,11 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-report
-        path: build/reports/tests/test/index.html
+        path: build/reports/tests/test
 
     - name: Upload Jacoco Report
       if: ${{ success() }}
       uses: actions/upload-artifact@v3
       with:
         name: jacoco-coverage-report
-        path: build/reports/jacoco/test/html/index.html
+        path: build/reports/jacoco/test/html
