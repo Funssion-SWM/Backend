@@ -29,6 +29,7 @@ public class MemoListDto {
     private List<String> memoTags;
     private Boolean isTemporary;
 
+
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
         this.memoTitle = memo.getTitle();

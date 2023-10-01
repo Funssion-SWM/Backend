@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface QuestionService {
 
     List<Question> getQuestions(OrderType orderBy);
 
-    Question getOneQuestion(Long questionId);
+    QuestionDto getOneQuestion(Long questionId);
 
     IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId);
 

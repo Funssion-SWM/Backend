@@ -7,6 +7,7 @@ import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +50,7 @@ public class QuestionController {
     }
 
     @GetMapping("/{id}")
-    public Question getQuestion(@PathVariable Long id){
+    public QuestionDto getQuestion(@PathVariable Long id){
         return questionService.getOneQuestion(id);
     }
 

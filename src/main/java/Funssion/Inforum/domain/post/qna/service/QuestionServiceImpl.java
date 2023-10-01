@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.qna.service;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -10,6 +11,7 @@ import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,8 +83,9 @@ public class QuestionServiceImpl implements QuestionService {
 
 
     @Override
-    public Question getOneQuestion(Long questionId) {
-        return questionRepository.getOneQuestion(questionId);
+    public QuestionDto getOneQuestion(Long questionId) {
+        Question question = questionRepository.getOneQuestion(questionId);
+        return new QuestionDto(question, SecurityContextUtils.getUserId());
     }
 
     @Override

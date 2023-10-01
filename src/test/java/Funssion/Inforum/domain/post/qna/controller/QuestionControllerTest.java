@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.post.qna.controller;
 
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -154,7 +154,7 @@ class QuestionControllerTest {
             void getQuestionById() throws Exception {
                 Long questionId = 1L;
                 when(questionService.getOneQuestion(questionId))
-                        .thenReturn(Question.builder()
+                        .thenReturn(QuestionDto.builder()
                                 .title("제목")
                                 .createdDate(LocalDateTime.now())
                                 .updatedDate(LocalDateTime.now())
