@@ -116,8 +116,8 @@ create table comment.info(
     likes int8 not null default 0,
     re_comments int8 not null default 0,
     comment_text text not null,
-    created_date timestamp,
-    updated_date timestamp
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp
 );
 
 CREATE TABLE member.like_comment (
@@ -136,8 +136,8 @@ CREATE TABLE comment.re_comments (
     likes int8 NOT NULL DEFAULT 0,
     parent_id int8 NOT NULL,
     comment_text text NOT NULL,
-    created_date timestamp NULL,
-    updated_date timestamp NULL
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp
 );
 
 CREATE TABLE post.search_history (

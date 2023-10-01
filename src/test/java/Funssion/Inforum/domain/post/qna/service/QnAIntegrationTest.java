@@ -197,9 +197,11 @@ class QnAIntegrationTest {
     void getQuestionsOfMemo(){
         Memo memo = createMemo();
 
-        QuestionSaveDto questionSaveDto = makeQuestionDto();
+        QuestionSaveDto questionSaveDto1 = makeQuestionDto();
+        QuestionSaveDto questionSaveDto2 = makeQuestionDto();
 
-        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
+        questionService.createQuestion(questionSaveDto1, saveMemberId, memo.getId());
+        questionService.createQuestion(questionSaveDto2, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
 
         List<Question> questionsOfMemo = questionRepository.getQuestionsOfMemo(memo.getId());
         assertThat(questionsOfMemo).hasSize(1);

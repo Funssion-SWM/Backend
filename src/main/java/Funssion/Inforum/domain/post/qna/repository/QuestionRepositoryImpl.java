@@ -81,10 +81,10 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         }
     }
     @Override
-    public List<Question> getQuestionsOfMemo(Long questionId) {
+    public List<Question> getQuestionsOfMemo(Long memoId) {
         String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
-                "from question.info order by created_date desc";
-        return template.query(sql,questionRowMapper());
+                "from question.info where memo_id = ? order by created_date desc";
+        return template.query(sql,questionRowMapper(),memoId);
     }
 
     @Override
