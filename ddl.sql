@@ -142,7 +142,7 @@ CREATE TABLE comment.re_comments (
 
 CREATE TABLE post.search_history (
     id bigserial primary key,
-    user_id int8 not null,r
+    user_id int8 not null,
     search_text text,
     access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
@@ -163,7 +163,7 @@ create table question.info(
     tags varchar array DEFAULT '{}',
     answers int8 not null default 0,
     memo_id int8 not null
-)
+);
 
 create table question.answer(
     id bigserial primary key,
@@ -177,8 +177,7 @@ create table question.answer(
     updated_date timestamp default current_timestamp,
     is_selected boolean not null default false,
     replies_count int8 not null default 0
-)
-
+);
 
 CREATE TABLE "member".follow (
     id bigserial NOT NULL,
