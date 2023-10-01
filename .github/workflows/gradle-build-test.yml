@@ -43,17 +43,9 @@ jobs:
       with:
         java-version: '17'
         distribution: 'corretto'
-        
-    - name: Remove previous snapshot.jar
-      run: rm -rf ./build/libs
       
     - name: Add properties
       run: echo "${{ secrets.APPLICATION_TEST }}" > ./src/main/resources/application.yml
-      
-    - name: init with Gradle
-      uses: gradle/gradle-build-action@v2
-      
-    - run: gradle init
       
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
@@ -61,28 +53,16 @@ jobs:
         gradle-version: 7.5.1
         arguments: build
 
-    - name: 테스트 실패 시, 실패한 코드 라인에 Check 코멘트를 등록합니다
-      uses: mikepenz/action-junit-report@v3
-      if: always()
+    - name: Upload Test Report
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v3
       with:
-        report_paths: '**/build/test-results/test/TEST-*.xml'
-        token: ${{ secrets.TOKEN }}
+        name: test-report
+        path: build/reports/tests/test/index.html
 
-    - name: build 실패 시 Slack으로 알립니다
-      uses: 8398a7/action-slack@v3
+    - name: Upload Jacoco Report
+      if: ${{ success() }}
+      uses: actions/upload-artifact@v3
       with:
-        status: ${{ job.status }}
-        author_name: 백엔드 빌드 실패 알림
-        fields: repo, message, commit, author, action, eventName, ref, workflow, job, took
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: failure()
-
-    - name: Notify Slack
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_COLOR: '#00FF00'
-        SLACK_TITLE: 'Build and Test'
-        SLACK_TEXT: 'Spring boot Build and Test Success'
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: success()
+        name: jacoco-coverage-report
+        path: build/reports/jacoco/test/html/index.html
