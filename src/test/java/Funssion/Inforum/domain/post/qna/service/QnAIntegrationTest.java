@@ -13,13 +13,20 @@ import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
+import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
+import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
+import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -33,12 +40,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 @Transactional
-class QuestionIntegrationTest {
+class QnAIntegrationTest {
     @Autowired
     QuestionRepository questionRepository;
     @Autowired
+    AnswerRepository answerRepository;
+    @Autowired
     MyRepository myRepository;
+    @Autowired
+    AnswerService answerService;
     @Autowired
     QuestionService questionService;
     @Autowired
@@ -46,13 +58,16 @@ class QuestionIntegrationTest {
     @Autowired
     MemoRepository memoRepository;
 
+    static final String AUTHORIZED_USER = "999";
+
     static Long saveMemberId;
 
     static QuestionSaveDto firstQuestionSaveDto;
     static QuestionSaveDto secondQuestionSaveDto;
     static QuestionSaveDto thirdQuestionSaveDto;
 
-    private static QuestionSaveDto saveQuestion(){
+
+    private static QuestionSaveDto makeQuestionDto(){
        return QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
                 .text("질문 내용")
                 .tags(List.of("tag1", "tag2"))
@@ -61,19 +76,18 @@ class QuestionIntegrationTest {
     }
     @BeforeEach
     void init() {
-        saveUser();
+        saveUser("user");
     }
 
-
-    private void saveUser() {
+    private void saveUser(String name) {
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()
-                .userName("taehoon")
+                .userName(name)
                 .loginType(LoginType.NON_SOCIAL)
                 .userPw("a1234567!")
-                .userEmail("test@gmail.com")
+                .userEmail(name+"@gmail.com")
                 .build();
         MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
-                .nickname("taehoon")
+                .nickname(name)
                 .profileImageFilePath("taehoon-image")
                 .introduce("introduce of taehoon")
                 .userTags(List.of("tag1", "tag2"))
@@ -83,6 +97,54 @@ class QuestionIntegrationTest {
         saveMemberId = saveMemberResponseDto.getId();
         myRepository.createProfile(saveMemberId, memberProfileEntity);
     }
+    @Test
+    @DisplayName("질문과 연관된 답변 생성")
+    @Transactional
+    void createAnswer(){
+        Question question = makeQuestion();
+
+        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                .userName("answer_user")
+                .loginType(LoginType.NON_SOCIAL)
+                .userPw("a1234567!")
+                .userEmail("test@gmail.com")
+                .build();
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                .nickname("answer_user")
+                .profileImageFilePath("taehoon-image")
+                .introduce("introduce of taehoon")
+                .userTags(List.of("tag1", "tag2"))
+                .build();
+
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("답변 텍스트")
+                .description("답변 요약")
+                .build();
+
+        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+        Long answerAuthorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+        assertThat(answerOfQuestion.getDescription()).isEqualTo("답변 요약");
+
+        LocalDateTime appliedDateTime = question.getCreatedDate();
+        List<History> monthlyHistoryOfQuestionAuthorId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
+        List<History> monthlyHistoryOfAnswerAuthorId = myRepository.findMonthlyHistoryByUserId(answerAuthorId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
+
+        assertThat(monthlyHistoryOfQuestionAuthorId).hasSize(1);
+        assertThat(monthlyHistoryOfAnswerAuthorId).hasSize(1);
+
+        History historyOfQuestionOwner = monthlyHistoryOfQuestionAuthorId.get(0);
+        History historyOfAnswerOwner = monthlyHistoryOfAnswerAuthorId.get(0);
+        assertThat(historyOfQuestionOwner.getUserId()).isEqualTo(saveMemberId);
+        assertThat(historyOfAnswerOwner.getUserId()).isEqualTo(answerAuthorId);
+        assertThat(historyOfQuestionOwner.getQuestionCnt()).isEqualTo(1L);
+        assertThat(historyOfQuestionOwner.getMemoCnt()).isEqualTo(0L);
+        assertThat(historyOfAnswerOwner.getQuestionCnt()).isEqualTo(1L);
+        assertThat(historyOfAnswerOwner.getMemoCnt()).isEqualTo(0L);
+
+    }
 
 
 
@@ -90,10 +152,12 @@ class QuestionIntegrationTest {
     @DisplayName("일반 질문 생성")
     @Transactional
     void createQuestion(){
-        QuestionSaveDto questionSaveDto = saveQuestion();
-
-        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-        assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
+        Question question = makeQuestion();
+        assertThat(question.getTitle()).isEqualTo("테스트 제목 생성");
+//        QuestionSaveDto questionSaveDto = makeQuestionDto();
+//
+//        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+//        assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
         List<History> monthlyHistoryByUserId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
@@ -106,13 +170,23 @@ class QuestionIntegrationTest {
 
     }
 
+    private Question makeQuestion() {
+
+
+        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
+                .text("질문 내용")
+                .tags(List.of("tag1", "tag2"))
+                .build();
+
+        return questionService.createQuestion(questionSaveDto, saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION ));
+    }
     @Test
     @DisplayName("특정 메모에 관한 질문 생성")
     @Transactional
     void createQuestionInMemo() {
         Memo memo = createMemo();
 
-        QuestionSaveDto questionSaveDto = saveQuestion();
+        QuestionSaveDto questionSaveDto = makeQuestionDto();
 
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
         assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
@@ -123,9 +197,11 @@ class QuestionIntegrationTest {
     void getQuestionsOfMemo(){
         Memo memo = createMemo();
 
-        QuestionSaveDto questionSaveDto = saveQuestion();
+        QuestionSaveDto questionSaveDto1 = makeQuestionDto();
+        QuestionSaveDto questionSaveDto2 = makeQuestionDto();
 
-        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
+        questionService.createQuestion(questionSaveDto1, saveMemberId, memo.getId());
+        questionService.createQuestion(questionSaveDto2, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
 
         List<Question> questionsOfMemo = questionRepository.getQuestionsOfMemo(memo.getId());
         assertThat(questionsOfMemo).hasSize(1);
@@ -133,12 +209,46 @@ class QuestionIntegrationTest {
     }
     @Test
     @DisplayName("특정 질문을 id로 열람하기")
+    @WithMockUser(username=AUTHORIZED_USER)
     @Transactional
     void getOneQuestion(){
-        QuestionSaveDto questionSaveDto = saveQuestion();
+        QuestionSaveDto questionSaveDto = makeQuestionDto();
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-        questionService.getOneQuestion(question.getId());
+        QuestionDto oneQuestion = questionService.getOneQuestion(question.getId());
+        assertThat(oneQuestion.isMine()).isEqualTo(false);
     }
+
+//    @Test
+//    @DisplayName("특정 질문을 id로 열람할 때, 자기가 작성한 질문인지 확인하기")
+//    @WithMockUser(username=AUTHORIZED_USER)
+//    @Transactional
+//    void checkMyQuestion(){
+//        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+//                .userName(AUTHORIZED_USER)
+//                .loginType(LoginType.NON_SOCIAL)
+//                .userPw("a1234567!")
+//                .userEmail(AUTHORIZED_USER+"@gmail.com")
+//                .build();
+//        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+//                .nickname(AUTHORIZED_USER)
+//                .profileImageFilePath("taehoon-image")
+//                .introduce("introduce of taehoon")
+//                .userTags(List.of("tag1", "tag2"))
+//                .build();
+//
+//        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+//        Long memberId = saveMemberResponseDto.getId();
+//        myRepository.createProfile(memberId, memberProfileEntity);
+//        QuestionSaveDto questionSaveDto = makeQuestionDto();
+//        Question question = questionService.createQuestion(questionSaveDto, memberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+//        //memberId 모킹하였음. (@WithMockUser랑 맞추기위해)
+//        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(AUTHORIZED_USER,"a123456"));
+//
+//        System.out.println("userid " + SecurityContextUtils.getUserId());
+//        System.out.println("userid " + question.getAuthorId());
+//        QuestionDto oneQuestion = questionService.getOneQuestion(question.getId());
+//        assertThat(oneQuestion.isMine()).isEqualTo(true);
+//    }
 
     private Memo createMemo() {
         String[] testTagsStringList = {
