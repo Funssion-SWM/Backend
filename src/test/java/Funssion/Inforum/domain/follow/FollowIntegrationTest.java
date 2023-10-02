@@ -1,5 +1,7 @@
 package Funssion.Inforum.domain.follow;
 
+import Funssion.Inforum.domain.follow.domain.Follow;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import static org.hamcrest.Matchers.blankString;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -31,12 +34,16 @@ public class FollowIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    FollowRepository followRepository;
 
     SaveMemberResponseDto savedMember1;
     SaveMemberResponseDto savedMember2;
+    SaveMemberResponseDto savedMember3;
 
     String testUserId1;
     String testUserId2;
+    String testUserId3;
 
     @BeforeEach
     void init() {
@@ -59,11 +66,22 @@ public class FollowIntegrationTest {
                 .introduce("hi")
                 .createdDate(LocalDateTime.now())
                 .tags("Java")
-                .imagePath("https://image")
+                .imagePath("https://image2")
+                .build());
+
+        savedMember3 = memberRepository.save(SocialMember.builder()
+                .userEmail("social2@gmail.com")
+                .loginType(LoginType.SOCIAL)
+                .userName("jinu3")
+                .introduce("hill")
+                .createdDate(LocalDateTime.now())
+                .tags("Spring")
+                .imagePath("https://image3")
                 .build());
 
         testUserId1 = savedMember1.getId().toString();
         testUserId2 = savedMember2.getId().toString();
+        testUserId3 = savedMember3.getId().toString();
     }
 
     @Nested
@@ -151,5 +169,67 @@ public class FollowIntegrationTest {
                             .param("userId", testUserId2))
                     .andExpect(status().isBadRequest());
         }
+    }
+
+    @Nested
+    @Transactional
+    @DisplayName("팔로우, 팔로잉 유저 정보 조회")
+    class getUserProfilesByFollowInfo {
+
+        @BeforeEach
+        void init() {
+            followRepository.save(Follow.builder()
+                    .userId(savedMember1.getId())
+                    .followedUserId(savedMember2.getId())
+                    .build());
+
+            followRepository.save(Follow.builder()
+                    .userId(savedMember1.getId())
+                    .followedUserId(savedMember3.getId())
+                    .build());
+
+            followRepository.save(Follow.builder()
+                    .userId(savedMember3.getId())
+                    .followedUserId(savedMember2.getId())
+                    .build());
+        }
+
+        @Test
+        @DisplayName("팔로우한 유저 정보 조회하기")
+        void getFollowingUserProfiles() throws Exception {
+            mvc.perform(get("/follows")
+                    .param("userId", testUserId1))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember2.getId())))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember3.getId())));
+
+            mvc.perform(get("/follows")
+                            .param("userId", testUserId2))
+                    .andExpect(content().string("[]"));
+
+            mvc.perform(get("/follows")
+                            .param("userId", testUserId3))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember2.getId())));
+        }
+
+        @Test
+        @DisplayName("팔로우한 유저 정보 조회하기")
+        void getFollowerUserProfiles() throws Exception {
+            mvc.perform(get("/followers")
+                            .param("userId", testUserId1))
+                            .andExpect(content().string("[]"));
+
+            mvc.perform(get("/followers")
+                            .param("userId", testUserId2))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember1.getId())))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember3.getId())));
+
+            mvc.perform(get("/followers")
+                            .param("userId", testUserId3))
+                    .andExpect(content().string(containsString("\"userId\":" + savedMember1.getId())));
+        }
+    }
+
+    String toJsonString(String str) {
+        return "\"" + str + "\"";
     }
 }

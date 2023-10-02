@@ -5,10 +5,13 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.domain.Follow;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -48,5 +51,13 @@ public class FollowService {
         memberRepository.updateFollowCnt(userId, Sign.MINUS);
         memberRepository.updateFollowerCnt(userIdToUnfollow, Sign.MINUS);
 
+    }
+
+    public List<MemberProfileEntity> getFollowingUserList(Long userId) {
+        return followRepository.findFollowingProfilesByUserId(userId);
+    }
+
+    public List<MemberProfileEntity> getFollowedUserList(Long userId) {
+        return followRepository.findFollowedProfilesByUserId(userId);
     }
 }
