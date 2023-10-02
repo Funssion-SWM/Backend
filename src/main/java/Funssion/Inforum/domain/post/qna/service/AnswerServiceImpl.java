@@ -11,8 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static Funssion.Inforum.common.constant.PostType.QUESTION;
+import static Funssion.Inforum.common.constant.PostType.ANSWER;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +26,12 @@ public class AnswerServiceImpl implements AnswerService {
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
         return addAuthorInfo(answerSaveDto,authorId,questionId);
     }
+
+    @Override
+    public List<Answer> getAnswersOfQuestion(Long questionId) {
+        return answerRepository.getAnswersOfQuestion(questionId);
+    }
+
     private Answer addAuthorInfo(AnswerSaveDto answerSaveDto, Long authorId, Long questionId) {
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         Answer answerSaveDtoWithAuthor = addAuthor(answerSaveDto, authorId, authorProfile,questionId);
@@ -38,9 +45,9 @@ public class AnswerServiceImpl implements AnswerService {
 
     private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
         try {
-            myRepository.updateHistory(userId, QUESTION, sign, curDate.toLocalDate());
+            myRepository.updateHistory(userId, ANSWER, sign, curDate.toLocalDate());
         } catch (HistoryNotFoundException e) {
-            myRepository.createHistory(userId, QUESTION);
+            myRepository.createHistory(userId, ANSWER);
         }
     }
 }

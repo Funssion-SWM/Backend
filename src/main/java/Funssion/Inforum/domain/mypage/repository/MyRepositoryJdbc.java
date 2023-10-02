@@ -47,6 +47,7 @@ public class MyRepositoryJdbc implements MyRepository {
                     .memoCnt(rs.getLong("memo_cnt"))
                     .blogCnt(rs.getLong("blog_cnt"))
                     .questionCnt(rs.getLong("question_cnt"))
+                    .answerCnt(rs.getLong("answer_cnt"))
                     .date(rs.getTimestamp("date").toLocalDateTime().toLocalDate())
                     .build()
         );

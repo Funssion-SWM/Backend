@@ -273,6 +273,13 @@ class QnAIntegrationTest {
         return memoRepository.create(memo1);
     }
 
+    private AnswerSaveDto createAnswerSaveDto(){
+        return AnswerSaveDto.builder()
+                .description("답변의 요약 정보가 들어갑니다.")
+                .text("답변의 내용이 들어갑니다.")
+                .build();
+    }
+
     @Nested
     @DisplayName("파라미터에 알맞는 정렬된 메모 리스트 가져오기")
     class getOrderedQuestions{
@@ -317,6 +324,51 @@ class QnAIntegrationTest {
             List<Question> hottestQuestionList = questionService.getQuestions(OrderType.HOT);
             assertThat(hottestQuestionList).hasSize(3);
         }
+    }
+
+    @Nested
+    @DisplayName("답변 가져오기")
+    class getAnswerList{
+        private Question makePureQuestionFirst(){
+            firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
+                    .text("질문 내용")
+                    .tags(List.of("tag1", "tag2"))
+                    .description("질문 내용 요약")
+                    .build();
+            return questionService.createQuestion(firstQuestionSaveDto,saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION));
+
+        }
+        private Question makeMemoAndCreateQuestion(){
+            Memo memo = createMemo();
+            firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
+                    .text("질문 내용")
+                    .tags(List.of("tag1", "tag2"))
+                    .description("질문 내용 요약")
+                    .build();
+            return questionService.createQuestion(firstQuestionSaveDto,saveMemberId,memo.getId());
+        }
+        @Test
+        @DisplayName("질문과 연관된 답변 리스트 가져오기")
+        void getAnswerListOfQuestion(){
+            Question question1 = makeQuestion();
+            Question question2 = makeQuestion();
+            makeAnswerOfQuestion(List.of(question1,question2));
+
+            List<Answer> answersOfQuestion = answerService.getAnswersOfQuestion(question1.getId());
+            assertThat(answersOfQuestion).hasSize(3);
+
+            List<History> monthlyHistorySavedMemberId = myRepository.findMonthlyHistoryByUserId(saveMemberId, question1.getCreatedDate().getYear(), question1.getCreatedDate().getMonthValue());
+            assertThat(monthlyHistorySavedMemberId.get(0).getAnswerCnt()).isEqualTo(4L);
+
+        }
+
+        private void makeAnswerOfQuestion(List<Question> questions) {
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(1).getId(),saveMemberId);
+        }
+
     }
 
     @Nested

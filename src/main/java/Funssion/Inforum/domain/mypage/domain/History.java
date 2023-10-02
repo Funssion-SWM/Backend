@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Builder
@@ -15,5 +13,6 @@ public class History {
     private Long memoCnt;
     private Long blogCnt;
     private Long questionCnt;
+    private Long answerCnt;
     private LocalDate date;
 }
