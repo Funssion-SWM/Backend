@@ -23,6 +23,7 @@ public class MemberProfileDto {
 
     public static MemberProfileDto valueOf(MemberProfileEntity memberProfileEntity) {
         return MemberProfileDto.builder()
+                .userId(memberProfileEntity.getUserId())
                 .profileImageFilePath(memberProfileEntity.getProfileImageFilePath())
                 .nickname(memberProfileEntity.getNickname())
                 .introduce(memberProfileEntity.getIntroduce())
