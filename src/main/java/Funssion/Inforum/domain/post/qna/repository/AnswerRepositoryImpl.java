@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.util.List;
 
 @Repository
 public class AnswerRepositoryImpl implements AnswerRepository {
@@ -36,8 +37,16 @@ public class AnswerRepositoryImpl implements AnswerRepository {
         },keyHolder);
         return this.getAnswerById(keyHolder.getKey().longValue());
     }
+
+    @Override
+    public List<Answer> getAnswersOfQuestion(Long questionId) {
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
+                +" from question.answer where question_id = ?";
+        return template.query(sql,answerRowMapper(),questionId);
+    }
+
     public Answer getAnswerById(Long id){
-        String sql = "select id, question_id, author_id, author_name, author_image_path, text, likes, created_date, updated_date, is_selected, replies_count"
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
                 + " from question.answer where id = ?";
         try{
             return template.queryForObject(sql,answerRowMapper(),id);
@@ -52,6 +61,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .questionId(rs.getLong("question_id"))
                         .text(rs.getString("text"))
                         .likes(rs.getLong("likes"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())

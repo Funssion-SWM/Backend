@@ -82,6 +82,7 @@ CREATE TABLE member.history (
     memo_cnt int8 NOT NULL DEFAULT 0,
     blog_cnt int8 NOT NULL DEFAULT 0,
     question_cnt int8 NOT NULL DEFAULT 0,
+    answer_cnt int8 NOT NULL DEFAULT 0,
     date date NOT NULL DEFAULT current_date
 );
 
