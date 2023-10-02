@@ -24,12 +24,27 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId) {
         Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
-        return addAuthorInfo(answerSaveDto,authorId,questionId);
+        return answer;
     }
 
     @Override
     public List<Answer> getAnswersOfQuestion(Long questionId) {
         return answerRepository.getAnswersOfQuestion(questionId);
+    }
+
+    @Override
+    public Long getAuthorId(Long answerId) {
+        return answerRepository.getAuthorIdOf(answerId);
+    }
+
+    @Override
+    public Answer updateAnswer(AnswerSaveDto answerSaveDto, Long answerId) {
+        return answerRepository.updateAnswer(answerSaveDto, answerId);
+    }
+
+    @Override
+    public Answer getAnswerBy(Long answerId) {
+        return answerRepository.getAnswerById(answerId);
     }
 
     private Answer addAuthorInfo(AnswerSaveDto answerSaveDto, Long authorId, Long questionId) {

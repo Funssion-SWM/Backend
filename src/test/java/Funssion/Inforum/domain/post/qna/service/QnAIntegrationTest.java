@@ -141,7 +141,7 @@ class QnAIntegrationTest {
         assertThat(historyOfAnswerOwner.getUserId()).isEqualTo(answerAuthorId);
         assertThat(historyOfQuestionOwner.getQuestionCnt()).isEqualTo(1L);
         assertThat(historyOfQuestionOwner.getMemoCnt()).isEqualTo(0L);
-        assertThat(historyOfAnswerOwner.getQuestionCnt()).isEqualTo(1L);
+        assertThat(historyOfAnswerOwner.getAnswerCnt()).isEqualTo(1L);
         assertThat(historyOfAnswerOwner.getMemoCnt()).isEqualTo(0L);
 
     }
@@ -362,6 +362,15 @@ class QnAIntegrationTest {
 
         }
 
+        @Test
+        @DisplayName("고유 id로 답변 하나만 가져오기")
+        void getAnswerOfQuestion(){
+            Question question1 = makeQuestion();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question1.getId(), saveMemberId);
+            Answer answer = answerService.getAnswerBy(answerOfQuestion.getId());
+            assertThat(answerOfQuestion.getText()).isEqualTo(answer.getText());
+        }
+
         private void makeAnswerOfQuestion(List<Question> questions) {
             answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
             answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
@@ -413,6 +422,21 @@ class QnAIntegrationTest {
             assertThat(history.getMemoCnt()).isEqualTo(0L);
 
             //MyRepository 수정했을때 날짜 바뀌는지 확인 위해 변수로 바꿔야할 필요 있음
+        }
+    }
+    @Nested
+    @DisplayName("답변 수정")
+    class updateAnswer{
+        @Test
+        @DisplayName("답변 수정 확인")
+        void updateAnswer(){
+            Question question = makeQuestion();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId);
+
+
+            System.out.println("answerOfQuestion.getId() = " + answerOfQuestion.getId());
+            Answer updatedAnswer = answerService.updateAnswer(createAnswerSaveDto(), answerOfQuestion.getId());
+            assertThat(updatedAnswer.getUpdatedDate()).isNotEqualTo(answerOfQuestion.getCreatedDate());
         }
     }
 }

@@ -10,4 +10,10 @@ public interface AnswerService {
     Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId);
 
     List<Answer> getAnswersOfQuestion(Long questionId);
+
+    Long getAuthorId(Long answerId);
+
+    Answer updateAnswer(AnswerSaveDto answerSaveDto, Long answerId);
+
+    Answer getAnswerBy(Long answerId);
 }

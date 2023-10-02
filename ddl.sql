@@ -174,6 +174,7 @@ create table question.answer(
     author_image_path varchar,
     text jsonb,
     likes int8 NOT NULL DEFAULT 0,
+    description text null,
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     is_selected boolean not null default false,

@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.qna.controller;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.AnswerDto;
@@ -33,5 +34,27 @@ public class AnswerController {
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
         List<Answer> answers = answerService.getAnswersOfQuestion(questionId);
         return answers.stream().map(answer->new AnswerDto(answer,loginId)).toList();
+    }
+
+    @GetMapping("/{answerId}")
+    public AnswerDto getAnswerBy(@PathVariable Long answerId){
+        Long loginId = AuthUtils.getUserId(CRUDType.READ);
+        Answer answer = answerService.getAnswerBy(answerId);
+        return new AnswerDto(answer,loginId);
+    }
+
+    @PatchMapping("/{answerId}")
+    public IsSuccessResponseDto updateAnswer(@RequestBody @Validated AnswerSaveDto answerSaveDto, @PathVariable Long answerId){
+        checkAuthorization(CRUDType.UPDATE, answerId);
+        answerService.updateAnswer(answerSaveDto, answerId);
+        return new IsSuccessResponseDto(true, "성공적으로 답변이 수정되었습니다.");
+    }
+
+    private Long checkAuthorization(CRUDType crudType,Long answerId) {
+        Long authorId = AuthUtils.getUserId(crudType);
+        if (!authorId.equals(answerService.getAuthorId(answerId))) {
+            throw new UnAuthorizedException("Permission denied to "+crudType.toString());
+        }
+        return authorId;
     }
 }
