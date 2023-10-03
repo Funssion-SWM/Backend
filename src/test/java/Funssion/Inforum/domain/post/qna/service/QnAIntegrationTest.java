@@ -172,8 +172,6 @@ class QnAIntegrationTest {
     }
 
     private Question makeQuestion() {
-
-
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag1", "tag2"))

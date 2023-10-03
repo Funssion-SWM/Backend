@@ -78,9 +78,9 @@ class CommentRepositoryImplTest {
                 LocalDateTime.now(),
                 null,
                 new CommentSaveDto(PostType.MEMO, 1L, "댓글 내용 저장"));
-        Long createdCommentPK = commentRepository.createComment(comment);
+        Comment createdComment = commentRepository.createComment(comment);
         assertThatCode(
-                () -> commentRepository.deleteComment(createdCommentPK))
+                () -> commentRepository.deleteComment(createdComment.getId()))
                 .doesNotThrowAnyException();
     }
 

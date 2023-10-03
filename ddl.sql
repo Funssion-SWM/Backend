@@ -59,7 +59,8 @@ CREATE TABLE memo.info (
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     tags varchar array DEFAULT '{}',
-    replies_count int8 not null default 0
+    replies_count int8 not null default 0,
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0)
 );
 
 CREATE TABLE member.auth (
@@ -118,7 +119,8 @@ create table comment.info(
     re_comments int8 not null default 0,
     comment_text text not null,
     created_date timestamp default current_timestamp,
-    updated_date timestamp default current_timestamp
+    updated_date timestamp default current_timestamp,
+    CONSTRAINT non_negative_re_comments CHECK (re_comments >= 0),
 );
 
 CREATE TABLE member.like_comment (
@@ -162,8 +164,10 @@ create table question.info(
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     tags varchar array DEFAULT '{}',
+    replies_count int8 not null default 0,
     answers int8 not null default 0,
-    memo_id int8 not null
+    memo_id int8 not null,
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0)
 );
 
 create table question.answer(
@@ -178,7 +182,10 @@ create table question.answer(
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     is_selected boolean not null default false,
-    replies_count int8 not null default 0
+    replies_count int8 not null default 0,
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
+    CONSTRAINT non_negative_likes CHECK (likes >= 0)
+
 );
 
 CREATE TABLE "member".follow (

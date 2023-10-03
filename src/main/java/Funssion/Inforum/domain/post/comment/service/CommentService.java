@@ -15,7 +15,6 @@ import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final MemoRepository memoRepository;
     private final MyRepository myRepository;
 
     /*
@@ -38,14 +36,14 @@ public class CommentService {
      * 이를 활용하여 profile을 가져옵니다.
      */
     @Transactional
-    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto, Long authorId){
+    public Comment createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
-        commentRepository.createComment(new Comment(
-            authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)
+        Comment comment = commentRepository.createComment(new Comment(
+                authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
-        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostId());
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
 
-        return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
+        return comment;
     }
 
     @Transactional

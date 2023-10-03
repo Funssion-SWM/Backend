@@ -65,7 +65,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public List<Question> getQuestions(OrderType orderBy) {
-        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from question.info ";
         sql += getSortedSql(orderBy);
         return template.query(sql, questionRowMapper());
@@ -82,14 +82,14 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
     @Override
     public List<Question> getQuestionsOfMemo(Long memoId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from question.info where memo_id = ? order by created_date desc";
         return template.query(sql,questionRowMapper(),memoId);
     }
 
     @Override
     public Question getOneQuestion(Long questionId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from question.info where id = ?";
         try{
             return template.queryForObject(sql,questionRowMapper(),questionId);
@@ -134,6 +134,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .tags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .repliesCount(rs.getLong("replies_count"))
                         .answersCount(rs.getLong("answers"))
                         .isSolved(rs.getBoolean("is_solved"))
                         .memoId(rs.getLong("memo_id"))

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
+
 public class CommentListDto {
     private Long id;
     private Long authorId;

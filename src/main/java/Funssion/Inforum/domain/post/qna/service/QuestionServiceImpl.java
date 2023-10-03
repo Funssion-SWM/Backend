@@ -100,7 +100,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     private Question addAuthor(QuestionSaveDto questionSaveDto, Long authorId, MemberProfileEntity authorProfile, Long memoId) {
         Long defaultAnswersCount = 0L;
+        Long defaultRepliesCount = 0L;
         boolean isSolved = false;
-        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultAnswersCount,isSolved,memoId);
+        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultRepliesCount, defaultAnswersCount,isSolved,memoId);
     }
 }

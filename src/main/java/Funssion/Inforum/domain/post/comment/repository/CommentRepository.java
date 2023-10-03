@@ -14,7 +14,7 @@ import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import java.util.List;
 
 public interface CommentRepository {
-    Long createComment(Comment comment);
+    Comment createComment(Comment comment);
 
     void createReComment(ReComment reComment);
     IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
@@ -44,6 +44,6 @@ public interface CommentRepository {
 
     PostIdAndTypeInfo getPostIdByCommentId(Long commentId);
 
-    void plusCommentsCountOfPost(Long postId);
+    void plusCommentsCountOfPost(PostType postType, Long postId);
     void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo);
 }
