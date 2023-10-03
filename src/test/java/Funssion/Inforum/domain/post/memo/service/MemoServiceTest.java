@@ -49,20 +49,24 @@ public class MemoServiceTest {
     static Memo memo2;
     static Memo memo3;
     static Memo memo4;
+    static Memo memo5;
     static MemoListDto memoListDto1;
     static MemoListDto memoListDto2;
     static MemoListDto memoListDto3;
     static MemoListDto memoListDto4;
+    static MemoListDto memoListDto5;
     static MemoDto memoDto1;
     static MemoDto memoDto2;
     static MemoDto memoDto3;
     static MemoDto memoDto4;
+    static MemoDto memoDto5;
     static Long userID1 = 1L;
     static Long userID2 = 2L;
     static Long memoID1 = 1L;
     static Long memoID2 = 2L;
     static Long memoID3 = 3L;
     static Long memoID4 = 4L;
+    static Long memoID5 = 5L;
 
     static Long DEFAULT_MEMO_CNT = 20L;
     static Long DEFAULT_PAGE_NUM = 0L;
@@ -124,17 +128,35 @@ public class MemoServiceTest {
                 .likes(0L)
                 .isTemporary(true)
                 .memoTags(List.of("JSP"))
+                .isCreated(Boolean.FALSE)
+                .build();
+        memo5 = Memo.builder()
+                .id(memoID5)
+                .title("Junit")
+                .text("Junit is Junit")
+                .description("Junit is ...")
+                .color("yellow")
+                .authorId(userID2)
+                .authorName("jinu2")
+                .authorImagePath("jinu2-image")
+                .createdDate(LocalDateTime.now())
+                .likes(0L)
+                .isTemporary(true)
+                .memoTags(List.of("Junit"))
+                .isCreated(Boolean.TRUE)
                 .build();
 
         memoListDto1 = new MemoListDto(memo1);
         memoListDto2 = new MemoListDto(memo2);
         memoListDto3 = new MemoListDto(memo3);
         memoListDto4 = new MemoListDto(memo4);
+        memoListDto5 = new MemoListDto(memo5);
 
         memoDto1 = new MemoDto(memo1);
         memoDto2 = new MemoDto(memo2);
         memoDto3 = new MemoDto(memo3);
         memoDto4 = new MemoDto(memo4);
+        memoDto5 = new MemoDto(memo5);
     }
 
     @BeforeEach
@@ -372,33 +394,102 @@ public class MemoServiceTest {
         }
 
         @Test
-        @DisplayName("로그인 후 이미 등록된 글 정상적으로 수정하는 케이스")
-        void updateMemoWithLogin() {
+        @DisplayName("로그인 후 다른 사람의 메모를 수정하려하는 케이스")
+        void updateMemoAnotherAuthorWrites() {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
-                    .willReturn(userID1);
+                    .willReturn(userID2);
             given(memoRepository.findById(memoID2))
                     .willReturn(memo2);
-            given(memoRepository.updateContentInMemo(memoSaveDto, memoID2))
-                    .willReturn(memo2);
 
-            MemoDto updated = memoService.updateMemo(memoID2, memoSaveDto);
-
-            assertThat(memoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            assertThatThrownBy(() -> memoService.updateMemo(memoID2, memoSaveDto))
+                    .isInstanceOf(UnAuthorizedException.class);
         }
 
-        @Test
-        @DisplayName("로그인 후 임시 글 수정 후 등록하는 케이스")
-        void updateTempMemoToRealMemoWithLogin() {
-            given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
-                    .willReturn(userID1);
-            given(memoRepository.findById(memoID2))
-                    .willReturn(memo2);
-            given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
-                    .willReturn(memo4);
+        @Nested
+        @DisplayName("실제 글로 등록")
+        class updateMemoToRealMemo {
 
-            MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
+            @Test
+            @DisplayName("로그인 후 이미 등록된 글을 정상적으로 재등록하는 케이스")
+            void updateMemoWithLogin() {
+                given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                        .willReturn(userID1);
+                given(memoRepository.findById(memoID2))
+                        .willReturn(memo2);
+                given(memoRepository.updateContentInMemo(memoSaveDto, memoID2))
+                        .willReturn(memo2);
 
-            assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+                MemoDto updated = memoService.updateMemo(memoID2, memoSaveDto);
+
+                assertThat(memoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            }
+
+            @Test
+            @DisplayName("임시 글을 최초 등록하는 케이스")
+            void updateTempMemoToRealMemoFirstTime() {
+                given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                        .willReturn(userID2);
+                given(memoRepository.findById(memoID4))
+                        .willReturn(memo4);
+                given(memoRepository.updateContentInMemo(memoSaveDto, memoID4, Boolean.TRUE))
+                        .willReturn(memo2);
+
+                MemoDto updated = memoService.updateMemo(memoID4, memoSaveDto);
+
+                assertThat(memoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            }
+
+            @Test
+            @DisplayName("로그인 후 등록했다가 임시저장된 글을 다시 등록하는 케이스")
+            void updateTempMemoToRealMemo() {
+                given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                        .willReturn(userID2);
+                given(memoRepository.findById(memoID5))
+                        .willReturn(memo5);
+                given(memoRepository.updateContentInMemo(memoSaveDto, memoID5))
+                        .willReturn(memo2);
+
+                MemoDto updated = memoService.updateMemo(memoID5, memoSaveDto);
+
+                assertThat(memoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            }
+
+        }
+
+
+        @Nested
+        @DisplayName("임시 글로 수정")
+        class updateTempMemoToRealMemoWithLogin {
+            @Test
+            @DisplayName("등록된 글을 수정 중 임시 저장하는 케이스")
+            void updateTempMemoToRealMemoWithLogin() {
+                given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                        .willReturn(userID1);
+                given(memoRepository.findById(memoID2))
+                        .willReturn(memo2);
+                given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
+                        .willReturn(memo4);
+
+                MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
+
+                assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            }
+
+            @Test
+            @DisplayName("임시 저장된 글을 다시 임시 저장하는 케이스")
+            void updateTempMemoToTempMemo() {
+                given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                        .willReturn(userID2);
+                given(memoRepository.findById(memoID5))
+                        .willReturn(memo5);
+                given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID5))
+                        .willReturn(memo4);
+
+                MemoDto updated = memoService.updateMemo(memoID5, tempMemoSaveDto);
+
+                assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+            }
+
         }
 
         @Test
@@ -471,6 +562,18 @@ public class MemoServiceTest {
         void deleteMemoWithoutLogin() {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
                     .willThrow(UnAuthorizedException.class);
+
+            assertThatThrownBy(() -> memoService.deleteMemo(memoID1))
+                    .isInstanceOf(UnAuthorizedException.class);
+        }
+
+        @Test
+        @DisplayName("로그인 후 다른 사람의 메모를 삭제하려는 케이스")
+        void deleteMemoAnotherAuthorWrites() {
+            given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                    .willReturn(userID2);
+            given(memoRepository.findById(memoID1))
+                    .willReturn(memo1);
 
             assertThatThrownBy(() -> memoService.deleteMemo(memoID1))
                     .isInstanceOf(UnAuthorizedException.class);

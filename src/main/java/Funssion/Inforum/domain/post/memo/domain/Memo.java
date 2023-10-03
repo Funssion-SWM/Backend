@@ -24,7 +24,7 @@ public class Memo extends Post {
     private Long repliesCount;
     private List<String> memoTags;
     private Boolean isTemporary;
-
+    private Boolean isCreated;
 
 
     public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate) {

@@ -132,6 +132,10 @@ class MemoRepositoryJdbcTest {
             likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo3.getId()));
         }
 
+        @Nested
+        @DisplayName("메모 내용 수정")
+        class updateContentInMemo {}
+
         @Test
         @DisplayName("메모 내용 수정")
         void updateContentTest() {
