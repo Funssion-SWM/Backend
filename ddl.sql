@@ -59,7 +59,8 @@ CREATE TABLE memo.info (
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     tags varchar array DEFAULT '{}',
-    replies_count int8 not null default 0
+    replies_count int8 not null default 0,
+    is_created boolean NOT NULL DEFAULT true
 );
 
 CREATE TABLE member.auth (

@@ -20,6 +20,7 @@ public interface MemoRepository {
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
+    Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated);
     Memo updateLikesInMemo(Long likes, Long memoId);
     void updateAuthorProfile(Long authorId, String authorProfileImagePath);
     void delete(Long id);

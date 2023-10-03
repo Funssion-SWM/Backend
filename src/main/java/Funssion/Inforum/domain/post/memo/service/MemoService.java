@@ -133,9 +133,8 @@ public class MemoService {
         } catch (SQLException e) {
             throw new ArrayToListException("tag update 중 sql.Array를 List로 변환하는 중 오류 발생",e);
         }
-        Memo memo = memoRepository.updateContentInMemo(form, memoId);
 
-        return new MemoDto(memo);
+        return new MemoDto(updateMemo(memoId, form, savedMemo));
     }
 
     private void updateHistory(MemoSaveDto form, Long userId, Memo savedMemo) {
@@ -148,6 +147,16 @@ public class MemoService {
         else
             createOrUpdateHistory(userId, savedMemo.getCreatedDate(), MINUS);
 
+    }
+
+    private Memo updateMemo(Long memoId, MemoSaveDto form, Memo savedMemo) {
+        Memo memo;
+        // 실제 메모로 등록된 적이 없는 메모를 등록하려 할 때
+        if (!form.getIsTemporary() && savedMemo.getIsTemporary() && !savedMemo.getIsCreated())
+            memo = memoRepository.updateContentInMemo(form, memoId, Boolean.TRUE);
+        else
+            memo = memoRepository.updateContentInMemo(form, memoId);
+        return memo;
     }
 
     @Transactional
