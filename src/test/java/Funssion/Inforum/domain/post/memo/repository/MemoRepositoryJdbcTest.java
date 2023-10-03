@@ -98,6 +98,9 @@ class MemoRepositoryJdbcTest {
             .memoTags(List.of("JWT", "Java"))
             .build();
 
+    static Long DEFAULT_MEMO_CNT = 20L;
+    static Long DEFAULT_PAGE_NUM = 0L;
+
     @Nested
     @DisplayName("메모 생성")
     class CreateMemo {
@@ -204,18 +207,42 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
         void findAllByDaysOrderByLikesTest() {
-            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1);
+            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(memoListCreatedAtToday.size()).isEqualTo(3);
             assertThat(memoListCreatedAtToday.get(0)).isEqualTo(createdMemo3);
         }
 
         @Test
+        @DisplayName("좋아요 순 날짜별 메모 페이징하기")
+        void findAllByDaysOrderByLikesWithPaging() {
+            List<Memo> memoListCreatedAtTodayInZeroPage = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, 2L);
+
+            assertThat(memoListCreatedAtTodayInZeroPage).containsExactly(createdMemo3, createdMemo2);
+
+            List<Memo> memoListCreatedAtTodayInOnePage = repository.findAllByDaysOrderByLikes(1, 1L, 2L);
+
+            assertThat(memoListCreatedAtTodayInOnePage).containsExactly(createdMemo);
+        }
+
+        @Test
         @DisplayName("최신 순 메모 불러오기")
         void findAllOrderByIdTest() {
-            List<Memo> memoList = repository.findAllOrderById();
+            List<Memo> memoList = repository.findAllOrderById(DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(memoList.get(0)).isEqualTo(createdMemo3);
+        }
+
+        @Test
+        @DisplayName("최신 순 메모 페이징하기")
+        void findAllOrderByIdWithPaging() {
+            List<Memo> memoListInZeroPage = repository.findAllOrderById(0L, 2L);
+
+            assertThat(memoListInZeroPage).containsExactly(createdMemo3, createdMemo2);
+
+            List<Memo> memoListInOnePage = repository.findAllOrderById(1L, 2L);
+
+            assertThat(memoListInOnePage).contains(createdMemo);
         }
 
         @Test

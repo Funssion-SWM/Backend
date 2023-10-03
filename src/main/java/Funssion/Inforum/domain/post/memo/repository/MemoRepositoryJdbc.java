@@ -60,16 +60,18 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Integer days) {
+    public List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
-                "order by likes desc, memo_id desc";
-        return template.query(sql, memoRowMapper(), days);
+                "order by likes desc, memo_id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), days, memoCnt, pageNum * memoCnt);
     }
 
     @Override
-    public List<Memo> findAllOrderById() {
-        String sql = "select * from memo.info where is_temporary = false order by memo_id desc";
-        return template.query(sql, memoRowMapper());
+    public List<Memo> findAllOrderById(Long pageNum, Long memoCnt) {
+        String sql = "select * from memo.info where is_temporary = false order by memo_id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), memoCnt, pageNum * memoCnt);
     }
 
     @Override

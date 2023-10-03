@@ -5,6 +5,7 @@ import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -50,23 +51,23 @@ public class MemoService {
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
 
-    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Long pageNum, Long memoCnt) {
 
         Integer days = DateType.toNumOfDays(date);
 
-        return getMemos(orderBy, days);
+        return getMemos(orderBy, days, pageNum, memoCnt);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days, Long pageNum, Long memoCnt) {
         switch (memoOrderType) {
             case NEW -> {
-                return memoRepository.findAllOrderById()
+                return memoRepository.findAllOrderById(pageNum, memoCnt)
                         .stream()
                         .map((MemoListDto::new))
                         .toList();
             }
             case HOT -> {
-                return memoRepository.findAllByDaysOrderByLikes(days)
+                return memoRepository.findAllByDaysOrderByLikes(days, pageNum, memoCnt)
                         .stream()
                         .map(MemoListDto::new)
                         .toList();
@@ -124,6 +125,8 @@ public class MemoService {
         Long userId = AuthUtils.getUserId(UPDATE);
         ArrayList<String> updatedTags = new ArrayList<>(form.getMemoTags());
         Memo savedMemo = memoRepository.findById(memoId);
+        checkPermission(userId, savedMemo);
+
         updateHistory(form, userId, savedMemo);
         try {
             tagRepository.updateTags(memoId,updatedTags);
@@ -149,9 +152,11 @@ public class MemoService {
 
     @Transactional
     public void deleteMemo(Long memoId) {
-
         Long userId = AuthUtils.getUserId(DELETE);
         Memo memo = memoRepository.findById(memoId);
+
+        checkPermission(userId, memo);
+
         try {
             tagRepository.deleteTags(memoId);
         } catch (SQLException e) {
@@ -163,6 +168,11 @@ public class MemoService {
 
         if (!memo.getIsTemporary())
             myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
+    }
+
+    private static void checkPermission(Long userId, Memo savedMemo) {
+        if (!userId.equals(savedMemo.getAuthorId()))
+            throw new UnAuthorizedException("메모를 업데이트할 권한이 없습니다.");
     }
 
 
