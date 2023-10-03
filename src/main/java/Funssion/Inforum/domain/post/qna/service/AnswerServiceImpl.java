@@ -9,6 +9,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final AnswerRepository answerRepository;
     private final MyRepository myRepository;
     @Override
+    @Transactional
     public Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId) {
         Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
@@ -45,6 +47,20 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public Answer getAnswerBy(Long answerId) {
         return answerRepository.getAnswerById(answerId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAnswer(Long answerId, Long authorId) {
+        LocalDateTime createdTime = getCreatedTimeOfAnswer(answerId);
+        createOrUpdateHistory(authorId,createdTime, Sign.MINUS);
+        answerRepository.deleteAnswer(answerId);
+    }
+
+    private LocalDateTime getCreatedTimeOfAnswer(Long answerId) {
+        Answer answerById = answerRepository.getAnswerById(answerId);
+        LocalDateTime createdTime = answerById.getCreatedDate();
+        return createdTime;
     }
 
     private Answer addAuthorInfo(AnswerSaveDto answerSaveDto, Long authorId, Long questionId) {

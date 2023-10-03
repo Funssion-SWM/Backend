@@ -16,4 +16,6 @@ public interface AnswerService {
     Answer updateAnswer(AnswerSaveDto answerSaveDto, Long answerId);
 
     Answer getAnswerBy(Long answerId);
+
+    void deleteAnswer(Long answerId, Long authorId);
 }

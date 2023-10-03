@@ -78,6 +78,15 @@ public class AnswerRepositoryImpl implements AnswerRepository {
             throw new AnswerNotFoundException("해당 답변 글을 찾을 수 없습니다.");
         }
     }
+
+    @Override
+    public void deleteAnswer(Long answerId) {
+        String sql = "delete from question.answer where id = ?";
+        if(template.update(sql,answerId)==0){
+            throw new AnswerNotFoundException("삭제할 답변이 존재하지 않습니다.");
+        }
+    }
+
     private RowMapper<Answer> answerRowMapper() {
         return ((rs, rowNum) ->
                 Answer.builder()

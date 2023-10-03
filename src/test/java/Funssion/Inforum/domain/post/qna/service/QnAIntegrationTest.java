@@ -18,6 +18,7 @@ import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
+import Funssion.Inforum.domain.post.qna.exception.AnswerNotFoundException;
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
@@ -329,24 +330,6 @@ class QnAIntegrationTest {
     @Nested
     @DisplayName("답변 가져오기")
     class getAnswerList{
-        private Question makePureQuestionFirst(){
-            firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
-                    .text("질문 내용")
-                    .tags(List.of("tag1", "tag2"))
-                    .description("질문 내용 요약")
-                    .build();
-            return questionService.createQuestion(firstQuestionSaveDto,saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION));
-
-        }
-        private Question makeMemoAndCreateQuestion(){
-            Memo memo = createMemo();
-            firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
-                    .text("질문 내용")
-                    .tags(List.of("tag1", "tag2"))
-                    .description("질문 내용 요약")
-                    .build();
-            return questionService.createQuestion(firstQuestionSaveDto,saveMemberId,memo.getId());
-        }
         @Test
         @DisplayName("질문과 연관된 답변 리스트 가져오기")
         void getAnswerListOfQuestion(){
@@ -433,10 +416,30 @@ class QnAIntegrationTest {
             Question question = makeQuestion();
             Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId);
 
-
-            System.out.println("answerOfQuestion.getId() = " + answerOfQuestion.getId());
             Answer updatedAnswer = answerService.updateAnswer(createAnswerSaveDto(), answerOfQuestion.getId());
             assertThat(updatedAnswer.getUpdatedDate()).isNotEqualTo(answerOfQuestion.getCreatedDate());
         }
     }
+    @Nested
+    @DisplayName("답변 삭제")
+    class deleteAnswer{
+        @Test
+        @DisplayName("자신이 작성한 답변을 삭제")
+        void deleteAnswer(){
+            Question question = makeQuestion();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId);
+
+            LocalDateTime createdTime = answerOfQuestion.getCreatedDate();
+            List<History> beforeDeleteHistory = myRepository.findMonthlyHistoryByUserId(saveMemberId, createdTime.getYear(), createdTime.getMonthValue());
+            assertThat(beforeDeleteHistory.get(0).getAnswerCnt()).isEqualTo(1L);
+
+            answerService.deleteAnswer(answerOfQuestion.getId(),saveMemberId);
+            assertThatThrownBy(()->answerService.getAnswerBy(answerOfQuestion.getId())).isExactlyInstanceOf(AnswerNotFoundException.class);
+
+            List<History> afterDeleteHistory = myRepository.findMonthlyHistoryByUserId(saveMemberId, createdTime.getYear(), createdTime.getMonthValue());
+            assertThat(afterDeleteHistory.get(0).getAnswerCnt()).isEqualTo(0L);
+
+        }
+    }
+
 }

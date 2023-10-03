@@ -50,6 +50,13 @@ public class AnswerController {
         return new IsSuccessResponseDto(true, "성공적으로 답변이 수정되었습니다.");
     }
 
+    @DeleteMapping("/{answerId}")
+    public IsSuccessResponseDto deleteAnswer(@PathVariable Long answerId){
+        Long loginId = checkAuthorization(CRUDType.DELETE, answerId);
+        answerService.deleteAnswer(answerId, loginId);
+        return new IsSuccessResponseDto(true, "성공적으로 답변이 삭제되었습니다.");
+    }
+
     private Long checkAuthorization(CRUDType crudType,Long answerId) {
         Long authorId = AuthUtils.getUserId(crudType);
         if (!authorId.equals(answerService.getAuthorId(answerId))) {
