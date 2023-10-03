@@ -51,23 +51,23 @@ public class MemoService {
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
 
-    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy) {
+    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Long pageNum, Long memoCnt) {
 
         Integer days = DateType.toNumOfDays(date);
 
-        return getMemos(orderBy, days);
+        return getMemos(orderBy, days, pageNum, memoCnt);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days, Long pageNum, Long memoCnt) {
         switch (memoOrderType) {
             case NEW -> {
-                return memoRepository.findAllOrderById()
+                return memoRepository.findAllOrderById(pageNum, memoCnt)
                         .stream()
                         .map((MemoListDto::new))
                         .toList();
             }
             case HOT -> {
-                return memoRepository.findAllByDaysOrderByLikes(days)
+                return memoRepository.findAllByDaysOrderByLikes(days, pageNum, memoCnt)
                         .stream()
                         .map(MemoListDto::new)
                         .toList();

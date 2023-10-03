@@ -70,7 +70,7 @@ class QnAIntegrationTest {
 
     private static QuestionSaveDto makeQuestionDto(){
        return QuestionSaveDto.builder().title("메모와 연관된 질문 제목 생성")
-                .text("질문 내용")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag1", "tag2"))
                 .description("질문 내용 요약")
                 .build();
@@ -118,7 +118,7 @@ class QnAIntegrationTest {
                 .build();
 
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
-                .text("답변 텍스트")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .description("답변 요약")
                 .build();
 
@@ -175,7 +175,7 @@ class QnAIntegrationTest {
 
 
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
-                .text("질문 내용")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag1", "tag2"))
                 .build();
 
@@ -277,7 +277,7 @@ class QnAIntegrationTest {
     private AnswerSaveDto createAnswerSaveDto(){
         return AnswerSaveDto.builder()
                 .description("답변의 요약 정보가 들어갑니다.")
-                .text("답변의 내용이 들어갑니다.")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .build();
     }
 
@@ -286,19 +286,19 @@ class QnAIntegrationTest {
     class getOrderedQuestions{
         private void saveQuestions() {
             firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
-                    .text("질문 내용")
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                     .tags(List.of("tag1", "tag2"))
                     .description("질문 내용 요약")
                     .build();
 
             secondQuestionSaveDto = QuestionSaveDto.builder().title("두번째 질문")
-                    .text("질문 내용")
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                     .tags(List.of("tag1", "tag2"))
                     .description("질문 내용 요약")
                     .build();
 
             thirdQuestionSaveDto = QuestionSaveDto.builder().title("세번째 질문")
-                    .text("질문 내용")
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                     .tags(List.of("tag1", "tag2"))
                     .description("질문 내용 요약")
                     .build();
@@ -367,13 +367,13 @@ class QnAIntegrationTest {
     @DisplayName("질문 수정")
     class updateQuestion{
         QuestionSaveDto saveQuestionDto = QuestionSaveDto.builder().title("저장된 질문")
-                .text("저장된 질문 내용")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"저장된 질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag1", "tag2"))
                 .description("질문 내용 요약")
                 .build();
 
         QuestionSaveDto updateQuestionDto = QuestionSaveDto.builder().title("수정된 질문")
-                .text("수정된 질문 내용")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"수정된 질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag3", "tag4"))
                 .description("질문 내용 요약")
                 .build();

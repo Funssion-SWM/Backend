@@ -64,6 +64,9 @@ public class MemoServiceTest {
     static Long memoID3 = 3L;
     static Long memoID4 = 4L;
 
+    static Long DEFAULT_MEMO_CNT = 20L;
+    static Long DEFAULT_PAGE_NUM = 0L;
+
     @BeforeAll
     static void beforeAll() {
         memo1 = Memo.builder()
@@ -154,16 +157,16 @@ public class MemoServiceTest {
         @Test
         @DisplayName("메인 페이지 메모 조회")
         void getMemosForMainPage() {
-            given(memoRepository.findAllOrderById())
+            given(memoRepository.findAllOrderById(DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT))
                     .willReturn(List.of(memo3, memo2, memo1));
-            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.any()))
+            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3, memo1));
-            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(toNumOfDays(DAY))))
+            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(toNumOfDays(DAY)), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3));
 
-            List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(WEEK, NEW);
-            List<MemoListDto> memosForMainPageOrderByLikesByMonth = memoService.getMemosForMainPage(MONTH, HOT);
-            List<MemoListDto> memosForMainPageOrderByLikesByDay = memoService.getMemosForMainPage(DAY, HOT);
+            List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(WEEK, NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<MemoListDto> memosForMainPageOrderByLikesByMonth = memoService.getMemosForMainPage(MONTH, HOT, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<MemoListDto> memosForMainPageOrderByLikesByDay = memoService.getMemosForMainPage(DAY, HOT, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
 
             assertThat(memosForMainPageOrderByDays).containsExactly(memoListDto3, memoListDto2, memoListDto1);
@@ -387,7 +390,7 @@ public class MemoServiceTest {
         @DisplayName("로그인 후 임시 글 수정 후 등록하는 케이스")
         void updateTempMemoToRealMemoWithLogin() {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
-                    .willReturn(userID2);
+                    .willReturn(userID1);
             given(memoRepository.findById(memoID2))
                     .willReturn(memo2);
             given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
