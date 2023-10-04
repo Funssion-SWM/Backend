@@ -42,7 +42,6 @@ class AnswerControllerTest {
     static void init() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
-                .description("답변의 요약 정보가 들어갑니다.")
                 .text("답변의 내용이 들어갑니다.")
                 .build();
         answerSaveDtoRequest = objectMapper.writeValueAsString(answerSaveDto);
@@ -111,7 +110,6 @@ class AnswerControllerTest {
                         .id(1L)
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
-                        .description("1번답변요약")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
@@ -141,7 +139,6 @@ class AnswerControllerTest {
                         .id(1L)
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
-                        .description("1번답변요약")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
@@ -185,7 +182,6 @@ class AnswerControllerTest {
                     .id(1L)
                     .authorName("1번답변작성자이룸")
                     .authorImagePath("1번답변작성자이미지경로")
-                    .description("1번답변요약")
                     .authorId(Long.valueOf(AUTHORIZED_USER))
                     .createdDate(LocalDateTime.now())
                     .updatedDate(LocalDateTime.now())
@@ -199,7 +195,6 @@ class AnswerControllerTest {
                     .id(1L)
                     .authorName("2번답변작성자이룸")
                     .authorImagePath("2번답변작성자이미지경로")
-                    .description("2번답변요약")
                     .authorId(2L)
                     .createdDate(LocalDateTime.now())
                     .updatedDate(LocalDateTime.now())
@@ -213,7 +208,6 @@ class AnswerControllerTest {
                     .id(1L)
                     .authorName("3번답변작성자이룸")
                     .authorImagePath("3번답변작성자이미지경로")
-                    .description("3번답변요약")
                     .authorId(3L)
                     .createdDate(LocalDateTime.now())
                     .updatedDate(LocalDateTime.now())

@@ -318,7 +318,6 @@ class CommentIntegrationTest {
                 .likes(0L)
                 .repliesCount(0L)
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문입니다.\", \"type\": \"text\"}]}]}")
-                .description("답변 내용 요약")
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .questionId(questionId)

@@ -127,7 +127,6 @@ class QnAIntegrationTest {
         myRepository.createProfile(answerAuthorId, memberProfileEntity);
 
         Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
-        assertThat(answerOfQuestion.getDescription()).isEqualTo("답변 요약");
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
         List<History> monthlyHistoryOfQuestionAuthorId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());

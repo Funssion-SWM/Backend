@@ -12,16 +12,14 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class Answer extends Post {
-    public Answer(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate, String description, String text, Long questionId, boolean isSelected, Long repliesCount) {
+    public Answer(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate, String text, Long questionId, boolean isSelected, Long repliesCount) {
         super(authorId, authorProfile, createdDate, updatedDate);
-        this.description = description;
         this.text = text;
         this.questionId = questionId;
         this.isSelected = isSelected;
         this.repliesCount = repliesCount;
     }
 
-    private final String description;
     private final String text;
     private final Long questionId;
     private final boolean isSelected;

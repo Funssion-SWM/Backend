@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 public class AnswerSaveDto {
     @NotBlank(message="내용을 입력해주세요")
     private String text;
-    private String description;
     @Builder
     public AnswerSaveDto(String text, String description) {
         this.text = text;
-        this.description = description;
     }
 }

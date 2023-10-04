@@ -11,7 +11,6 @@ public class AnswerDto {
     private Long authorId;
     private String authorName;
     private String authorImagePath;
-    private String description;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Long likes;
@@ -30,7 +29,6 @@ public class AnswerDto {
         this.updatedDate = answer.getUpdatedDate();
         this.likes = answer.getLikes();
         this.text = answer.getText();
-        this.description = answer.getDescription();
         this.repliesCount = answer.getRepliesCount();
         this.questionId = answer.getQuestionId();
         this.isSelected = answer.isSelected();
