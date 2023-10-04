@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.qna.service;
 
+import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
@@ -13,13 +14,21 @@ import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.s3.S3Repository;
+import Funssion.Inforum.s3.S3Utils;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
 
@@ -30,6 +39,11 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
+    private final S3Repository s3Repository;
+
+    @Value("${aws.s3.question-dir}")
+    private static String QUESTION_DIR;
+
     @Override
     public Long getAuthorId(Long questionId) {
         return questionRepository.getAuthorId(questionId);
@@ -91,10 +105,20 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional
     public IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId) {
-        Question deletedQuestion = questionRepository.getOneQuestion(questionId);
+        Question willBeDeletedQuestion = questionRepository.getOneQuestion(questionId);
+        deleteImagesInQuestion(willBeDeletedQuestion);
         questionRepository.deleteQuestion(questionId);
-        myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,deletedQuestion.getCreatedDate().toLocalDate());
+        myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
+    }
+
+    private void deleteImagesInQuestion(Question deletedQuestion) {
+        String[] parts = deletedQuestion.getText().split("\"src\": \"");
+
+        for (int i = 1; i < parts.length; i++) {
+            String imageURL = parts[i].substring(0, parts[i].indexOf('"'));
+            s3Repository.delete(QUESTION_DIR, imageURL);
+        }
     }
 
 
@@ -102,5 +126,18 @@ public class QuestionServiceImpl implements QuestionService {
         Long defaultAnswersCount = 0L;
         boolean isSolved = false;
         return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultAnswersCount,isSolved,memoId);
+    }
+
+    @Override
+    public ImageDto saveImageAndGetImageURL(MultipartFile image) {
+        Long authorId = AuthUtils.getUserId(CRUDType.UPDATE);
+        String imageName = S3Utils.generateImageNameOfS3(authorId);
+
+        String uploadedURL = s3Repository.upload(image, QUESTION_DIR, imageName);
+
+        return ImageDto.builder()
+                .imagePath(uploadedURL)
+                .imageName(imageName)
+                .build();
     }
 }

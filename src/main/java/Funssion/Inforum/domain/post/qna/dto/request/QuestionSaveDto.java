@@ -24,6 +24,12 @@ public class QuestionSaveDto{
         this.tags = tags;
     }
 
+    public static QuestionSaveDto tempQuestionDto() {
+        return QuestionSaveDto.builder()
+                .title("temporal question")
+                .build();
+    }
+
 //    public QuestionSaveDto(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate, String title, String text, List<String> tags) {
 //        super(authorId, authorProfile, createdDate, updatedDate);
 //        this.title = title;
