@@ -2,7 +2,6 @@ package Funssion.Inforum.common.exception.handler;
 
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DuplicateException;
-import Funssion.Inforum.common.exception.etc.ForbiddenException;
 import Funssion.Inforum.common.exception.etc.ImageIOException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
@@ -35,14 +34,6 @@ public class CustomExceptionHandler {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
-
-    @ResponseStatus(FORBIDDEN)
-    @ExceptionHandler(ForbiddenException.class)
-    public ErrorResult handleForbiddenEx(ForbiddenException e){
-        log.warn("error message={}", e.getMessage(), e);
-        return e.getErrorResult();
-    }
-
 
 
     @ResponseStatus(UNAUTHORIZED)
