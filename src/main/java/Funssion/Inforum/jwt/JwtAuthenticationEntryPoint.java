@@ -1,5 +1,6 @@
 package Funssion.Inforum.jwt;
 
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -14,7 +15,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"인증된 사용자가 아닙니다.");
+//        // 유효한 자격증명을 제공하지 않고 접근하려 할때 401
+//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"인증된 사용자가 아닙니다.");
+        throw new UnAuthorizedException("인증된 사용자가 아닙니다.");
     }
 }
