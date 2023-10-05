@@ -94,6 +94,13 @@ CREATE TABLE member.like  (
     post_id int8 NOT NULL,
     created timestamp DEFAULT current_timestamp
 );
+CREATE TABLE member.dislike  (
+    id bigserial PRIMARY KEY,
+    user_id int8 NOT NULL,
+    post_type varchar NOT NULL,
+    post_id int8 NOT NULL,
+    created timestamp DEFAULT current_timestamp
+);
 
 CREATE TABLE member.info (
     id serial PRIMARY KEY,

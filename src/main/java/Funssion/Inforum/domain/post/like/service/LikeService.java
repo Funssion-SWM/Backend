@@ -78,6 +78,12 @@ public class LikeService {
         likeRepository.delete(userId, postType, postId);
     }
 
+    @Transactional
+    public void dislikePost(PostType postType, Long postId){
+        Long userId = SecurityContextUtils.getUserId();
+    }
+
+
 
     private void updateLikesInPost(PostType postType, Long postId, Sign sign) {
         switch (postType) {

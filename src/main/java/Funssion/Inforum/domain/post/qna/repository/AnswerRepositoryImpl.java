@@ -42,7 +42,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public List<Answer> getAnswersOfQuestion(Long questionId) {
-        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, dislikes, created_date, updated_date, is_selected, replies_count"
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
                 +" from question.answer where question_id = ?";
         return template.query(sql,answerRowMapper(),questionId);
     }
@@ -69,7 +69,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     }
 
     public Answer getAnswerById(Long id){
-        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, dislikes, created_date, updated_date, is_selected, replies_count"
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
                 + " from question.answer where id = ?";
         try{
             return template.queryForObject(sql,answerRowMapper(),id);

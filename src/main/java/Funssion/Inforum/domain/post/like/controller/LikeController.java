@@ -1,7 +1,6 @@
 package Funssion.Inforum.domain.post.like.controller;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.exception.notfound.UrlNotFoundException;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.like.service.LikeService;
 import jakarta.validation.constraints.Min;
@@ -37,5 +36,9 @@ public class LikeController {
     @PostMapping("/{postType}/{postId}/unlike")
     public void unlike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId) {
         likeService.unlikePost(postType, postId);
+    }
+    @PostMapping("/{postType}/{postId}/dislike")
+    public void dislike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId){
+        likeService.dislikePost(postType,postId);
     }
 }
