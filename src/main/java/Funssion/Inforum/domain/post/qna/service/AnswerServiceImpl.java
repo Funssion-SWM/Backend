@@ -31,7 +31,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final S3Repository s3Repository;
 
     @Value("${aws.s3.answer-dir}")
-    private static String ANSWER_DIR;
+    private String ANSWER_DIR;
 
     @Override
     @Transactional
