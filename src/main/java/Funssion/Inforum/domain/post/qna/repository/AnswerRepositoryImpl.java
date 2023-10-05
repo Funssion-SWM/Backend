@@ -79,6 +79,16 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     }
 
     @Override
+    public Answer updateLikesInAnswer(Long likes, Long answerId) {
+        String sql = "update question.answer " +
+                "set likes = ? " +
+                "where id = ?";
+
+        if (template.update(sql, likes, answerId) == 0) throw new AnswerNotFoundException("update likes fail");
+        return getAnswerById(answerId);
+    }
+
+    @Override
     public void deleteAnswer(Long answerId) {
         String sql = "delete from question.answer where id = ?";
         if(template.update(sql,answerId)==0){

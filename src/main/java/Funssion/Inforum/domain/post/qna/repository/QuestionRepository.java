@@ -18,6 +18,7 @@ public interface QuestionRepository {
     Question getOneQuestion(Long questionId);
 
     void deleteQuestion(Long questionId);
+    Question updateLikesInQuestion(Long likes, Long questionId);
 
     List<Question> getQuestionsOfMemo(Long memoId);
 

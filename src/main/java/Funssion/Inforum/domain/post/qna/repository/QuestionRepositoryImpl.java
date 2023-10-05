@@ -104,6 +104,15 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
     }
 
+    @Override
+    public Question updateLikesInQuestion(Long likes, Long questionId) {
+        String sql = "update question.info " +
+                "set likes = ? " +
+                "where id = ?";
+
+        if (template.update(sql, likes, questionId) == 0) throw new QuestionNotFoundException("update likes fail");
+        return getOneQuestion(questionId);
+    }
 
 
     private String getSortedSql(OrderType orderBy){
