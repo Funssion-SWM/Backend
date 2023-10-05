@@ -8,11 +8,13 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.AnswerDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -55,6 +57,13 @@ public class AnswerController {
         Long loginId = checkAuthorization(CRUDType.DELETE, answerId);
         answerService.deleteAnswer(answerId, loginId);
         return new IsSuccessResponseDto(true, "성공적으로 답변이 삭제되었습니다.");
+    }
+
+    @PostMapping("/image")
+    public ImageDto saveImageAndGetImageURL(
+            @RequestPart MultipartFile image
+    ) {
+        return answerService.saveImageAndGetImageURL(image);
     }
 
     private Long checkAuthorization(CRUDType crudType,Long answerId) {

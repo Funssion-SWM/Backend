@@ -10,11 +10,13 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -57,6 +59,13 @@ public class QuestionController {
     @GetMapping("/memo")
     public List<Question> getQuestionsOfMemo(@RequestParam Long memoId){
         return questionService.getQuestionsOfMemo(memoId);
+    }
+
+    @PostMapping("/image")
+    public ImageDto saveImageAndGetImageURL(
+            @RequestPart MultipartFile image
+    ) {
+        return questionService.saveImageAndGetImageURL(image);
     }
 
     private Long checkAuthorization(CRUDType crudType,Long questionId) {
