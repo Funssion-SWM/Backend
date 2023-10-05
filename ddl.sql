@@ -178,13 +178,15 @@ create table question.answer(
     author_image_path varchar,
     text jsonb,
     likes int8 NOT NULL DEFAULT 0,
+    dislikes int8 NOT NULL DEFAULT 0,
     description text null,
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     is_selected boolean not null default false,
     replies_count int8 not null default 0,
     CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
-    CONSTRAINT non_negative_likes CHECK (likes >= 0)
+    CONSTRAINT non_negative_likes CHECK (likes >= 0),
+    CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
 
 );
 

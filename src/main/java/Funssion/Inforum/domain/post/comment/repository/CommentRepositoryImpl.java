@@ -206,7 +206,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public LikeResponseDto likeComment(Long commentId, Boolean isReComment,Long userId) {
-        log.info("is Recomment ? ={}",isReComment);
         insertLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterLike = updateLikesOfCommentsTable(commentId, isReComment,false);
         return new LikeResponseDto(true,howManyLikesAfterLike);

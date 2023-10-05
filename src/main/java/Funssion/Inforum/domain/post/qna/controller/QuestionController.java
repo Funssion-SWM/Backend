@@ -33,6 +33,8 @@ public class QuestionController {
         questionService.createQuestion(questionSaveDto, authorId, memoId);
         return new IsSuccessResponseDto(true,"성공적으로 질문이 등록되었습니다.");
     }
+
+
     @PutMapping("/{id}")
     public IsSuccessResponseDto updateQuestion(@PathVariable(value ="id") Long questionId,@RequestBody @Validated QuestionSaveDto questionSaveDto){
         Long authorId = checkAuthorization(CRUDType.UPDATE, questionId);

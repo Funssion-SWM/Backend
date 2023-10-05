@@ -112,7 +112,8 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {
-        String sql = "update member.auth as auth set password = ? from member.info as memberInfo where memberInfo.email = ?";
+        String sql = "update member.auth as auth set password = ? from member.info as info " +
+                "where auth.user_id = info.id and info.email = ?";
         int updatedRow = jdbcTemplate.update(sql, passwordEncoder.encode(passwordUpdateDto.getUserPw()), passwordUpdateDto.getEmail());
         if (updatedRow == 0) throw new UpdateFailException("비밀번호가 수정되지 않았습니다.");
         return new IsSuccessResponseDto(true, "비밀번호가 수정되었습니다.");

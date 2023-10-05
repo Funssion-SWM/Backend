@@ -90,8 +90,9 @@ public class AnswerServiceImpl implements AnswerService {
     }
     private Answer addAuthor(AnswerSaveDto answerSaveDto, Long authorId, MemberProfileEntity authorProfile, Long questionId) {
         Long defaultRepliesCount = 0L;
+        Long defaultDislikes = 0L;
         boolean isSelected = false;
-        return new Answer(authorId,authorProfile, LocalDateTime.now(),null, answerSaveDto.getText(),questionId,isSelected,defaultRepliesCount);
+        return new Answer(authorId,authorProfile, LocalDateTime.now(),null, answerSaveDto.getText(),questionId, defaultDislikes, isSelected,defaultRepliesCount);
     }
 
     private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
