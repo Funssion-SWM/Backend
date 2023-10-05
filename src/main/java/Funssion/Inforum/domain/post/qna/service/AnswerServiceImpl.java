@@ -64,15 +64,15 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     @Transactional
     public void deleteAnswer(Long answerId, Long authorId) {
-        LocalDateTime createdTime = getCreatedTimeOfAnswer(answerId);
-        createOrUpdateHistory(authorId,createdTime, Sign.MINUS);
+        Answer willBeDeletedAnswer = answerRepository.getAnswerById(answerId);
+        s3Repository.deleteFromText(ANSWER_DIR, willBeDeletedAnswer.getText());
+        createOrUpdateHistory(authorId,willBeDeletedAnswer.getCreatedDate(), Sign.MINUS);
         answerRepository.deleteAnswer(answerId);
     }
 
     @Override
     public ImageDto saveImageAndGetImageURL(MultipartFile image) {
         Long userId = AuthUtils.getUserId(UPDATE);
-
         String imageName = S3Utils.generateImageNameOfS3(userId);
 
         String uploadedURL = s3Repository.upload(image, ANSWER_DIR, imageName);
@@ -81,12 +81,6 @@ public class AnswerServiceImpl implements AnswerService {
                 .imageName(imageName)
                 .imagePath(uploadedURL)
                 .build();
-    }
-
-    private LocalDateTime getCreatedTimeOfAnswer(Long answerId) {
-        Answer answerById = answerRepository.getAnswerById(answerId);
-        LocalDateTime createdTime = answerById.getCreatedDate();
-        return createdTime;
     }
 
     private Answer addAuthorInfo(AnswerSaveDto answerSaveDto, Long authorId, Long questionId) {
