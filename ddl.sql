@@ -120,7 +120,7 @@ create table comment.info(
     comment_text text not null,
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
-    CONSTRAINT non_negative_re_comments CHECK (re_comments >= 0),
+    CONSTRAINT non_negative_re_comments CHECK (re_comments >= 0)
 );
 
 CREATE TABLE member.like_comment (
