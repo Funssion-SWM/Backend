@@ -42,7 +42,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final S3Repository s3Repository;
 
     @Value("${aws.s3.question-dir}")
-    private static String QUESTION_DIR;
+    private String QUESTION_DIR;
 
     @Override
     public Long getAuthorId(Long questionId) {
