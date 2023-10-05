@@ -7,13 +7,20 @@ import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
+import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.s3.S3Repository;
+import Funssion.Inforum.s3.S3Utils;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static Funssion.Inforum.common.constant.CRUDType.UPDATE;
 import static Funssion.Inforum.common.constant.PostType.ANSWER;
 
 @Service
@@ -21,6 +28,11 @@ import static Funssion.Inforum.common.constant.PostType.ANSWER;
 public class AnswerServiceImpl implements AnswerService {
     private final AnswerRepository answerRepository;
     private final MyRepository myRepository;
+    private final S3Repository s3Repository;
+
+    @Value("${aws.s3.answer-dir}")
+    private static String ANSWER_DIR;
+
     @Override
     @Transactional
     public Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId) {
@@ -55,6 +67,20 @@ public class AnswerServiceImpl implements AnswerService {
         LocalDateTime createdTime = getCreatedTimeOfAnswer(answerId);
         createOrUpdateHistory(authorId,createdTime, Sign.MINUS);
         answerRepository.deleteAnswer(answerId);
+    }
+
+    @Override
+    public ImageDto saveImageAndGetImageURL(MultipartFile image) {
+        Long userId = AuthUtils.getUserId(UPDATE);
+
+        String imageName = S3Utils.generateImageNameOfS3(userId);
+
+        String uploadedURL = s3Repository.upload(image, ANSWER_DIR, imageName);
+
+        return ImageDto.builder()
+                .imageName(imageName)
+                .imagePath(uploadedURL)
+                .build();
     }
 
     private LocalDateTime getCreatedTimeOfAnswer(Long answerId) {

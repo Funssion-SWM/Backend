@@ -106,19 +106,10 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId) {
         Question willBeDeletedQuestion = questionRepository.getOneQuestion(questionId);
-        deleteImagesInQuestion(willBeDeletedQuestion);
+        s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
-    }
-
-    private void deleteImagesInQuestion(Question deletedQuestion) {
-        String[] parts = deletedQuestion.getText().split("\"src\": \"");
-
-        for (int i = 1; i < parts.length; i++) {
-            String imageURL = parts[i].substring(0, parts[i].indexOf('"'));
-            s3Repository.delete(QUESTION_DIR, imageURL);
-        }
     }
 
 
