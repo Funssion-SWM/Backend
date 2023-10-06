@@ -42,8 +42,8 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public List<Answer> getAnswersOfQuestion(Long questionId) {
-        return answerRepository.getAnswersOfQuestion(questionId);
+    public List<Answer> getAnswersOfQuestion(Long loginId, Long questionId) {
+        return answerRepository.getAnswersOfQuestion(loginId, questionId);
     }
 
     @Override

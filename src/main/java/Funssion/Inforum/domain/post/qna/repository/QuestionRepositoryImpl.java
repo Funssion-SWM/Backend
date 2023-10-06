@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
@@ -64,11 +65,15 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public List<Question> getQuestions(OrderType orderBy) {
-        String sql = "select id, author_id, author_name, author_image_path, title, description, text, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
-                "from question.info ";
+    public List<Question> getQuestions(Long userId,OrderType orderBy) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "case when L.post_id = Q.id then true else false end as is_like "+
+                "from question.info AS Q "+
+                "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
+                        "on Q.id = L.post_id ";
         sql += getSortedSql(orderBy);
-        return template.query(sql, questionRowMapper());
+        return template.query(sql, questionLikeRowMapper(),userId);
     }
 
     @Override
@@ -81,10 +86,16 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         }
     }
     @Override
-    public List<Question> getQuestionsOfMemo(Long memoId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
-                "from question.info where memo_id = ? order by created_date desc";
-        return template.query(sql,questionRowMapper(),memoId);
+    public List<Question> getQuestionsOfMemo(Long userId,Long memoId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "case when L.post_id = Q.id then true else false end as is_like "+
+                "from (select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, memo_id " +
+                        "from question.info where memo_id = ?) AS Q "+
+                        "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
+                        "on Q.id = L.post_id";
+
+        return template.query(sql,questionLikeRowMapper(),memoId, userId);
     }
 
     @Override
@@ -146,6 +157,28 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .repliesCount(rs.getLong("replies_count"))
                         .answersCount(rs.getLong("answers"))
                         .isSolved(rs.getBoolean("is_solved"))
+                        .memoId(rs.getLong("memo_id"))
+                        .build());
+    }
+
+    private RowMapper<Question> questionLikeRowMapper() {
+        return ((rs, rowNum) ->
+                Question.builder()
+                        .id(rs.getLong("id"))
+                        .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
+                        .title(rs.getString("title"))
+                        .text(rs.getString("text"))
+                        .description(rs.getString("description"))
+                        .likes(rs.getLong("likes"))
+                        .tags(TagUtils.createStringListFromArray(rs.getArray("tags")))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .repliesCount(rs.getLong("replies_count"))
+                        .answersCount(rs.getLong("answers"))
+                        .isSolved(rs.getBoolean("is_solved"))
+                        .isLike(rs.getBoolean("is_like"))
                         .memoId(rs.getLong("memo_id"))
                         .build());
     }

@@ -20,7 +20,6 @@ import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
 
@@ -87,12 +85,12 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> getQuestions(OrderType orderBy) {
-        return questionRepository.getQuestions(orderBy);
+    public List<Question> getQuestions(Long userId, OrderType orderBy) {
+        return questionRepository.getQuestions(userId, orderBy);
     }
     @Override
-    public List<Question> getQuestionsOfMemo(Long memoId) {
-        return questionRepository.getQuestionsOfMemo(memoId);
+    public List<Question> getQuestionsOfMemo(Long userId, Long memoId) {
+        return questionRepository.getQuestionsOfMemo(userId, memoId);
     }
 
 
@@ -117,7 +115,7 @@ public class QuestionServiceImpl implements QuestionService {
         Long defaultAnswersCount = 0L;
         Long defaultRepliesCount = 0L;
         boolean isSolved = false;
-        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultRepliesCount, defaultAnswersCount,isSolved,memoId);
+        return new Question(authorId,authorProfile,LocalDateTime.now(),null, questionSaveDto.getTitle(), questionSaveDto.getDescription(),questionSaveDto.getText(), questionSaveDto.getTags(),defaultRepliesCount, defaultAnswersCount,isSolved,false,memoId);
     }
 
     @Override

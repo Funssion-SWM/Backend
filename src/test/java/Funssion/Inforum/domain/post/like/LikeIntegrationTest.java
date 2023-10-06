@@ -1,6 +1,8 @@
 package Funssion.Inforum.domain.post.like;
 
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -41,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-@Transactional
+//@Transactional
 public class LikeIntegrationTest {
     @Autowired
     LikeService likeService;
@@ -152,6 +154,66 @@ public class LikeIntegrationTest {
         assertThatThrownBy(() -> userLike(answerOfQuestion)).hasMessage("You Cannot Both Dislike and Like Post");
     }
 
+
+    @Test
+    @DisplayName("답변에 좋아요 누르고, 내가 좋아요 눌렀는지 확인")
+    @WithMockUser(username=AUTHORIZED_USER)
+    @Transactional
+    void 내가_답변_좋아요를_눌렀는지_확인(){
+        Question question = makeQuestion();
+
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                .description("답변 요약")
+                .build();
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        userLike(answerOfQuestion);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId())).hasSize(1);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).getLikes()).isEqualTo(1L);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).isLike()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("답변에 싫어요 누르고, 내가 싫어요 눌렀는지 확인")
+    @WithMockUser(username=AUTHORIZED_USER)
+    @Transactional
+    void 내가_답변_싫어요를_눌렀는지_확인(){
+        Question question = makeQuestion();
+
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                .description("답변 요약")
+                .build();
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        userDisLike(answerOfQuestion);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId())).hasSize(1);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).getLikes()).isEqualTo(0L);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).getDislikes()).isEqualTo(1L);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).isLike()).isEqualTo(false);
+        assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId()).get(0).isDisLike()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("질문에 좋아요 누르고, 내가 좋아요 눌렀는지 확인 및 취소 ")
+    @WithMockUser(username=AUTHORIZED_USER)
+    @Transactional
+    void 내가_질문에_좋아요_눌렀는지_확인_및_취소(){
+        Question question = makeQuestion();
+
+        userLike(question);
+
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).getLikes()).isEqualTo(1);
+        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW).get(0).getLikes()).isEqualTo(1);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).isLike()).isEqualTo(true);
+        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW).get(0).isLike()).isEqualTo(false);
+
+        likeService.unlikePost(PostType.QUESTION,question.getId());
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).getLikes()).isEqualTo(0);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).isLike()).isEqualTo(false);
+
+    }
 
     private void userLike(Post post) {
         PostType postType = switch (post.getClass().getSimpleName()) {
