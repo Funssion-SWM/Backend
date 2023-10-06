@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.like.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.domain.post.like.domain.DisLike;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ class LikeRepositoryImplTest {
     private final Like like3 = new Like(0L,9998L, PostType.MEMO, 99997L, new Timestamp(0));
     private final Like like4 = new Like(0L,9999L, PostType.QUESTION, 99996L,new Timestamp(0));
 
+    private final DisLike disLikeOfAnswer = new DisLike(0L,9999L, PostType.ANSWER, 99999L, new Timestamp(0));
+
     @Test
     @DisplayName("좋아요 정보 저장")
     void create() {
@@ -34,6 +37,12 @@ class LikeRepositoryImplTest {
         Like saved2 = likeRepository.create(like4);
         assertThat(saved1).isEqualTo(likeRepository.findById(saved1.getId()));
         assertThat(saved2).isEqualTo(likeRepository.findById(saved2.getId()));
+    }
+    @Test
+    @DisplayName("싫어요 정보 저장")
+    void createDisLike() {
+        DisLike disLike = likeRepository.createDisLike(disLikeOfAnswer);
+        assertThat(disLike).isEqualTo(likeRepository.findByIdOfDisLike(disLike.getId()));
     }
 
     @Test
@@ -73,12 +82,25 @@ class LikeRepositoryImplTest {
     @DisplayName("좋아요 정보 삭제하기")
     void delete() {
         Like saved = likeRepository.create(like1);
-        likeRepository.delete(saved.getUserId(), saved.getPostType(), saved.getPostId());
+        likeRepository.deleteLike(saved.getUserId(), saved.getPostType(), saved.getPostId());
 
         assertThatThrownBy(() -> likeRepository.findById(saved.getId()))
                 .isInstanceOf(NotFoundException.class);
 
-        assertThatThrownBy(() -> likeRepository.delete(like2.getUserId(), like2.getPostType(), like2.getPostId()))
+        assertThatThrownBy(() -> likeRepository.deleteLike(like2.getUserId(), like2.getPostType(), like2.getPostId()))
+                .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("싫어요 정보 삭제하기")
+    void deleteDisLike() {
+        DisLike disLike = likeRepository.createDisLike(disLikeOfAnswer);
+        likeRepository.deleteDisLike(disLike.getUserId(), disLike.getPostType(), disLike.getPostId());
+
+        assertThatThrownBy(() -> likeRepository.findByIdOfDisLike(disLike.getId()))
+                .isInstanceOf(NotFoundException.class);
+
+        assertThatThrownBy(() -> likeRepository.deleteDisLike(disLikeOfAnswer.getUserId(), disLikeOfAnswer.getPostType(), disLikeOfAnswer.getPostId()))
                 .isInstanceOf(NotFoundException.class);
     }
 }

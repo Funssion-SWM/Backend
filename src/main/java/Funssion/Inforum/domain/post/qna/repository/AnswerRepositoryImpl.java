@@ -42,7 +42,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public List<Answer> getAnswersOfQuestion(Long questionId) {
-        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, dislikes, likes, created_date, updated_date, is_selected, replies_count"
                 +" from question.answer where question_id = ?";
         return template.query(sql,answerRowMapper(),questionId);
     }
@@ -69,7 +69,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     }
 
     public Answer getAnswerById(Long id){
-        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, likes, created_date, updated_date, is_selected, replies_count"
+        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, dislikes, text, likes, created_date, updated_date, is_selected, replies_count"
                 + " from question.answer where id = ?";
         try{
             return template.queryForObject(sql,answerRowMapper(),id);
@@ -85,6 +85,16 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                 "where id = ?";
 
         if (template.update(sql, likes, answerId) == 0) throw new AnswerNotFoundException("update likes fail");
+        return getAnswerById(answerId);
+    }
+
+    @Override
+    public Answer updateDisLikesInAnswer(Long disLikes, Long answerId) {
+        String sql = "update question.answer " +
+                "set dislikes = ? " +
+                "where id = ?";
+
+        if (template.update(sql, disLikes, answerId) == 0) throw new AnswerNotFoundException("update likes fail");
         return getAnswerById(answerId);
     }
 
@@ -106,6 +116,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                         .questionId(rs.getLong("question_id"))
                         .text(rs.getString("text"))
                         .likes(rs.getLong("likes"))
+                        .dislikes(rs.getLong("dislikes"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .repliesCount(rs.getLong("replies_count"))

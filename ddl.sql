@@ -193,7 +193,6 @@ create table question.answer(
     CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
     CONSTRAINT non_negative_likes CHECK (likes >= 0),
     CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
-
 );
 
 CREATE TABLE "member".follow (

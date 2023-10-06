@@ -15,5 +15,6 @@ public interface AnswerRepository {
     Answer updateAnswer(AnswerSaveDto answerSaveDto, Long answerId);
     Answer getAnswerById(Long id);
     Answer updateLikesInAnswer(Long likes, Long answerId);
+    Answer updateDisLikesInAnswer(Long disLikes, Long answerId);
     void deleteAnswer(Long answerId);
 }

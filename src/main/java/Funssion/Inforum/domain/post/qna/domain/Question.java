@@ -22,6 +22,7 @@ public class Question extends Post {
     private final Long answersCount;
     private final boolean isSolved;
 
+
     public Question(Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate, String title, String description, String text, List<String> tags,Long repliesCount, Long answersCount, boolean isSolved, Long memoId) {
         super(authorId, authorProfile, createdDate, updatedDate);
         this.title = title;
