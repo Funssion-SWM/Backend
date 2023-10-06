@@ -40,12 +40,13 @@ public class QuestionDto {
     private String title;
     private String text;
     private Long likesCount;
+    private Long repliesCount;
     private Long answersCount;
     private Long memoId;
     private boolean isSolved;
     private List<String> tags;
     private boolean isMine;
-
+    private boolean isLike;
     public QuestionDto(Question question, Long authorId) {
         this.id = question.getId();
         this.authorId = question.getAuthorId();
@@ -60,6 +61,7 @@ public class QuestionDto {
         this.tags = question.getTags();
         this.likesCount = question.getLikes();
         this.answersCount = question.getAnswersCount();
+        this.repliesCount = question.getRepliesCount();
         this.isSolved = question.isSolved();
         this.memoId = question.getMemoId();
         this.isMine = this.authorId.equals(authorId);

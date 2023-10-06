@@ -15,13 +15,13 @@ public interface QuestionService {
     Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId);
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId, Long authorId);
 
-    List<Question> getQuestions(OrderType orderBy);
+    List<Question> getQuestions(Long userId, OrderType orderBy);
 
     QuestionDto getOneQuestion(Long questionId);
 
     IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId);
 
-    List<Question> getQuestionsOfMemo(Long memoId);
+    List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
     ImageDto saveImageAndGetImageURL(MultipartFile image);
 }

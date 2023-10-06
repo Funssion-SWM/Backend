@@ -50,7 +50,8 @@ public class QuestionController {
 
     @GetMapping
     public List<Question> getQuestions(@RequestParam (required = false, defaultValue = "NEW") OrderType orderBy){
-        return questionService.getQuestions(orderBy);
+        Long loginId = AuthUtils.getUserId(CRUDType.READ);
+        return questionService.getQuestions(loginId,orderBy);
     }
 
     @GetMapping("/{id}")
@@ -60,7 +61,8 @@ public class QuestionController {
 
     @GetMapping("/memo")
     public List<Question> getQuestionsOfMemo(@RequestParam Long memoId){
-        return questionService.getQuestionsOfMemo(memoId);
+        Long loginId = AuthUtils.getUserId(CRUDType.READ);
+        return questionService.getQuestionsOfMemo(loginId,memoId);
     }
 
     @PostMapping("/image")

@@ -85,10 +85,11 @@ class AnswerControllerTest {
             @WithMockUser(username = AUTHORIZED_USER)
             void getAnswersOfQuestion() throws Exception {
                 String questionId = "1";
+                Long loginId = 1L;
                 Long longTypeQuestionId = Long.valueOf(questionId);
                 List<Answer> answers = mockAnswerDomainListIn(longTypeQuestionId);
 
-                when(answerService.getAnswersOfQuestion(longTypeQuestionId)).thenReturn(answers);
+                when(answerService.getAnswersOfQuestion(loginId ,longTypeQuestionId)).thenReturn(answers);
                 MvcResult result = mvc.perform(get("/answers")
                                 .param("questionId", questionId))
                         .andExpect(status().isOk())

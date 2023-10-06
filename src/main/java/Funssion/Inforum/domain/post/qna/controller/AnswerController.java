@@ -34,7 +34,7 @@ public class AnswerController {
     @GetMapping
     public List<AnswerDto> getAnswersOfQuestion(@RequestParam Long questionId){
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
-        List<Answer> answers = answerService.getAnswersOfQuestion(questionId);
+        List<Answer> answers = answerService.getAnswersOfQuestion(loginId,questionId);
         return answers.stream().map(answer->new AnswerDto(answer,loginId)).toList();
     }
 
