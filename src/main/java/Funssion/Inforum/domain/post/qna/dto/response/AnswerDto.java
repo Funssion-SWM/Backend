@@ -14,6 +14,7 @@ public class AnswerDto {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Long likes;
+    private Long dislikes;
     private String text;
     private Long questionId;
     private boolean isSelected;
@@ -28,6 +29,7 @@ public class AnswerDto {
         this.createdDate = answer.getCreatedDate();
         this.updatedDate = answer.getUpdatedDate();
         this.likes = answer.getLikes();
+        this.dislikes =answer.getDislikes();
         this.text = answer.getText();
         this.repliesCount = answer.getRepliesCount();
         this.questionId = answer.getQuestionId();
