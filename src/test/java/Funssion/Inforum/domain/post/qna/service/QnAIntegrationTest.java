@@ -201,10 +201,11 @@ class QnAIntegrationTest {
         questionService.createQuestion(questionSaveDto1, saveMemberId, memo.getId());
         questionService.createQuestion(questionSaveDto2, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
 
-        List<Question> questionsOfMemo = questionRepository.getQuestionsOfMemo(memo.getId());
+        List<Question> questionsOfMemo = questionRepository.getQuestionsOfMemo(saveMemberId, memo.getId());
         assertThat(questionsOfMemo).hasSize(1);
         assertThat(questionsOfMemo.get(0).getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
     }
+
     @Test
     @DisplayName("특정 질문을 id로 열람하기")
     @WithMockUser(username=AUTHORIZED_USER)
@@ -308,7 +309,7 @@ class QnAIntegrationTest {
         @DisplayName("최신순으로 정렬")
         void getLatest(){
             saveQuestions();
-            List<Question> latestQuestionList = questionService.getQuestions(OrderType.NEW);
+            List<Question> latestQuestionList = questionService.getQuestions(saveMemberId,OrderType.NEW);
             assertThat(latestQuestionList).hasSize(3);
             List<String> questionTitleList = latestQuestionList.stream().map(question -> {
                 return question.getTitle();
@@ -319,7 +320,7 @@ class QnAIntegrationTest {
         @DisplayName("인기순으로 정렬")
         void getHottest(){
             saveQuestions();
-            List<Question> hottestQuestionList = questionService.getQuestions(OrderType.HOT);
+            List<Question> hottestQuestionList = questionService.getQuestions(saveMemberId, OrderType.HOT);
             assertThat(hottestQuestionList).hasSize(3);
         }
     }
@@ -334,7 +335,7 @@ class QnAIntegrationTest {
             Question question2 = makeQuestion();
             makeAnswerOfQuestion(List.of(question1,question2));
 
-            List<Answer> answersOfQuestion = answerService.getAnswersOfQuestion(question1.getId());
+            List<Answer> answersOfQuestion = answerService.getAnswersOfQuestion(saveMemberId, question1.getId());
             assertThat(answersOfQuestion).hasSize(3);
 
             List<History> monthlyHistorySavedMemberId = myRepository.findMonthlyHistoryByUserId(saveMemberId, question1.getCreatedDate().getYear(), question1.getCreatedDate().getMonthValue());

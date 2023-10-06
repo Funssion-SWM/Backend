@@ -11,7 +11,7 @@ public interface QuestionRepository {
 
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId);
 
-    List<Question> getQuestions(OrderType orderBy);
+    List<Question> getQuestions(Long userId, OrderType orderBy);
 
     Long getAuthorId(Long questionId);
 
@@ -20,6 +20,6 @@ public interface QuestionRepository {
     void deleteQuestion(Long questionId);
     Question updateLikesInQuestion(Long likes, Long questionId);
 
-    List<Question> getQuestionsOfMemo(Long memoId);
+    List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
 }

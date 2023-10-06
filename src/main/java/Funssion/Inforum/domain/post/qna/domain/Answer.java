@@ -28,6 +28,8 @@ public class Answer extends Post {
     private final Long repliesCount;
 
     private Long dislikes;
+    private boolean isLike;
+    private boolean isDisLike;
 
     public Long updateDisLikes(Sign sign) {
         switch (sign) {

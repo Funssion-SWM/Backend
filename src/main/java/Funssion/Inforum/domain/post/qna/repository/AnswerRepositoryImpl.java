@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.AnswerNotFoundException;
@@ -41,10 +42,19 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     }
 
     @Override
-    public List<Answer> getAnswersOfQuestion(Long questionId) {
-        String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, text, dislikes, likes, created_date, updated_date, is_selected, replies_count"
-                +" from question.answer where question_id = ?";
-        return template.query(sql,answerRowMapper(),questionId);
+    public List<Answer> getAnswersOfQuestion(Long loginId, Long questionId) {
+        String sql =
+                 "select A.id, A.question_id, A.author_id, A.author_name, A.author_image_path, A.question_id, A.text, A.dislikes, A.likes, A.created_date, A.updated_date, A.is_selected, A.replies_count,"
+                +" case when L.post_id = A.id then true else false end as is_like, "
+                +" case when DL.post_id = A.id then true else false end as is_dislike"
+                +" FROM (SELECT id, question_id, author_id, author_name, author_image_path, text, dislikes, likes, created_date, updated_date, is_selected, replies_count"
+                        +" FROM question.answer WHERE question_id = ?) AS A"
+                        +" left join (select post_id from member.dislike where user_id = ? and post_type = '"+PostType.ANSWER+"') AS DL"
+                        +" on A.id = DL.post_id "
+                        +" left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.ANSWER+"') AS L"
+                        +" on A.id = L.post_id "
+                        +" order by A.likes desc";
+        return template.query(sql,answerLikeRowMapper(), questionId, loginId, loginId);
     }
 
     @Override
@@ -116,6 +126,24 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                         .questionId(rs.getLong("question_id"))
                         .text(rs.getString("text"))
                         .likes(rs.getLong("likes"))
+                        .dislikes(rs.getLong("dislikes"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .repliesCount(rs.getLong("replies_count"))
+                        .isSelected(rs.getBoolean("is_selected"))
+                        .build());
+    }private RowMapper<Answer> answerLikeRowMapper() {
+        return ((rs, rowNum) ->
+                Answer.builder()
+                        .id(rs.getLong("id"))
+                        .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
+                        .questionId(rs.getLong("question_id"))
+                        .text(rs.getString("text"))
+                        .likes(rs.getLong("likes"))
+                        .isLike(rs.getBoolean("is_like"))
+                        .isDisLike(rs.getBoolean("is_dislike"))
                         .dislikes(rs.getLong("dislikes"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
