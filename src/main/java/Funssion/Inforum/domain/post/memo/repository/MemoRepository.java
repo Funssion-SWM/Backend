@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 
@@ -24,5 +25,6 @@ public interface MemoRepository {
     Memo updateLikesInMemo(Long likes, Long memoId);
     void updateAuthorProfile(Long authorId, String authorProfileImagePath);
     void delete(Long id);
+    void updateQuestionsCountOfMemo(Long memoId, Sign sign);
 
 }

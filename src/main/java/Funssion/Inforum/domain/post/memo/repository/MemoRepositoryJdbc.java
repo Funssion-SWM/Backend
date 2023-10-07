@@ -1,8 +1,9 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -16,10 +17,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -171,6 +170,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
                         .repliesCount(rs.getLong("replies_count"))
+                        .questionCount(rs.getLong("question_count"))
                         .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
@@ -237,6 +237,16 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+    }
+
+    @Override
+    public void updateQuestionsCountOfMemo(Long memoId, Sign sign) {
+        String sql ="";
+        switch(sign){
+            case PLUS -> sql = "update memo.info set question_count = question_count + 1 where memo_id = ?";
+            case MINUS-> sql = "update memo.info set question_count = question_count - 1 where memo_id = ?";
+        }
+        if(template.update(sql,memoId)==0) throw new MemoNotFoundException("update question count fail");
     }
 
     public Long getCommentsCount(Long id){

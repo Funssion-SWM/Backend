@@ -105,7 +105,7 @@ class QnAIntegrationTest {
     @DisplayName("질문과 연관된 답변 생성")
     @Transactional
     void createAnswer(){
-        Question question = makeQuestion();
+        Question question = makePureQuestion();
 
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()
                 .userName("answer_user")
@@ -156,7 +156,7 @@ class QnAIntegrationTest {
     @DisplayName("답변 삭제 후 질문 리스트에 삭제된 답변의 갯수가 반영되는지 확인")
     @Transactional
     void checkAnswersCountWhenDelete(){
-        Question question = makeQuestion();
+        Question question = makePureQuestion();
 
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()
                 .userName("answer_user")
@@ -198,12 +198,8 @@ class QnAIntegrationTest {
     @DisplayName("일반 질문 생성")
     @Transactional
     void createQuestion(){
-        Question question = makeQuestion();
+        Question question = makePureQuestion();
         assertThat(question.getTitle()).isEqualTo("테스트 제목 생성");
-//        QuestionSaveDto questionSaveDto = makeQuestionDto();
-//
-//        Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-//        assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
         List<History> monthlyHistoryByUserId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
@@ -216,7 +212,8 @@ class QnAIntegrationTest {
 
     }
 
-    private Question makeQuestion() {
+
+    private Question makePureQuestion() {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                 .tags(List.of("tag1", "tag2"))
@@ -234,6 +231,7 @@ class QnAIntegrationTest {
 
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
         assertThat(question.getTitle()).isEqualTo("메모와 연관된 질문 제목 생성");
+        assertThat(memoRepository.findById(question.getMemoId()).getQuestionCount()).isEqualTo(1);
     }
     @Test
     @DisplayName("특정 메모를 태그한 질문 열람하기")
@@ -377,8 +375,8 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("질문과 연관된 답변 리스트 가져오기")
         void getAnswerListOfQuestion(){
-            Question question1 = makeQuestion();
-            Question question2 = makeQuestion();
+            Question question1 = makePureQuestion();
+            Question question2 = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -395,7 +393,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("고유 id로 답변 하나만 가져오기")
         void getAnswerOfQuestion(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
             Long answerAuthorId = createAuthorOfAnswer();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
@@ -467,7 +465,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("자신이 작성한 질문글에 답변을 작성할 경우")
         void authorOfQuestionCreateAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
             assertThatThrownBy(()->answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId)).hasMessage("자신이 작성한 질문 글에 답변을 달 수 없습니다.");
         }
     }
@@ -477,7 +475,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("답변 수정 확인")
         void updateAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -498,7 +496,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("자신이 작성한 답변을 삭제")
         void deleteAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -528,7 +526,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("답변 채택 확인 및 질문에도 채택된 질문인지 확인")
         void selectAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -555,7 +553,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("답변 채택했었음에도 또 답변 체크하는 경우")
         void selectDuplicateAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -573,7 +571,7 @@ class QnAIntegrationTest {
         @Test
         @DisplayName("질문 작성자가 아님에도 답변 체택하는 경우")
         void AuthorOfAnswerSelectOwnAnswer(){
-            Question question = makeQuestion();
+            Question question = makePureQuestion();
 
             Long answerAuthorId = createAuthorOfAnswer();
 
@@ -585,6 +583,26 @@ class QnAIntegrationTest {
             Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
             assertThatThrownBy(()->answerService.selectAnswer(answerAuthorId, question.getId(), answerOfQuestion.getId())).isExactlyInstanceOf(UnAuthorizedException.class);
+        }
+    }
+    @Nested
+    @DisplayName("질문 삭제")
+    class deleteQuestion{
+        @Test
+        @DisplayName("메모와 연관된 질문을 삭제할 경우 질문 수가 메모에 반영")
+        void deleteQuestionThenApplyQuestionCountOfMemo(){
+            Memo memo = createMemo();
+
+            QuestionSaveDto questionSaveDto = makeQuestionDto();
+
+            Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
+            questionService.createQuestion(questionSaveDto,saveMemberId,memo.getId());
+
+            assertThat(memoRepository.findById(question.getMemoId()).getQuestionCount()).isEqualTo(2);
+            questionService.deleteQuestion(question.getId(),saveMemberId);
+            assertThat(memoRepository.findById(question.getMemoId()).getQuestionCount()).isEqualTo(1);
+
+
         }
     }
     private Long createAuthorOfAnswer(){

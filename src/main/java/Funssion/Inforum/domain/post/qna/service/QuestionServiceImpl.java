@@ -50,15 +50,15 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
-        findMemo(memoId);
+        findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
         return question;
     }
 
-    private void findMemo(Long memoId) {
+    private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {
         if(memoId != Long.valueOf(Constant.NONE_MEMO_QUESTION)){
-            memoRepository.findById(memoId);
+            memoRepository.updateQuestionsCountOfMemo(memoId,sign);
         }
     }
 
@@ -103,6 +103,11 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId) {
         Question willBeDeletedQuestion = questionRepository.getOneQuestion(questionId);
+        findMemoAndUpdateQuestionsCount(willBeDeletedQuestion.getMemoId(), Sign.MINUS);
+        if(willBeDeletedQuestion.getAnswersCount() != 0){
+            return new IsSuccessResponseDto(false,"답변이 등록된 질문은 삭제할 수 없습니다.");
+        }
+
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
