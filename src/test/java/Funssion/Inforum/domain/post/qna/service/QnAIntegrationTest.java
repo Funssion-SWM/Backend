@@ -126,7 +126,7 @@ class QnAIntegrationTest {
         Long answerAuthorId = saveMemberResponseDto.getId();
         myRepository.createProfile(answerAuthorId, memberProfileEntity);
 
-        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+        answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
         List<Question> questions = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
         assertThat(questions.get(0).getAnswersCount()).isEqualTo(1);
@@ -149,7 +149,47 @@ class QnAIntegrationTest {
 
     }
 
+    @Test
+    @DisplayName("답변 삭제 후 질문 리스트에 삭제된 답변의 갯수가 반영되는지 확인")
+    @Transactional
+    void checkAnswersCountWhenDelete(){
+        Question question = makeQuestion();
 
+        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                .userName("answer_user")
+                .loginType(LoginType.NON_SOCIAL)
+                .userPw("a1234567!")
+                .userEmail("test@gmail.com")
+                .build();
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                .nickname("answer_user")
+                .profileImageFilePath("taehoon-image")
+                .introduce("introduce of taehoon")
+                .userTags(List.of("tag1", "tag2"))
+                .build();
+
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                .description("답변 요약")
+                .build();
+
+        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+        Long answerAuthorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+
+        answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+        Answer beDeletedAnswer = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+        List<Question> questionsBeforeDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        assertThat(questionsBeforeDelete.get(0).getAnswersCount()).isEqualTo(2);
+
+       answerService.deleteAnswer(beDeletedAnswer.getId(),beDeletedAnswer.getAuthorId());
+
+        List<Question> questionsAfterDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        assertThat(questionsAfterDelete.get(0).getAnswersCount()).isEqualTo(1);
+
+
+    }
 
     @Test
     @DisplayName("일반 질문 생성")

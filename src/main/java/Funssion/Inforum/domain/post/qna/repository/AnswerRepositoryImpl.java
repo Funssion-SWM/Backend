@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.AnswerNotFoundException;
@@ -86,6 +87,16 @@ public class AnswerRepositoryImpl implements AnswerRepository {
         }catch(EmptyResultDataAccessException e){
             throw new AnswerNotFoundException("해당 답변 글을 찾을 수 없습니다.");
         }
+    }
+
+    @Override
+    public void updateAnswersCountOfQuestion(Long questionId, Sign sign) {
+        String sql = "";
+        switch(sign){
+            case PLUS -> sql = "update question.info set answers = answers + 1 where id = ?";
+            case MINUS -> sql = "update question.info set answers = answers - 1 where id = ?";
+        }
+        if (template.update(sql,questionId) == 0) throw new AnswerNotFoundException("update likes fail");
     }
 
     @Override

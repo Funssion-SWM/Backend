@@ -37,6 +37,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Transactional
     public Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId) {
         Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
+        answerRepository.updateAnswersCountOfQuestion(questionId,Sign.PLUS);
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
         return answer;
     }
@@ -65,6 +66,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Transactional
     public void deleteAnswer(Long answerId, Long authorId) {
         Answer willBeDeletedAnswer = answerRepository.getAnswerById(answerId);
+        answerRepository.updateAnswersCountOfQuestion(willBeDeletedAnswer.getQuestionId(),Sign.MINUS);
         s3Repository.deleteFromText(ANSWER_DIR, willBeDeletedAnswer.getText());
         createOrUpdateHistory(authorId,willBeDeletedAnswer.getCreatedDate(), Sign.MINUS);
         answerRepository.deleteAnswer(answerId);

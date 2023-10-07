@@ -174,7 +174,8 @@ create table question.info(
     replies_count int8 not null default 0,
     answers int8 not null default 0,
     memo_id int8 not null,
-    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0)
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
+    constraint non_negative_answers_count check (answers >= 0)
 );
 
 create table question.answer(
