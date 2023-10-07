@@ -4,7 +4,6 @@ import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -95,9 +94,9 @@ public class QuestionServiceImpl implements QuestionService {
 
 
     @Override
-    public QuestionDto getOneQuestion(Long questionId) {
+    public QuestionDto getOneQuestion(Long loginId, Long questionId) {
         Question question = questionRepository.getOneQuestion(questionId);
-        return new QuestionDto(question, SecurityContextUtils.getUserId());
+        return new QuestionDto(question, loginId);
     }
 
     @Override

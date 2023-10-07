@@ -22,4 +22,6 @@ public interface AnswerService {
     void deleteAnswer(Long answerId, Long authorId);
 
     ImageDto saveImageAndGetImageURL(MultipartFile image);
+
+    Answer selectAnswer(Long loginId, Long questionId, Long answerId);
 }

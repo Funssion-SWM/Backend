@@ -17,4 +17,6 @@ public interface AnswerRepository {
     Answer updateLikesInAnswer(Long likes, Long answerId);
     Answer updateDisLikesInAnswer(Long disLikes, Long answerId);
     void deleteAnswer(Long answerId);
+
+    Answer select(Long answerId);
 }

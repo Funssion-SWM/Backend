@@ -153,7 +153,7 @@ class QuestionControllerTest {
             @DisplayName("질문 id로 받아오기")
             void getQuestionById() throws Exception {
                 Long questionId = 1L;
-                when(questionService.getOneQuestion(questionId))
+                when(questionService.getOneQuestion(SecurityContextUtils.getUserId(), questionId))
                         .thenReturn(QuestionDto.builder()
                                 .title("제목")
                                 .createdDate(LocalDateTime.now())

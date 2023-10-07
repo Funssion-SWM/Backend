@@ -17,7 +17,7 @@ public interface QuestionService {
 
     List<Question> getQuestions(Long userId, OrderType orderBy);
 
-    QuestionDto getOneQuestion(Long questionId);
+    QuestionDto getOneQuestion(Long loginId, Long questionId);
 
     IsSuccessResponseDto deleteQuestion(Long questionId, Long authorId);
 

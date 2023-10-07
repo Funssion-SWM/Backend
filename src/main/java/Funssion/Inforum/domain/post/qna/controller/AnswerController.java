@@ -37,6 +37,12 @@ public class AnswerController {
         List<Answer> answers = answerService.getAnswersOfQuestion(loginId,questionId);
         return answers.stream().map(answer->new AnswerDto(answer,loginId)).toList();
     }
+    @PatchMapping("/select/{questionId}")
+    public IsSuccessResponseDto selectAnswer(@PathVariable Long questionId, @RequestParam Long answerId){
+        Long loginId = AuthUtils.getUserId(CRUDType.CREATE);
+        answerService.selectAnswer(loginId,questionId,answerId);
+        return new IsSuccessResponseDto(true,"성공적으로 답변이 채택되었습니다.");
+    }
 
     @GetMapping("/{answerId}")
     public AnswerDto getAnswerBy(@PathVariable Long answerId){
