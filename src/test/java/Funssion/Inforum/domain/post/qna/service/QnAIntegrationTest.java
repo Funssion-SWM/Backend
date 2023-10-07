@@ -128,6 +128,9 @@ class QnAIntegrationTest {
 
         Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
+        List<Question> questions = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        assertThat(questions.get(0).getAnswersCount()).isEqualTo(1);
+
         LocalDateTime appliedDateTime = question.getCreatedDate();
         List<History> monthlyHistoryOfQuestionAuthorId = myRepository.findMonthlyHistoryByUserId(saveMemberId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
         List<History> monthlyHistoryOfAnswerAuthorId = myRepository.findMonthlyHistoryByUserId(answerAuthorId, appliedDateTime.getYear(), appliedDateTime.getMonthValue());
