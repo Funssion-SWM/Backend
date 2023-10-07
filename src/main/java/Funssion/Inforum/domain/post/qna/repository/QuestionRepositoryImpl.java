@@ -7,6 +7,7 @@ import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerException;
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
 import Funssion.Inforum.domain.tag.TagUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -115,6 +116,20 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
     }
 
+    @Override
+    public void solveQuestion(Long questionId) {
+        String sql = "update question.info set is_solved = true where id = ?";
+        exceptionHandlingOfNonUniqueSolved(questionId);
+        if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
+    }
+
+    private void exceptionHandlingOfNonUniqueSolved(Long questionId){
+        String sql = "select count(id) from question.info where is_solved is true and id = ?";
+        Long selectedAnswerCount = template.queryForObject(sql, Long.class, questionId);
+        if (selectedAnswerCount !=0){
+            throw new DuplicateSelectedAnswerException("두개의 답변을 채택할 순 없습니다.");
+        }
+    }
     @Override
     public Question updateLikesInQuestion(Long likes, Long questionId) {
         String sql = "update question.info " +

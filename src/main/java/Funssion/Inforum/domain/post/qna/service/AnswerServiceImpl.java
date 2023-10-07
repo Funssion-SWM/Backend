@@ -1,12 +1,15 @@
 package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
+import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -29,6 +32,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final AnswerRepository answerRepository;
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
+    private final QuestionRepository questionRepository;
 
     @Value("${aws.s3.answer-dir}")
     private String ANSWER_DIR;
@@ -36,10 +40,17 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     @Transactional
     public Answer createAnswerOfQuestion(AnswerSaveDto answerSaveDto, Long questionId, Long authorId) {
+        if(isAuthorOfQuestionCreateAnswer(questionId, authorId)){
+            throw new BadRequestException("자신이 작성한 질문 글에 답변을 달 수 없습니다.");
+        }
         Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         answerRepository.updateAnswersCountOfQuestion(questionId,Sign.PLUS);
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
         return answer;
+    }
+
+    private boolean isAuthorOfQuestionCreateAnswer(Long questionId, Long authorId) {
+        return questionRepository.getOneQuestion(questionId).getAuthorId().equals(authorId);
     }
 
     @Override
@@ -83,6 +94,17 @@ public class AnswerServiceImpl implements AnswerService {
                 .imageName(imageName)
                 .imagePath(uploadedURL)
                 .build();
+    }
+
+    @Override
+    public Answer selectAnswer(Long loginId, Long questionId, Long answerId) {
+        if(isNotUserAuthorOfQuestion(loginId, questionId)) throw new UnAuthorizedException("답변을 채택할 권한이 없습니다.");
+        questionRepository.solveQuestion(questionId);
+        return answerRepository.select(answerId);
+    }
+
+    private boolean isNotUserAuthorOfQuestion(Long loginId, Long questionId) {
+        return !loginId.equals(questionRepository.getAuthorId(questionId));
     }
 
     private Answer addAuthorInfo(AnswerSaveDto answerSaveDto, Long authorId, Long questionId) {

@@ -56,7 +56,8 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public QuestionDto getQuestion(@PathVariable Long id){
-        return questionService.getOneQuestion(id);
+        Long loginId = AuthUtils.getUserId(CRUDType.READ);
+        return questionService.getOneQuestion(loginId,id);
     }
 
     @GetMapping("/memo")

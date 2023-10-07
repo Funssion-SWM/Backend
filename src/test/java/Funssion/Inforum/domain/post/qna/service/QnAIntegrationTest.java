@@ -1,6 +1,8 @@
 package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -19,6 +21,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.exception.AnswerNotFoundException;
+import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerException;
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
@@ -256,7 +259,7 @@ class QnAIntegrationTest {
     void getOneQuestion(){
         QuestionSaveDto questionSaveDto = makeQuestionDto();
         Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-        QuestionDto oneQuestion = questionService.getOneQuestion(question.getId());
+        QuestionDto oneQuestion = questionService.getOneQuestion(SecurityContextUtils.getUserId(), question.getId());
         assertThat(oneQuestion.isMine()).isEqualTo(false);
     }
 
@@ -376,30 +379,40 @@ class QnAIntegrationTest {
         void getAnswerListOfQuestion(){
             Question question1 = makeQuestion();
             Question question2 = makeQuestion();
-            makeAnswerOfQuestion(List.of(question1,question2));
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            makeAnswerOfQuestion(answerAuthorId,List.of(question1,question2));
 
             List<Answer> answersOfQuestion = answerService.getAnswersOfQuestion(saveMemberId, question1.getId());
             assertThat(answersOfQuestion).hasSize(3);
 
-            List<History> monthlyHistorySavedMemberId = myRepository.findMonthlyHistoryByUserId(saveMemberId, question1.getCreatedDate().getYear(), question1.getCreatedDate().getMonthValue());
-            assertThat(monthlyHistorySavedMemberId.get(0).getAnswerCnt()).isEqualTo(4L);
+            List<History> monthlyHistoryAnswerAuthorId = myRepository.findMonthlyHistoryByUserId(answerAuthorId, question1.getCreatedDate().getYear(), question1.getCreatedDate().getMonthValue());
+            assertThat(monthlyHistoryAnswerAuthorId .get(0).getAnswerCnt()).isEqualTo(4L);
 
         }
 
         @Test
         @DisplayName("고유 id로 답변 하나만 가져오기")
         void getAnswerOfQuestion(){
-            Question question1 = makeQuestion();
-            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question1.getId(), saveMemberId);
+            Question question = makeQuestion();
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
             Answer answer = answerService.getAnswerBy(answerOfQuestion.getId());
             assertThat(answerOfQuestion.getText()).isEqualTo(answer.getText());
         }
 
-        private void makeAnswerOfQuestion(List<Question> questions) {
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),saveMemberId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(1).getId(),saveMemberId);
+        private void makeAnswerOfQuestion(Long authorId, List<Question> questions) {
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(1).getId(),authorId);
         }
 
     }
@@ -449,13 +462,30 @@ class QnAIntegrationTest {
         }
     }
     @Nested
+    @DisplayName("답변 작성")
+    class createAnswer{
+        @Test
+        @DisplayName("자신이 작성한 질문글에 답변을 작성할 경우")
+        void authorOfQuestionCreateAnswer(){
+            Question question = makeQuestion();
+            assertThatThrownBy(()->answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId)).hasMessage("자신이 작성한 질문 글에 답변을 달 수 없습니다.");
+        }
+    }
+    @Nested
     @DisplayName("답변 수정")
     class updateAnswer{
         @Test
         @DisplayName("답변 수정 확인")
         void updateAnswer(){
             Question question = makeQuestion();
-            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId);
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
             Answer updatedAnswer = answerService.updateAnswer(createAnswerSaveDto(), answerOfQuestion.getId());
             assertThat(updatedAnswer.getUpdatedDate()).isNotEqualTo(answerOfQuestion.getCreatedDate());
@@ -464,23 +494,119 @@ class QnAIntegrationTest {
     @Nested
     @DisplayName("답변 삭제")
     class deleteAnswer{
+
         @Test
         @DisplayName("자신이 작성한 답변을 삭제")
         void deleteAnswer(){
             Question question = makeQuestion();
-            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberId);
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
             LocalDateTime createdTime = answerOfQuestion.getCreatedDate();
-            List<History> beforeDeleteHistory = myRepository.findMonthlyHistoryByUserId(saveMemberId, createdTime.getYear(), createdTime.getMonthValue());
+            List<History> beforeDeleteHistory = myRepository.findMonthlyHistoryByUserId(answerAuthorId, createdTime.getYear(), createdTime.getMonthValue());
             assertThat(beforeDeleteHistory.get(0).getAnswerCnt()).isEqualTo(1L);
 
-            answerService.deleteAnswer(answerOfQuestion.getId(),saveMemberId);
+            answerService.deleteAnswer(answerOfQuestion.getId(),answerAuthorId);
             assertThatThrownBy(()->answerService.getAnswerBy(answerOfQuestion.getId())).isExactlyInstanceOf(AnswerNotFoundException.class);
 
-            List<History> afterDeleteHistory = myRepository.findMonthlyHistoryByUserId(saveMemberId, createdTime.getYear(), createdTime.getMonthValue());
+            List<History> afterDeleteHistory = myRepository.findMonthlyHistoryByUserId(answerAuthorId, createdTime.getYear(), createdTime.getMonthValue());
             assertThat(afterDeleteHistory.get(0).getAnswerCnt()).isEqualTo(0L);
 
         }
+    }
+
+    @Nested
+    @DisplayName("답변 채택")
+    class selectAnswer{
+        @Test
+        @DisplayName("답변 채택 확인 및 질문에도 채택된 질문인지 확인")
+        void selectAnswer(){
+            Question question = makeQuestion();
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+            Answer answer = answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion.getId());
+
+            assertThat(answer.isSelected()).isEqualTo(true);
+
+            QuestionDto questionAfterSolved = questionService.getOneQuestion(saveMemberId, question.getId());
+
+            assertThat(questionAfterSolved.isSolved()).isEqualTo(true);
+
+            QuestionDto questionAfterSolvedByOther = questionService.getOneQuestion(9999L, question.getId());
+
+            assertThat(questionAfterSolvedByOther.isSolved()).isEqualTo(true);
+
+        }
+        @Test
+        @DisplayName("답변 채택했었음에도 또 답변 체크하는 경우")
+        void selectDuplicateAnswer(){
+            Question question = makeQuestion();
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion1 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+            Answer answerOfQuestion2 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+            answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion1.getId());
+            assertThatThrownBy(()->answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion2.getId())).isExactlyInstanceOf(DuplicateSelectedAnswerException.class);
+        }
+        @Test
+        @DisplayName("질문 작성자가 아님에도 답변 체택하는 경우")
+        void AuthorOfAnswerSelectOwnAnswer(){
+            Question question = makeQuestion();
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+            assertThatThrownBy(()->answerService.selectAnswer(answerAuthorId, question.getId(), answerOfQuestion.getId())).isExactlyInstanceOf(UnAuthorizedException.class);
+        }
+    }
+    private Long createAuthorOfAnswer(){
+        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                .userName("answer_user")
+                .loginType(LoginType.NON_SOCIAL)
+                .userPw("a1234567!")
+                .userEmail("test@gmail.com")
+                .build();
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                .nickname("answer_user")
+                .profileImageFilePath("taehoon-image")
+                .introduce("introduce of taehoon")
+                .userTags(List.of("tag1", "tag2"))
+                .build();
+
+
+        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+        Long answerAuthorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+
+        return answerAuthorId;
     }
 
 }

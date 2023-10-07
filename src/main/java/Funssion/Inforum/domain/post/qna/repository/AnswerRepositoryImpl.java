@@ -127,6 +127,15 @@ public class AnswerRepositoryImpl implements AnswerRepository {
         }
     }
 
+    @Override
+    public Answer select(Long answerId) {
+        String sql = "update question.answer set is_selected = true where id = ?";
+        if(template.update(sql,answerId)==0){
+            throw new AnswerNotFoundException("삭제할 답변이 존재하지 않습니다.");
+        }
+        return getAnswerById(answerId);
+    }
+
     private RowMapper<Answer> answerRowMapper() {
         return ((rs, rowNum) ->
                 Answer.builder()
