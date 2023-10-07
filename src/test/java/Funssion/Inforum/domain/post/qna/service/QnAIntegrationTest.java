@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
@@ -11,6 +12,8 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.domain.History;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.like.repository.LikeRepository;
+import Funssion.Inforum.domain.post.like.service.LikeService;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
@@ -30,6 +33,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +66,10 @@ class QnAIntegrationTest {
     MemberRepository memberRepository;
     @Autowired
     MemoRepository memoRepository;
+    @Autowired
+    LikeService likeService;
+    @Autowired
+    LikeRepository likeRepository;
 
     static final String AUTHORIZED_USER = "999";
 
@@ -186,12 +195,10 @@ class QnAIntegrationTest {
         List<Question> questionsBeforeDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
         assertThat(questionsBeforeDelete.get(0).getAnswersCount()).isEqualTo(2);
 
-       answerService.deleteAnswer(beDeletedAnswer.getId(),beDeletedAnswer.getAuthorId());
+        answerService.deleteAnswer(beDeletedAnswer.getId(),beDeletedAnswer.getAuthorId());
 
         List<Question> questionsAfterDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
         assertThat(questionsAfterDelete.get(0).getAnswersCount()).isEqualTo(1);
-
-
     }
 
     @Test
@@ -326,7 +333,7 @@ class QnAIntegrationTest {
     @Nested
     @DisplayName("파라미터에 알맞는 정렬된 메모 리스트 가져오기")
     class getOrderedQuestions{
-        private void saveQuestions() {
+        private void saveQuestions(){
             firstQuestionSaveDto = QuestionSaveDto.builder().title("첫번째 질문")
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
                     .tags(List.of("tag1", "tag2"))
@@ -344,12 +351,9 @@ class QnAIntegrationTest {
                     .tags(List.of("tag1", "tag2"))
                     .description("질문 내용 요약")
                     .build();
-            //@Transactional 처리했음. 순서 보장
-
             questionService.createQuestion(firstQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
             questionService.createQuestion(secondQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
             questionService.createQuestion(thirdQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-
         }
         @Test
         @DisplayName("최신순으로 정렬")
@@ -391,6 +395,33 @@ class QnAIntegrationTest {
             assertThat(monthlyHistoryAnswerAuthorId .get(0).getAnswerCnt()).isEqualTo(4L);
 
         }
+        @Test
+        @DisplayName("질문과 연관된 답변 리스트를 채택순, 좋아요-싫어요 순으로 가져오기")
+        void getOrderedAnswerListOfQuestion(){
+            Question question = makePureQuestion();
+
+            Long answerAuthorId = createAuthorOfAnswer();
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            Answer answerOfQuestion1 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+            Answer answerOfQuestion2 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+            Answer answerOfQuestion3 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+            Answer answerOfQuestion4 = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberId.toString(),"12345678"));
+
+            likeService.likePost(PostType.ANSWER,answerOfQuestion4.getId());
+            answerService.selectAnswer(saveMemberId,answerOfQuestion3.getQuestionId(),answerOfQuestion3.getId());
+            likeService.dislikePost(PostType.ANSWER,answerOfQuestion2.getId());
+
+            List<Answer> answersOfQuestion = answerService.getAnswersOfQuestion(saveMemberId, question.getId());
+            assertThat(answersOfQuestion).hasSize(4);
+            assertThat(answersOfQuestion.stream().map(answer->answer.getId()).collect(Collectors.toList())).containsExactly(answerOfQuestion3.getId(),answerOfQuestion4.getId(),answerOfQuestion1.getId(),answerOfQuestion2.getId());
+        }
+
 
         @Test
         @DisplayName("고유 id로 답변 하나만 가져오기")

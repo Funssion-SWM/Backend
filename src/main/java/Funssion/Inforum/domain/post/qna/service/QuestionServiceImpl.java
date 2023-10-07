@@ -51,7 +51,6 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
-        log.info("create order = {}",questionSaveDto.getTitle());
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);

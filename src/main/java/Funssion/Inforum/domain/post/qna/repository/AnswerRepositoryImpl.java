@@ -53,8 +53,8 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                         +" left join (select post_id from member.dislike where user_id = ? and post_type = '"+PostType.ANSWER+"') AS DL"
                         +" on A.id = DL.post_id "
                         +" left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.ANSWER+"') AS L"
-                        +" on A.id = L.post_id "
-                        +" order by A.likes desc";
+                        +" on A.id = L.post_id"
+                        +" order by A.is_selected desc, (A.likes - A.dislikes) desc";
         return template.query(sql,answerLikeRowMapper(), questionId, loginId, loginId);
     }
 

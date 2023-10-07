@@ -77,7 +77,7 @@ public class LikeService {
     @Transactional
     public void likePost(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
-
+        System.out.println("userId = " + userId);
         likeRepository.findByUserIdAndPostInfoOfDisLike(userId,postType,postId)
                 .ifPresent(like ->{
                     throw new BadRequestException("You Cannot Both Dislike and Like Post");
