@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 public class QuestionDto {
     @Builder
-    public QuestionDto(Long id, Long authorId, String authorName, String authorImagePath, String description, LocalDateTime createdDate, LocalDateTime updatedDate, Long likes, String title, String text, Long likesCount, Long answersCount, Long memoId, boolean isSolved, List<String> tags, boolean isMine) {
+    public QuestionDto(Long id, Long authorId, String authorName, String authorImagePath, String description, LocalDateTime createdDate, LocalDateTime updatedDate, Long likes, String title, String text, Long likesCount, Long answersCount, Long memoId, boolean isSolved, List<String> tags, boolean isMine, boolean isLike) {
         this.id = id;
         this.authorId = authorId;
         this.authorName = authorName;
@@ -27,6 +27,7 @@ public class QuestionDto {
         this.isSolved = isSolved;
         this.tags = tags;
         this.isMine = isMine;
+        this.isLike = isLike;
     }
 
     private Long id;

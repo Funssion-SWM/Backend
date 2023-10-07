@@ -19,6 +19,8 @@ public class AnswerDto {
     private Long questionId;
     private boolean isSelected;
     private Long repliesCount;
+    private boolean isLike;
+    private boolean isDisLike;
     private boolean isMine;
 
     public AnswerDto(Answer answer,Long loginId){
@@ -34,6 +36,8 @@ public class AnswerDto {
         this.repliesCount = answer.getRepliesCount();
         this.questionId = answer.getQuestionId();
         this.isSelected = answer.isSelected();
+        this.isLike = answer.isLike();
+        this.isDisLike = answer.isDisLike();
         this.isMine = loginId.equals(this.authorId);
     }
 }
