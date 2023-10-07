@@ -345,9 +345,11 @@ class QnAIntegrationTest {
                     .description("질문 내용 요약")
                     .build();
             //@Transactional 처리했음. 순서 보장
-            questionService.createQuestion(firstQuestionSaveDto,saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION));
-            questionService.createQuestion(secondQuestionSaveDto,saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
-            questionService.createQuestion(thirdQuestionSaveDto,saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+
+            questionService.createQuestion(firstQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+            questionService.createQuestion(secondQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+            questionService.createQuestion(thirdQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+
         }
         @Test
         @DisplayName("최신순으로 정렬")
@@ -596,14 +598,31 @@ class QnAIntegrationTest {
             QuestionSaveDto questionSaveDto = makeQuestionDto();
 
             Question question = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
-            questionService.createQuestion(questionSaveDto,saveMemberId,memo.getId());
+            Question question2 = questionService.createQuestion(questionSaveDto, saveMemberId, memo.getId());
 
             assertThat(memoRepository.findById(question.getMemoId()).getQuestionCount()).isEqualTo(2);
             questionService.deleteQuestion(question.getId(),saveMemberId);
             assertThat(memoRepository.findById(question.getMemoId()).getQuestionCount()).isEqualTo(1);
-
-
         }
+        @Test
+        @DisplayName("답변이 달린 질문을 삭제할 경우 오류 발생")
+        void deleteQuestionWhenItHasAnswer(){
+            QuestionSaveDto questionSaveDto = makeQuestionDto();
+
+            Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+
+            Long answerAuthorId = createAuthorOfAnswer();
+
+            AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                    .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                    .description("답변 요약")
+                    .build();
+
+            answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
+
+            assertThatThrownBy(()->questionService.deleteQuestion(question.getId(),saveMemberId)).hasMessage("답변이 달린 질문은 삭제할 수 없습니다.");
+        }
+
     }
     private Long createAuthorOfAnswer(){
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()

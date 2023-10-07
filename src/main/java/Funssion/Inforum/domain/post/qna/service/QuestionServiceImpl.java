@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -50,6 +51,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
+        log.info("create order = {}",questionSaveDto.getTitle());
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
@@ -105,7 +107,7 @@ public class QuestionServiceImpl implements QuestionService {
         Question willBeDeletedQuestion = questionRepository.getOneQuestion(questionId);
         findMemoAndUpdateQuestionsCount(willBeDeletedQuestion.getMemoId(), Sign.MINUS);
         if(willBeDeletedQuestion.getAnswersCount() != 0){
-            return new IsSuccessResponseDto(false,"답변이 등록된 질문은 삭제할 수 없습니다.");
+            throw new BadRequestException("답변이 달린 질문은 삭제할 수 없습니다.");
         }
 
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
