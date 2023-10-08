@@ -144,7 +144,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     private String getSortedSql(OrderType orderBy){
         switch (orderBy){
             case HOT:
-                return "order by likes desc";
+                return "order by likes desc, created_date desc";
             case NEW:
                 return "order by created_date desc";
             case ANSWERS:
