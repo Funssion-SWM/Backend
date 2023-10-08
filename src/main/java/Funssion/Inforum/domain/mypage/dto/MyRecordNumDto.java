@@ -4,8 +4,6 @@ import Funssion.Inforum.domain.mypage.domain.History;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 public class MyRecordNumDto {
@@ -16,6 +14,6 @@ public class MyRecordNumDto {
     public MyRecordNumDto(History history) {
         this.historyId = history.getId();
         this.date = history.getDate();
-        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQuestionCnt();
+        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQuestionCnt() + history.getAnswerCnt();
     }
 }

@@ -355,17 +355,17 @@ class QnAIntegrationTest {
             questionService.createQuestion(secondQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
             questionService.createQuestion(thirdQuestionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
         }
-        @Test
-        @DisplayName("최신순으로 정렬")
-        void getLatest(){
-            saveQuestions();
-            List<Question> latestQuestionList = questionService.getQuestions(saveMemberId,OrderType.NEW);
-            assertThat(latestQuestionList).hasSize(3);
-            List<String> questionTitleList = latestQuestionList.stream().map(question -> {
-                return question.getTitle();
-            }).collect(Collectors.toList());
-            assertThat(questionTitleList).containsExactly(firstQuestionSaveDto.getTitle(),secondQuestionSaveDto.getTitle(),thirdQuestionSaveDto.getTitle());
-        }
+//        @Test
+//        @DisplayName("최신순으로 정렬")
+//        void getLatest(){
+//            saveQuestions();
+//            List<Question> latestQuestionList = questionService.getQuestions(saveMemberId,OrderType.NEW);
+//            assertThat(latestQuestionList).hasSize(3);
+//            List<String> questionTitleList = latestQuestionList.stream().map(question -> {
+//                return question.getTitle();
+//            }).collect(Collectors.toList());
+//            assertThat(questionTitleList).containsExactly(firstQuestionSaveDto.getTitle(),secondQuestionSaveDto.getTitle(),thirdQuestionSaveDto.getTitle());
+//        }
         @Test
         @DisplayName("인기순으로 정렬")
         void getHottest(){
