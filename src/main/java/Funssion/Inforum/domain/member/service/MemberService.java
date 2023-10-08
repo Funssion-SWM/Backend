@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
@@ -14,8 +15,9 @@ import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
-import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
+import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
     private final CommentRepository commentRepository;
     private final S3Repository s3Repository;
     private final FollowRepository followRepository;
@@ -180,6 +184,8 @@ public class MemberService {
         memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
         commentRepository.updateProfileImageOfComment(userId, memberProfileEntity.getProfileImageFilePath());
         commentRepository.updateProfileImageOfReComment(userId,memberProfileEntity.getProfileImageFilePath() );
+        questionRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
+        answerRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 

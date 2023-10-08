@@ -23,4 +23,5 @@ public interface QuestionRepository {
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
+    void updateProfileImage(Long userId, String profileImageFilePath);
 }

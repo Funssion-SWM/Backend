@@ -100,6 +100,15 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
+    public void updateProfileImage(Long userId, String profileImageFilePath) {
+        String sql = "update question.info " +
+                "set author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql, profileImageFilePath, userId);
+    }
+
+    @Override
     public Question getOneQuestion(Long questionId) {
         String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from question.info where id = ?";

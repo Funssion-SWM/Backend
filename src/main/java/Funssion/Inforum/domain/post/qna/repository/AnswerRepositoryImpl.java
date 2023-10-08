@@ -136,6 +136,15 @@ public class AnswerRepositoryImpl implements AnswerRepository {
         return getAnswerById(answerId);
     }
 
+    @Override
+    public void updateProfileImage(Long userId, String profileImageFilePath) {
+        String sql = "update question.answer " +
+                "set author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql, profileImageFilePath, userId);
+    }
+
     private RowMapper<Answer> answerRowMapper() {
         return ((rs, rowNum) ->
                 Answer.builder()
