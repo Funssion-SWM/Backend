@@ -134,7 +134,7 @@ public class LikeIntegrationTest {
         userLike(answerOfQuestion);
         assertThat(likeService.getLikeInfo(PostType.ANSWER, answerOfQuestion.getId())).isEqualTo(new LikeResponseDto(true, 1L));
 
-        assertThatThrownBy(() -> userDisLike(answerOfQuestion)).hasMessage("You Cannot Both Dislike and Like Post");
+        assertThatThrownBy(() -> userDisLike(answerOfQuestion)).hasMessage("싫어요와 좋아요를 동시에 할 수 없습니다.");
     }
 
     @Test
@@ -155,7 +155,7 @@ public class LikeIntegrationTest {
         userDisLike(answerOfQuestion);
         assertThat(likeService.getDisLikeInfo(PostType.ANSWER, answerOfQuestion.getId())).isEqualTo(new DisLikeResponseDto(true, 1L));
 
-        assertThatThrownBy(() -> userLike(answerOfQuestion)).hasMessage("You Cannot Both Dislike and Like Post");
+        assertThatThrownBy(() -> userLike(answerOfQuestion)).hasMessage("싫어요와 좋아요를 동시에 할 수 없습니다.");
     }
 
 
