@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.like.domain.DisLike;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.dto.response.DisLikeResponseDto;
@@ -59,7 +60,7 @@ public class LikeService {
                 return answerRepository.getAnswerById(postId).getLikes();
             }
             default ->{
-                throw new BadRequestException("유효하지 않은 postType 입니다.");
+                throw new BadRequestException("유효하지 않은 게시물 타입입니다.");
             }
         }
     }
@@ -80,12 +81,12 @@ public class LikeService {
         System.out.println("userId = " + userId);
         likeRepository.findByUserIdAndPostInfoOfDisLike(userId,postType,postId)
                 .ifPresent(like ->{
-                    throw new BadRequestException("You Cannot Both Dislike and Like Post");
+                    throw new BadRequestException("싫어요와 좋아요를 동시에 할 수 없습니다.");
                 });
 
         likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
                 .ifPresent(like -> {
-                    throw new BadRequestException("you have already liked this post");
+                    throw new BadRequestException("이미 좋아요한 게시물입니다.");
                 });
 
         updateLikesInPost(postType, postId, Sign.PLUS);
@@ -98,7 +99,7 @@ public class LikeService {
 
 
         likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
-                .orElseThrow(() -> new BadRequestException("you haven't liked this post"));
+                .orElseThrow(() -> new BadRequestException("아직 좋아요하지 않은 게시물입니다."));
 
         updateLikesInPost(postType, postId, Sign.MINUS);
         likeRepository.deleteLike(userId, postType, postId);
@@ -112,12 +113,12 @@ public class LikeService {
 
         likeRepository.findByUserIdAndPostInfo(userId,postType,postId)
                         .ifPresent(like ->{
-                            throw new BadRequestException("You Cannot Both Dislike and Like Post");
+                            throw new BadRequestException("싫어요와 좋아요를 동시에 할 수 없습니다.");
                         });
 
         likeRepository.findByUserIdAndPostInfoOfDisLike(userId, postType, postId)
                 .ifPresent(dislike -> {
-                    throw new BadRequestException("you have already disliked this post");
+                    throw new BadRequestException("이미 싫어요한 게시물입니다.");
                 });
 
         likeRepository.createDisLike(new DisLike(userId,postType,postId));
@@ -129,7 +130,7 @@ public class LikeService {
         updateDisLikesInPost(postType, postId, Sign.MINUS);
 
         likeRepository.findByUserIdAndPostInfoOfDisLike(userId, postType, postId)
-                .orElseThrow(() -> new BadRequestException("you haven't disliked this post"));
+                .orElseThrow(() -> new BadRequestException("아직 싫어요하지 않은 게시물입니다."));
 
         likeRepository.deleteDisLike(userId, postType, postId);
     }
@@ -153,8 +154,8 @@ public class LikeService {
                 Long updatedLikes = answer.updateLikes(sign);
                 answerRepository.updateLikesInAnswer(updatedLikes,postId);
             }
-            case BLOG -> throw new BadRequestException("not yet implement");
-            default -> throw new BadRequestException("undefined post type");
+            case BLOG -> throw new NotYetImplementException();
+            default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");
         }
     }
     private void updateDisLikesInPost(PostType postType, Long postId, Sign sign){
@@ -165,7 +166,7 @@ public class LikeService {
                 answerRepository.updateDisLikesInAnswer(updatedDisLikes,postId);
             }
             case QUESTION, MEMO -> throw new BadRequestException("해당 타입의 게시글들은 비추천할 수 없습니다.");
-            default -> throw new BadRequestException("undefined post type");
+            default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");
         }
     }
 }
