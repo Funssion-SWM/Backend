@@ -123,11 +123,13 @@ public class LikeIntegrationTest {
     void 좋아요_후_취소없이_바로_싫어요_누를경우_에러(){
         Question question = makeQuestion();
 
+        Long answerAuthorId = createAuthorOfAnswer();
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .description("답변 요약")
                 .build();
-        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
         userLike(answerOfQuestion);
         assertThat(likeService.getLikeInfo(PostType.ANSWER, answerOfQuestion.getId())).isEqualTo(new LikeResponseDto(true, 1L));
@@ -142,11 +144,13 @@ public class LikeIntegrationTest {
     void 싫어요_후_취소없이_바로_좋아요_누를경우_에러(){
         Question question = makeQuestion();
 
+        Long answerAuthorId = createAuthorOfAnswer();
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .description("답변 요약")
                 .build();
-        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
         userDisLike(answerOfQuestion);
         assertThat(likeService.getDisLikeInfo(PostType.ANSWER, answerOfQuestion.getId())).isEqualTo(new DisLikeResponseDto(true, 1L));
@@ -162,11 +166,13 @@ public class LikeIntegrationTest {
     void 내가_답변_좋아요를_눌렀는지_확인(){
         Question question = makeQuestion();
 
+        Long answerAuthorId = createAuthorOfAnswer();
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .description("답변 요약")
                 .build();
-        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
         userLike(answerOfQuestion);
         assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId())).hasSize(1);
@@ -181,11 +187,13 @@ public class LikeIntegrationTest {
     void 내가_답변_싫어요를_눌렀는지_확인(){
         Question question = makeQuestion();
 
+        Long answerAuthorId = createAuthorOfAnswer();
         AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                 .description("답변 요약")
                 .build();
-        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), saveMemberId);
+
+        Answer answerOfQuestion = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
         userDisLike(answerOfQuestion);
         assertThat(answerRepository.getAnswersOfQuestion(SecurityContextUtils.getUserId(),answerOfQuestion.getQuestionId())).hasSize(1);
@@ -241,5 +249,27 @@ public class LikeIntegrationTest {
                 .build();
 
         return questionService.createQuestion(questionSaveDto, saveMemberId,Long.valueOf(Constant.NONE_MEMO_QUESTION ));
+    }
+
+    private Long createAuthorOfAnswer(){
+        MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                .userName("answer_user")
+                .loginType(LoginType.NON_SOCIAL)
+                .userPw("a1234567!")
+                .userEmail("test@gmail.com")
+                .build();
+        MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                .nickname("answer_user")
+                .profileImageFilePath("taehoon-image")
+                .introduce("introduce of taehoon")
+                .userTags(List.of("tag1", "tag2"))
+                .build();
+
+
+        SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+        Long answerAuthorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+
+        return answerAuthorId;
     }
 }
