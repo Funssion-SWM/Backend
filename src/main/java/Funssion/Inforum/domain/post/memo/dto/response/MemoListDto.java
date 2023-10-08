@@ -24,10 +24,12 @@ public class MemoListDto {
     private String authorName;
     private String authorProfileImagePath;
     private Long repliesCount;
+    private Long questionCount;
     private Long likes;
     private Boolean isLike;
     private List<String> memoTags;
     private Boolean isTemporary;
+
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -43,6 +45,7 @@ public class MemoListDto {
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
+        this.questionCount = memo.getQuestionCount();
 
         setMemoTagsLimit(2);
     }

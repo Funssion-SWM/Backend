@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.exception.ArrayToListException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -36,7 +36,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public MemberProfileEntity findProfileByUserId(Long userId) {
-        String sql = "select name,introduce,tags,image_path from member.info where id = ?";
+        String sql = "select id,name,introduce,tags,image_path,follow_cnt,follower_cnt from member.info where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
     }
     private RowMapper<History> historyRowMapper() {
@@ -47,6 +47,7 @@ public class MyRepositoryJdbc implements MyRepository {
                     .memoCnt(rs.getLong("memo_cnt"))
                     .blogCnt(rs.getLong("blog_cnt"))
                     .questionCnt(rs.getLong("question_cnt"))
+                    .answerCnt(rs.getLong("answer_cnt"))
                     .date(rs.getTimestamp("date").toLocalDateTime().toLocalDate())
                     .build()
         );

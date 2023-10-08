@@ -15,7 +15,6 @@ import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,12 +24,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
-    private final MemoRepository memoRepository;
     private final MyRepository myRepository;
 
     /*
@@ -38,30 +35,35 @@ public class CommentService {
      * 로그인된 유저의 정보를 가져와
      * 이를 활용하여 profile을 가져옵니다.
      */
-    public IsSuccessResponseDto createComment(CommentSaveDto commentSaveDto, Long authorId){
+    @Transactional
+    public Comment createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
-        commentRepository.createComment(new Comment(
-            authorId,authorProfile, LocalDateTime.now(),null,commentSaveDto)
+        Comment comment = commentRepository.createComment(new Comment(
+                authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
-        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostId());
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
 
-        return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
+        return comment;
     }
 
+    @Transactional
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
         return commentRepository.updateComment(commentUpdateDto,commentId);
     }
 
+    @Transactional
     public IsSuccessResponseDto deleteComment(Long commentId) {
         PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
         return commentRepository.deleteComment(commentId);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId,Long userId){
         return commentRepository.getCommentsAtPost(postType, postId,userId);
     }
 
+    @Transactional
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 

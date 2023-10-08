@@ -24,16 +24,8 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
       
-    - name: Remove previous snapshot.jar
-      run: rm -rf ./build/libs
-      
     - name: Add properties
       run: echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application.yml
-      
-    - name: init with Gradle
-      uses: gradle/gradle-build-action@v2
-      
-    - run: gradle init
       
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
@@ -60,10 +52,12 @@ jobs:
         username: ec2-user
         key: ${{ secrets.PRIVATE_KEY }}
         script: |
-            sudo docker stop backend
-            sudo docker rm backend
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
-            sudo docker run -dp 8080:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
+            docker stop backend
+            docker rm backend
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }} 
+            docker run -dp 8080:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_DEV_REPO }}
+            
     - name: Notify Slack
       uses: rtCamp/action-slack-notify@v2
       env:

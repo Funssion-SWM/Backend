@@ -1,6 +1,6 @@
 package Funssion.Inforum.common.exception.notfound;
 
-import Funssion.Inforum.common.exception.ErrorResult;
+import Funssion.Inforum.common.exception.response.ErrorResult;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

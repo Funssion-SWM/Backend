@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.post.comment.controller;
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.UnAuthorizedException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
@@ -15,6 +15,7 @@ import Funssion.Inforum.domain.post.comment.service.CommentService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,10 +27,12 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @PostMapping()
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public IsSuccessResponseDto createComment(@RequestBody CommentSaveDto commentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
-        return commentService.createComment(commentSaveDto,authorId);
+        commentService.createComment(commentSaveDto,authorId);
+        return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
     }
 
     @PatchMapping("/{commentId}")
@@ -48,11 +51,9 @@ public class CommentController {
     public List<CommentListDto> getCommentsAtPostIn(@PathVariable String postType, @PathVariable Long postId){
         Long userId = AuthUtils.getUserId(CRUDType.READ);
         return commentService.getCommentsAtPost(PostType.valueOf(postType.toUpperCase()),postId,userId);
-        /* To Do
-            converter 사용할 것
-         */
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/recomments")
     public IsSuccessResponseDto createReComment(@RequestBody ReCommentSaveDto reCommentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
@@ -78,14 +79,14 @@ public class CommentController {
     }
 
     @PostMapping("/like/{commentId}")
-    public LikeResponseDto likeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
+    public LikeResponseDto likeComments(@PathVariable Long commentId,@RequestParam(required=true) Boolean isReComment){
         Long userId = AuthUtils.getUserId(CRUDType.CREATE);
-        return commentService.likeComments(commentId,Boolean.valueOf(isReComment),userId);
+        return commentService.likeComments(commentId,isReComment,userId);
     }
     @DeleteMapping("/like/{commentId}")
-    public LikeResponseDto cancelLikeComments(@PathVariable Long commentId,@RequestParam(required=true) String isReComment){
+    public LikeResponseDto cancelLikeComments(@PathVariable Long commentId,@RequestParam(required=true) Boolean isReComment){
         Long userId = AuthUtils.getUserId(CRUDType.DELETE);
-        return commentService.cancelLikeComments(commentId,Boolean.valueOf(isReComment),userId);
+        return commentService.cancelLikeComments(commentId,isReComment,userId);
     }
 
     private void checkAuthorization(CRUDType crudType, Long commentId, boolean isReComment) {

@@ -2,7 +2,7 @@ package Funssion.Inforum.domain.post.comment.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.UpdateFailException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -78,9 +78,9 @@ class CommentRepositoryImplTest {
                 LocalDateTime.now(),
                 null,
                 new CommentSaveDto(PostType.MEMO, 1L, "댓글 내용 저장"));
-        Long createdCommentPK = commentRepository.createComment(comment);
+        Comment createdComment = commentRepository.createComment(comment);
         assertThatCode(
-                () -> commentRepository.deleteComment(createdCommentPK))
+                () -> commentRepository.deleteComment(createdComment.getId()))
                 .doesNotThrowAnyException();
     }
 

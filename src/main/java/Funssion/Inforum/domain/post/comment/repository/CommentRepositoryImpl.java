@@ -2,10 +2,9 @@ package Funssion.Inforum.domain.post.comment.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.CreateFailException;
-import Funssion.Inforum.common.exception.UpdateFailException;
+import Funssion.Inforum.common.exception.etc.CreateFailException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
@@ -39,7 +38,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         this.template = new JdbcTemplate(dataSource);
     }
     @Override
-    public Long createComment(Comment comment) {
+    public Comment createComment(Comment comment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into comment.info (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)"
                 + "values (?, ?, ?, ?, ?, ?, ?)";
@@ -58,9 +57,13 @@ public class CommentRepositoryImpl implements CommentRepository{
         if (updatedRow != 01){
             throw new CreateFailException("댓글 저장에 실패하였습니다.");
         }
-        return keyHolder.getKey().longValue();
+        return getCommentById(keyHolder.getKey().longValue());
     }
-
+    private Comment getCommentById(Long commentId){
+        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, re_comments, post_type, comment_text, created_date, updated_date " +
+                "from comment.info where id =?";
+        return template.queryForObject(sql,commentRowMapper(),commentId);
+    }
     public void updateProfileImageOfComment(Long userId, String authorProfileImagePath){
         String sql = "update comment.info " +
                 "set author_image_path = ? " +
@@ -203,7 +206,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public LikeResponseDto likeComment(Long commentId, Boolean isReComment,Long userId) {
-        log.info("is Recomment ? ={}",isReComment);
         insertLikeOfMemberLikeCommentsTable(commentId, isReComment,userId);
         Long howManyLikesAfterLike = updateLikesOfCommentsTable(commentId, isReComment,false);
         return new LikeResponseDto(true,howManyLikesAfterLike);
@@ -217,9 +219,21 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     @Override
-    public void plusCommentsCountOfPost(Long id) {
-        String sql = "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
-        if (template.update(sql, id) == 0) throw new NotFoundException("댓글 수 업데이트 실패 (댓글 또는 메모가 존재하지 않음)");
+    public void plusCommentsCountOfPost(PostType postType, Long id) {
+        String sql = sqlUpdatingDifferentPost(postType,id);
+        if (template.update(sql, id) == 0) throw new NotFoundException("댓글 수 업데이트 실패. 게시글이 존재하지 않음");
+    }
+    private String sqlUpdatingDifferentPost(PostType postType, Long id){
+        switch(postType){
+            case MEMO:
+                return "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
+            case QUESTION:
+                return "update question.info set replies_count = replies_count + 1 where id = ?";
+            case ANSWER:
+                return "update question.answer set replies_count = replies_count + 1 where id = ?";
+            default:
+                throw new IllegalArgumentException("잘못된 postType의 댓글입니다.");
+        }
     }
 
     @Override
@@ -227,7 +241,8 @@ public class CommentRepositoryImpl implements CommentRepository{
         String sql = "";
         switch(postIdAndTypeInfo.getPostType()){
             case MEMO -> sql = "update memo.info set replies_count = replies_count - 1 where memo_id = ?";
-            case QUESTION -> throw new NotYetImplementException("아직 구현 안됨. 구현 예정");
+            case QUESTION -> sql = "update question.info set replies_count = replies_count - 1 where id = ?";
+            case ANSWER -> sql = "update question.answer set replies_count = replies_count - 1 where id = ?";
         }
         if (template.update(sql,postIdAndTypeInfo.getPostId()) == 0) throw new NotFoundException("댓글 수 업데이트 실패 (댓글 또는 메모가 존재하지 않음)");
     }
@@ -276,11 +291,11 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
-        String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date " +
+        String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date, 'false' as is_liked " +
                 "from comment.info " +
                 "where id = ?";
         try {
-            return Optional.of(template.queryForObject(sql, commentRowMapper(), commentId));
+            return Optional.of(template.queryForObject(sql, commentListRowMapper(), commentId));
         }catch(EmptyResultDataAccessException e){
             return Optional.empty();
         }
@@ -320,20 +335,6 @@ public class CommentRepositoryImpl implements CommentRepository{
 
         );
     };
-    private RowMapper<CommentListDto> commentRowMapper() {
-        return ((rs,rowNum)->
-                CommentListDto.builder()
-                        .id(rs.getLong("id"))
-                        .authorId(rs.getLong("author_id"))
-                        .authorName(rs.getString("author_name"))
-                        .authorImagePath(rs.getString("author_image_path"))
-                        .commentText(rs.getString("comment_text"))
-                        .createdDate(rs.getDate("created_date"))
-                        .updatedDate(rs.getDate("updated_date"))
-                        .likes(rs.getLong("likes"))
-                        .reCommentsNumber(rs.getLong("re_comments"))
-                        .build());
-    };
     private RowMapper<CommentListDto> commentListRowMapper() {
         return ((rs,rowNum)->
                 CommentListDto.builder()
@@ -342,11 +343,27 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
                         .commentText(rs.getString("comment_text"))
-                        .createdDate(rs.getDate("created_date"))
-                        .updatedDate(rs.getDate("updated_date"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .isLike(rs.getBoolean("is_liked"))
                         .likes(rs.getLong("likes"))
                         .reCommentsNumber(rs.getLong("re_comments"))
+                        .build());
+    };
+
+    private RowMapper<Comment> commentRowMapper() {
+        return ((rs,rowNum)->
+                Comment.builder()
+                        .id(rs.getLong("id"))
+                        .postId(rs.getLong("post_id"))
+                        .authorId(rs.getLong("author_id"))
+                        .authorName(rs.getString("author_name"))
+                        .authorImagePath(rs.getString("author_image_path"))
+                        .postTypeWithComment(PostType.valueOf(rs.getString("post_type")))
+                        .commentText(rs.getString("comment_text"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .likes(rs.getLong("likes"))
                         .build());
     };
     private RowMapper<ReCommentListDto> reCommentRowMapper() {
@@ -357,8 +374,8 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
                         .commentText(rs.getString("comment_text"))
-                        .createdDate(rs.getDate("created_date"))
-                        .updatedDate(rs.getDate("updated_date"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
                         .isLike(rs.getBoolean("is_liked"))
                         .build());
@@ -371,8 +388,8 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
                         .commentText(rs.getString("comment_text"))
-                        .createdDate(rs.getDate("created_date"))
-                        .updatedDate(rs.getDate("updated_date"))
+                        .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
+                        .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
                         .isLike(rs.getBoolean("is_liked"))
                         .build());

@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.post.like.controller;
 
-import Funssion.Inforum.domain.post.like.controller.LikeController;
 import Funssion.Inforum.domain.post.like.service.LikeService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LikeController.class)
@@ -41,6 +41,13 @@ class LikeControllerTest {
 
         mvc.perform(get("/memodsfsd/1/like"))
                 .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser
+    @DisplayName("게시글 비추천 정보 가져오기")
+    void getDisLikeInfo() throws Exception {
+        mvc.perform(get("/questions/1/dislike"))
+                .andExpect(status().isOk());
     }
 
     @Test

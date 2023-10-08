@@ -17,7 +17,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,9 +33,11 @@ public class MemoController {
     @GetMapping
     public List<MemoListDto> getMemos(
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
-            @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy) {
-
-        return memoService.getMemosForMainPage(period, orderBy);
+            @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy,
+            @RequestParam(required = false, defaultValue = "0") Long pageNum,
+            @RequestParam(required = false, defaultValue = "20") Long memoCnt
+    ) {
+        return memoService.getMemosForMainPage(period, orderBy, pageNum, memoCnt);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -67,13 +71,16 @@ public class MemoController {
 
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
-            @RequestParam @NotBlank String searchString,
+            @RequestParam(required = false) String searchString,
             @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
-        return memoService.searchMemosBy(
-                searchString, userId, orderBy, isTag);
+        if (Objects.isNull(searchString) || searchString.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return memoService.searchMemosBy(searchString, userId, orderBy, isTag);
     }
 
     @GetMapping("/drafts")

@@ -2,14 +2,14 @@ package Funssion.Inforum.domain.member.controller;
 
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
-import Funssion.Inforum.domain.post.memo.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,16 +60,16 @@ public class MemberController {
     }
     @PostMapping("/authenticate-email/find")
     public IsSuccessResponseDto mailSendToFindPassword(@RequestBody @Valid EmailRequestDto emailDto){
-        String decodedEmail = URLDecoder.decode(emailDto.getEmail(), StandardCharsets.UTF_8);
-        if (memberService.isRegisteredEmail(decodedEmail).isValid()) {
-            return mailService.sendEmailLink(emailDto.getEmail());
+        if (memberService.isRegisteredEmail(emailDto.getEmail()).isValid()) {
+            mailService.sendEmailLink(emailDto.getEmail());
+            return new IsSuccessResponseDto(true, "해당 이메일로 인증번호 링크를 전송하였습니다.");
         } else {
             return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
         }
     }
-    @PutMapping("/password/{usersTemporaryCode}")
-    public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto, @PathVariable String usersTemporaryCode ){
-        return memberService.findAndChangePassword(passwordUpdateDto,usersTemporaryCode);
+    @PutMapping("/password")
+    public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto ){
+        return memberService.findAndChangePassword(passwordUpdateDto);
     }
 
     @PostMapping("/authenticate-code")
@@ -89,6 +89,7 @@ public class MemberController {
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
+        log.info("user id = {}",userId);
         Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
         boolean isLogin = !userId.equals("anonymousUser");
         return new ValidMemberDto(loginId, isLogin);
@@ -151,7 +152,7 @@ public class MemberController {
     }
 
     @GetMapping("/profile/{id}")
-    public MemberProfileEntity getProfile(@PathVariable("id") Long userId){
+    public MemberProfileDto getProfile(@PathVariable("id") Long userId){
         try {
             return memberService.getMemberProfile(userId);
         }catch (EmptyResultDataAccessException e){
@@ -180,7 +181,6 @@ public class MemberController {
 
     @GetMapping("/find-email-by")
     public EmailDto findEmailByNickname(@RequestParam String nickname){
-        String decodedNickname = URLDecoder.decode(nickname, StandardCharsets.UTF_8);
-        return memberService.findEmailByNickname(decodedNickname);
+        return memberService.findEmailByNickname(nickname);
     }
 }

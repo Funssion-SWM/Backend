@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.mypage.service;
 
+import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
@@ -18,8 +19,7 @@ public class MyService {
 
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
-    private final MemberRepositoryImpl memberRepository;
-    private final LikeRepository likeRepository;
+    private final MemberRepository memberRepository;
 
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()
@@ -35,8 +35,7 @@ public class MyService {
     }
 
     public List<MemoListDto> getMyMemos(Long userId) {
-        return memoRepository.findAllByUserIdOrderById(userId)
-                .stream()
+        return memoRepository.findAllByUserIdOrderById(userId).stream()
                 .map(MemoListDto::new)
                 .toList();
     }

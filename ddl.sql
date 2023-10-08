@@ -3,6 +3,8 @@ CREATE SCHEMA memo;
 create schema comment;
 create schema post;
 create schema tag;
+create schema question;
+
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
     tag_id bigserial,
@@ -57,7 +59,10 @@ CREATE TABLE memo.info (
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
     tags varchar array DEFAULT '{}',
-    replies_count int8 not null default 0
+    replies_count int8 not null default 0,
+    is_created boolean NOT NULL DEFAULT true,
+    question_count int8 not null default 0,
+    constraint non_negative_question_count check (question_count >= 0)
 );
 
 CREATE TABLE member.auth (
@@ -80,10 +85,18 @@ CREATE TABLE member.history (
     memo_cnt int8 NOT NULL DEFAULT 0,
     blog_cnt int8 NOT NULL DEFAULT 0,
     question_cnt int8 NOT NULL DEFAULT 0,
+    answer_cnt int8 NOT NULL DEFAULT 0,
     date date NOT NULL DEFAULT current_date
 );
 
 CREATE TABLE member.like  (
+    id bigserial PRIMARY KEY,
+    user_id int8 NOT NULL,
+    post_type varchar NOT NULL,
+    post_id int8 NOT NULL,
+    created timestamp DEFAULT current_timestamp
+);
+CREATE TABLE member.dislike  (
     id bigserial PRIMARY KEY,
     user_id int8 NOT NULL,
     post_type varchar NOT NULL,
@@ -99,7 +112,9 @@ CREATE TABLE member.info (
     introduce varchar(100),
     tags varchar array DEFAULT '{}',
     image_path varchar(300),
-    created_date timestamp
+    created_date timestamp,
+    follow_cnt int8 not null default 0,
+    follower_cnt int8 not null default 0
 );
 
 create table comment.info(
@@ -112,8 +127,9 @@ create table comment.info(
     likes int8 not null default 0,
     re_comments int8 not null default 0,
     comment_text text not null,
-    created_date timestamp,
-    updated_date timestamp
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    CONSTRAINT non_negative_re_comments CHECK (re_comments >= 0)
 );
 
 CREATE TABLE member.like_comment (
@@ -132,8 +148,8 @@ CREATE TABLE comment.re_comments (
     likes int8 NOT NULL DEFAULT 0,
     parent_id int8 NOT NULL,
     comment_text text NOT NULL,
-    created_date timestamp NULL,
-    updated_date timestamp NULL
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp
 );
 
 CREATE TABLE post.search_history (
@@ -142,4 +158,49 @@ CREATE TABLE post.search_history (
     search_text text,
     access_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_tag boolean
+);
+
+create table question.info(
+    id bigserial primary key,
+    author_id int8 NOT NULL,
+    author_name varchar,
+    author_image_path varchar,
+    title varchar(255) NOT NULL,
+    description text null,
+    text jsonb,
+    likes int8 NOT NULL DEFAULT 0,
+    is_solved boolean NOT NULL DEFAULT false,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    tags varchar array DEFAULT '{}',
+    replies_count int8 not null default 0,
+    answers int8 not null default 0,
+    memo_id int8 not null,
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
+    constraint non_negative_answers_count check (answers >= 0)
+);
+
+create table question.answer(
+    id bigserial primary key,
+    question_id int8 not null,
+    author_id int8 not null,
+    author_name varchar,
+    author_image_path varchar,
+    text jsonb,
+    likes int8 NOT NULL DEFAULT 0,
+    dislikes int8 NOT NULL DEFAULT 0,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    is_selected boolean not null default false,
+    replies_count int8 not null default 0,
+    CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
+    CONSTRAINT non_negative_likes CHECK (likes >= 0),
+    CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
+);
+
+CREATE TABLE "member".follow (
+    id bigserial NOT NULL,
+    user_id int8 NOT NULL,
+    followed_user_id int8 NOT NULL,
+    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

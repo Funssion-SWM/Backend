@@ -6,11 +6,12 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.domain.Post;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 @Getter
+@SuperBuilder
 public class Comment extends Post {
     private PostType postTypeWithComment;
     @NotEmpty

@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.member.service;
 
 import Funssion.Inforum.domain.member.dto.request.CodeCheckDto;
+import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.ValidatedDto;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
@@ -34,9 +36,11 @@ public class MailService {
     @Transactional
     public IsSuccessResponseDto sendEmailCode(String beVerifiedEmail){
         try {
+            LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
+
             String generatedCode = makeRandomString();
             authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
-            authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
+            authCodeRepository.insertEmailCodeForVerification(dueDate,beVerifiedEmail, generatedCode);
             sendEmailForRegistration(beVerifiedEmail,generatedCode);
         }catch(DataAccessException e){
             return new IsSuccessResponseDto(false,"오류 발생");
@@ -44,16 +48,15 @@ public class MailService {
         return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 코드를 전송하였습니다!");
     }
     @Transactional
-    public IsSuccessResponseDto sendEmailLink(String beVerifiedEmail){
-        try {
-            String generatedCode = makeRandomString();
-            authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
-            authCodeRepository.insertEmailCodeForVerification(beVerifiedEmail, generatedCode);
-            sendEmailForUpdatingPassword(beVerifiedEmail,generatedCode);
-        }catch(DataAccessException e){
-            return new IsSuccessResponseDto(false,"오류 발생");
-        }
-        return new IsSuccessResponseDto(true,"성공적으로 해당 이메일로 비밀번호 수정 링크를 전송하였습니다!");
+    public GenCodeResponse sendEmailLink(String beVerifiedEmail){
+        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
+
+        String generatedCode = makeRandomString();
+        authCodeRepository.invalidateExistedEmailCode(beVerifiedEmail);
+        authCodeRepository.insertEmailCodeForVerification(dueDate, beVerifiedEmail, generatedCode);
+        sendEmailForUpdatingPassword(beVerifiedEmail,generatedCode);
+
+        return new GenCodeResponse(generatedCode);
     }
     public ValidatedDto isAuthorizedEmail(CodeCheckDto requestCodeDto){
         boolean isAuthorized = authCodeRepository.checkRequestCode(requestCodeDto);
@@ -88,7 +91,7 @@ public class MailService {
         String content =
                 " 반갑습니다!" + "<br>" + "Inforum 비밀번호 업데이트를 위한 이메일 입니다." +    //html 형식으로 작성 !
                         "<br><br>" +
-                        "비밀번호 인증을 위한 링크는 <a href='https://www.inforum.me/users/password/'" + code + "> 비밀번호 수정 링크</a>입니다." +
+                        "비밀번호 인증을 위한 확인 코드는 <span style='color :blue;'>"  + code + "</span> 입니다." +
                         "<br>" +
                         "해당 링크를 클릭하여 비밀번호를 변경해주세요." +
                         "<br>" +

@@ -1,8 +1,8 @@
 package Funssion.Inforum.domain.tag.repository;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
-import Funssion.Inforum.common.exception.DuplicateException;
-import Funssion.Inforum.common.exception.UpdateFailException;
+import Funssion.Inforum.common.exception.etc.DuplicateException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.tag.TagUtils;
 import lombok.extern.slf4j.Slf4j;

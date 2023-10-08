@@ -1,8 +1,9 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.ArrayToListException;
-import Funssion.Inforum.common.exception.BadRequestException;
+import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -16,10 +17,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +37,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, tags, is_temporary) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?);";
+        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, tags, is_temporary, is_created) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
         List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
@@ -52,6 +51,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setString(7, memo.getColor());
             psmt.setArray(8,TagUtils.createSqlArray(template,listOfTagsInMemo));
             psmt.setBoolean(9, memo.getIsTemporary());
+            psmt.setBoolean(10, !memo.getIsTemporary());
             return psmt;
         }, keyHolder);
         long createdMemoId = keyHolder.getKey().longValue();
@@ -60,16 +60,18 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Integer days) {
+    public List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt) {
         String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
-                "order by likes desc, memo_id desc";
-        return template.query(sql, memoRowMapper(), days);
+                "order by likes desc, memo_id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), days, memoCnt, pageNum * memoCnt);
     }
 
     @Override
-    public List<Memo> findAllOrderById() {
-        String sql = "select * from memo.info where is_temporary = false order by memo_id desc";
-        return template.query(sql, memoRowMapper());
+    public List<Memo> findAllOrderById(Long pageNum, Long memoCnt) {
+        String sql = "select * from memo.info where is_temporary = false order by memo_id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
@@ -101,27 +103,27 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), getParams(searchStringList));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType) {
-        String sql = "select * from memo.info where is_temporary = false and ";
+        StringBuilder sql = new StringBuilder("select * from (select * from memo.info where is_temporary = false) m where ");
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_title like ? or ";
+            sql.append("memo_title ilike ? or ");
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql += "memo_text::text like ? ";
-            if (i != searchStringList.size() - 1) sql += "or ";
+            sql.append("memo_text::text ilike ? ");
+            if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
-        sql += getOrderBySql(orderType);
+        sql.append(getOrderBySql(orderType));
 
-        return sql;
+        return sql.toString();
     }
 
     private static Object[] getParams(List<String> searchStringList) {
         ArrayList<String> params = new ArrayList<>();
         params.addAll(searchStringList);
         params.addAll(searchStringList);
-        return params.stream().toArray();
+        return params.toArray();
     }
 
     @Override
@@ -168,11 +170,13 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
                         .repliesCount(rs.getLong("replies_count"))
+                        .questionCount(rs.getLong("question_count"))
                         .memoTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
                         .isTemporary(rs.getBoolean("is_temporary"))
+                        .isCreated(rs.getBoolean("is_created"))
                         .build());
     }
 
@@ -180,11 +184,29 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = ?, is_temporary = ? " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = current_timestamp, is_temporary = ? " +
                 "where memo_id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), Date.valueOf(LocalDate.now()), form.getIsTemporary(), memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), memoId)
+                    == 0)
+                throw new MemoNotFoundException("update content fail");
+        } catch (SQLException e) {
+            throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+        }
+        return findById(memoId);
+    }
+
+    @Override
+    public Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated) {
+
+        String sql = "update memo.info " +
+                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, created_date = current_timestamp, updated_date = current_timestamp, is_temporary = ? , is_created = ? " +
+                "where memo_id = ?";
+        try {
+            if (template.update(sql,
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), isCreated
+                    , memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {
@@ -215,6 +237,16 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public void delete(Long id) {
         String sql = "delete from memo.info where memo_id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
+    }
+
+    @Override
+    public void updateQuestionsCountOfMemo(Long memoId, Sign sign) {
+        String sql ="";
+        switch(sign){
+            case PLUS -> sql = "update memo.info set question_count = question_count + 1 where memo_id = ?";
+            case MINUS-> sql = "update memo.info set question_count = question_count - 1 where memo_id = ?";
+        }
+        if(template.update(sql,memoId)==0) throw new MemoNotFoundException("update question count fail");
     }
 
     public Long getCommentsCount(Long id){

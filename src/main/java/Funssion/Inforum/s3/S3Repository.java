@@ -1,6 +1,6 @@
 package Funssion.Inforum.s3;
 
-import Funssion.Inforum.common.exception.ImageIOException;
+import Funssion.Inforum.common.exception.etc.ImageIOException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ public class S3Repository {
     public String upload(MultipartFile memberProfileImage, String bucketName, String imageName) {
         try {
             ObjectMetadata imageMetaData = S3Utils.getObjectMetaData(memberProfileImage);
+            log.info("bucket = {} image = {}", bucketName, imageName);
             s3Client.putObject(bucketName, imageName, memberProfileImage.getInputStream(), imageMetaData);
             return getImageURL(bucketName, imageName);
         } catch (IOException e) {
@@ -45,16 +46,23 @@ public class S3Repository {
         s3Client.deleteObject(bucketName,imageNameInS3);
     }
 
+    public void deleteFromText(String bucketName, String text) {
+        String[] parts = text.split("\"src\": \"");
+
+        for (int i = 1; i < parts.length; i++) {
+            String imageName = S3Utils.parseImageNameOfS3(parts[i].substring(0, parts[i].indexOf('"')));
+            s3Client.deleteObject(bucketName, imageName);
+        }
+    }
+
     public void deleteAll(String folderName) {
         ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request()
                 .withBucketName(defaultBucketName)
                 .withPrefix(folderName);
         ListObjectsV2Result listObjectsV2Result = s3Client.listObjectsV2(listObjectsV2Request);
-        ListIterator<S3ObjectSummary> listIterator = listObjectsV2Result.getObjectSummaries().listIterator();
 
-        while (listIterator.hasNext()){
-            S3ObjectSummary objectSummary = listIterator.next();
-            DeleteObjectRequest request = new DeleteObjectRequest(defaultBucketName,objectSummary.getKey());
+        for (S3ObjectSummary objectSummary : listObjectsV2Result.getObjectSummaries()) {
+            DeleteObjectRequest request = new DeleteObjectRequest(defaultBucketName, objectSummary.getKey());
             s3Client.deleteObject(request);
         }
     }

@@ -27,21 +27,14 @@ public class AuthCodeRepository {
      * 1. 이메일 인증코드 전송을 이전에 시행한 적이 있고, 만료되지 않았다면 해당 row의 expiration 필드값을 true로 변환
      */
     public void invalidateExistedEmailCode(String beVerifiedEmail){
-        log.info("Email ={} Verification Occurred",beVerifiedEmail);
         String sql =
                 "UPDATE MEMBER.AUTH_CODE " +
                         "SET EXPIRATION = true " +
                         "WHERE EMAIL = ? AND EXPIRATION = false";
-        try {
-            jdbcTemplate.update(sql, beVerifiedEmail);
-        }catch(DataAccessException e){
-            log.error("error in invalidateExistedEmailCode = "+e.getMessage());
-        }
-
+        jdbcTemplate.update(sql, beVerifiedEmail);
     }
 
-    public void insertEmailCodeForVerification(String beVerifiedEmail,String code){
-        LocalDateTime dueDate = LocalDateTime.now().plusMinutes(5); //유효시간 5분
+    public void insertEmailCodeForVerification(LocalDateTime dueDate, String beVerifiedEmail,String code){
 
         //----------------- member.info 테이블 insert -----------------//
         String sql = "insert into member.auth_code(email,code,due_date) values(?,?,?)";

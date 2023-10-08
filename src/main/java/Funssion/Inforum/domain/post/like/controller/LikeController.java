@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.like.controller;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.exception.notfound.UrlNotFoundException;
+import Funssion.Inforum.domain.post.like.dto.response.DisLikeResponseDto;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.like.service.LikeService;
 import jakarta.validation.constraints.Min;
@@ -28,6 +28,13 @@ public class LikeController {
     ) {
         return likeService.getLikeInfo(postType, postId);
     }
+    @GetMapping("/{postType}/{postId}/dislike")
+    public DisLikeResponseDto getDisLikeInfo(
+            @PathVariable PostType postType,
+            @PathVariable @Min(1) Long postId
+    ) {
+        return likeService.getDisLikeInfo(postType, postId);
+    }
 
     @PostMapping("/{postType}/{postId}/like")
     public void like(@PathVariable PostType postType, @PathVariable @Min(1) Long postId) {
@@ -37,5 +44,13 @@ public class LikeController {
     @PostMapping("/{postType}/{postId}/unlike")
     public void unlike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId) {
         likeService.unlikePost(postType, postId);
+    }
+    @PostMapping("/{postType}/{postId}/dislike")
+    public void dislike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId){
+        likeService.dislikePost(postType,postId);
+    }
+    @PostMapping("/{postType}/{postId}/undislike")
+    public void unDislike(@PathVariable PostType postType, @PathVariable @Min(1) Long postId){
+        likeService.unDislikePost(postType,postId);
     }
 }

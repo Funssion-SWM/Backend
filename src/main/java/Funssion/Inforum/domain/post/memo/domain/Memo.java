@@ -22,8 +22,10 @@ public class Memo extends Post {
     private String text;
     private String color;
     private Long repliesCount;
+    private Long questionCount;
     private List<String> memoTags;
     private Boolean isTemporary;
+    private Boolean isCreated;
 
 
 
