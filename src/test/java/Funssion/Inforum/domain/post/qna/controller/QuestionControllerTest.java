@@ -126,7 +126,7 @@ class QuestionControllerTest {
                 }
 
                 @Test
-                @WithMockUser
+                @WithMockUser(AUTHORIZED_USER)
                 @DisplayName("정렬 파라미터 검증")
                 void getLatestQuestion() throws Exception {
                     mvc.perform(get("/questions"))
@@ -149,7 +149,7 @@ class QuestionControllerTest {
                 }
             }
             @Test
-            @WithMockUser
+            @WithMockUser(AUTHORIZED_USER)
             @DisplayName("질문 id로 받아오기")
             void getQuestionById() throws Exception {
                 Long questionId = 1L;
