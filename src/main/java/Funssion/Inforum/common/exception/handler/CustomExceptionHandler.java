@@ -4,6 +4,7 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DuplicateException;
 import Funssion.Inforum.common.exception.etc.ImageIOException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import Funssion.Inforum.common.exception.etc.ValueTooLongException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.exception.response.ErrorResult;
 import jakarta.validation.ValidationException;
@@ -66,6 +67,12 @@ public class CustomExceptionHandler {
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorResult handleDataIntegrityViolationOfJSONB(DataIntegrityViolationException e){
+        return new ErrorResult(BAD_REQUEST,e.getMessage());
+    }
+
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(ValueTooLongException.class)
+    public ErrorResult handleDataIntegrityViolationOfJSONB(ValueTooLongException e){
         return new ErrorResult(BAD_REQUEST,e.getMessage());
     }
 

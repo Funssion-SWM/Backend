@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.mypage.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.exception.etc.ValueTooLongException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -109,23 +110,9 @@ public class MyRepositoryJdbc implements MyRepository {
         StringBuilder sqlBuilder = new StringBuilder("UPDATE member.info SET ");
         List<Object> params = new ArrayList<>();
 
-        if (memberProfileEntity.getIntroduce() != null) {
-            sqlBuilder.append("introduce = ?, ");
-            params.add(memberProfileEntity.getIntroduce());
-        }
-
-        if (memberProfileEntity.getUserTags() != null) {
-            sqlBuilder.append("tags = ?, ");
-            try {
-                params.add(TagUtils.createSqlArray(template,memberProfileEntity.getUserTags()));
-            } catch (SQLException e) {
-                throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
-            }
-        }
-
-        sqlBuilder.append("image_path = ?, ");
-        params.add(memberProfileEntity.getProfileImageFilePath());
-
+        appendIntroductionSql(memberProfileEntity, sqlBuilder, params);
+        appendTagsSql(memberProfileEntity, sqlBuilder, params);
+        appendImagePathSql(memberProfileEntity, sqlBuilder, params);
 
         // parameter 추가시 sql 뒤에 ", " 삭제
         if (params.size() > 0) {
@@ -149,6 +136,32 @@ public class MyRepositoryJdbc implements MyRepository {
                 memberProfileEntity.getIntroduce(),
                 "성공적으로 프로필을 수정하였습니다."
         );
+    }
+
+    private static void appendImagePathSql(MemberProfileEntity memberProfileEntity, StringBuilder sqlBuilder, List<Object> params) {
+        sqlBuilder.append("image_path = ?, ");
+        params.add(memberProfileEntity.getProfileImageFilePath());
+    }
+
+    private void appendTagsSql(MemberProfileEntity memberProfileEntity, StringBuilder sqlBuilder, List<Object> params) {
+        if (memberProfileEntity.getUserTags() != null) {
+            sqlBuilder.append("tags = ?, ");
+            try {
+                params.add(TagUtils.createSqlArray(template, memberProfileEntity.getUserTags()));
+            } catch (SQLException e) {
+                throw new ArrayToListException("Javax.sql.Array (PostgreSQL의 array) 를 List로 변경할 때의 오류",e);
+            }
+        }
+    }
+
+    private static void appendIntroductionSql(MemberProfileEntity memberProfileEntity, StringBuilder sqlBuilder, List<Object> params) {
+        if (memberProfileEntity.getIntroduce() != null) {
+            if (memberProfileEntity.getIntroduce().length() >=300){
+                throw new ValueTooLongException("자기소개는 300자 이내로 작성해주세요.");
+            }
+            sqlBuilder.append("introduce = ?, ");
+            params.add(memberProfileEntity.getIntroduce());
+        }
     }
 
     @Override
