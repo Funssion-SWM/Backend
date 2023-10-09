@@ -12,6 +12,8 @@ public interface QuestionRepository {
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId);
 
     List<Question> getQuestions(Long userId, OrderType orderBy);
+    List<Question> getMyQuestions(Long userId, OrderType orderBy);
+
 
     Long getAuthorId(Long questionId);
 

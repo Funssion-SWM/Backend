@@ -219,6 +219,27 @@ class QnAIntegrationTest {
 
     }
 
+    @Test
+    @DisplayName("자신이 질문한 것들만 가져오기")
+    @Transactional
+    void getMyQuestion(){
+        makePureQuestion();
+        makePureQuestion();
+        makeQuestionOfOtherAuthor();
+
+        List<Question> myQuestions = questionRepository.getMyQuestions(saveMemberId, OrderType.NEW);
+        assertThat(myQuestions).hasSize(2);
+    }
+
+    private void makeQuestionOfOtherAuthor() {
+        Long questionAuthorId = createUniqueAuthor();
+        QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")
+                .tags(List.of("tag1", "tag2"))
+                .build();
+        questionService.createQuestion(questionSaveDto, questionAuthorId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
+    }
+
 
     private Question makePureQuestion() {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
@@ -384,7 +405,7 @@ class QnAIntegrationTest {
             Question question1 = makePureQuestion();
             Question question2 = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             makeAnswerOfQuestion(answerAuthorId,List.of(question1,question2));
 
@@ -400,7 +421,7 @@ class QnAIntegrationTest {
         void getOrderedAnswerListOfQuestion(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
                     .description("답변 요약")
@@ -427,7 +448,7 @@ class QnAIntegrationTest {
         @DisplayName("고유 id로 답변 하나만 가져오기")
         void getAnswerOfQuestion(){
             Question question = makePureQuestion();
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -510,7 +531,7 @@ class QnAIntegrationTest {
         void updateAnswer(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -531,7 +552,7 @@ class QnAIntegrationTest {
         void deleteAnswer(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -561,7 +582,7 @@ class QnAIntegrationTest {
         void selectAnswer(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -588,7 +609,7 @@ class QnAIntegrationTest {
         void selectDuplicateAnswer(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -606,7 +627,7 @@ class QnAIntegrationTest {
         void AuthorOfAnswerSelectOwnAnswer(){
             Question question = makePureQuestion();
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -642,7 +663,7 @@ class QnAIntegrationTest {
 
             Question question = questionService.createQuestion(questionSaveDto, saveMemberId, Long.valueOf(Constant.NONE_MEMO_QUESTION));
 
-            Long answerAuthorId = createAuthorOfAnswer();
+            Long answerAuthorId = createUniqueAuthor();
 
             AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
                     .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
@@ -655,7 +676,7 @@ class QnAIntegrationTest {
         }
 
     }
-    private Long createAuthorOfAnswer(){
+    private Long createUniqueAuthor(){
         MemberSaveDto memberSaveDto = MemberSaveDto.builder()
                 .userName("answer_user")
                 .loginType(LoginType.NON_SOCIAL)
@@ -671,10 +692,10 @@ class QnAIntegrationTest {
 
 
         SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
-        Long answerAuthorId = saveMemberResponseDto.getId();
-        myRepository.createProfile(answerAuthorId, memberProfileEntity);
+        Long authorId = saveMemberResponseDto.getId();
+        myRepository.createProfile(authorId, memberProfileEntity);
 
-        return answerAuthorId;
+        return authorId;
     }
 
 }
