@@ -231,6 +231,66 @@ class QnAIntegrationTest {
         assertThat(myQuestions).hasSize(2);
     }
 
+    @Test
+    @DisplayName("자신이 좋아요한 질문만 가져오기")
+    @Transactional
+    void getMyLikedQuestion(){
+        Question question1 = makePureQuestion();
+        Question question2 = makePureQuestion();
+        Question question3 = makePureQuestion();
+        Long likeUserId = createUniqueAuthor();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(likeUserId.toString(),"12345678"));
+
+        likeService.likePost(PostType.QUESTION, question1.getId());
+        likeService.likePost(PostType.QUESTION, question2.getId());
+
+        List<Question> myLikedQuestions = questionRepository.getMyLikedQuestions(likeUserId);
+        assertThat(myLikedQuestions).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("자신이 답변한 질문만 가져오기")
+    @Transactional
+    void getQuestionsOfMyAnswer(){
+        Question question1 = makePureQuestion();
+        Question question2 = makePureQuestion();
+        Question question3 = makePureQuestion();
+        Long answerAuthorId = createUniqueAuthor();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(answerAuthorId.toString(),"12345678"));
+        AnswerSaveDto answerSaveDto = AnswerSaveDto.builder()
+                .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"답변 내용\", \"type\": \"text\"}]}]}")
+                .description("답변 요약")
+                .build();
+        answerService.createAnswerOfQuestion(answerSaveDto,question2.getId(),answerAuthorId);
+        answerService.createAnswerOfQuestion(answerSaveDto,question3.getId(),answerAuthorId);
+
+        List<Question> questionsOfMyAnswer = questionRepository.getQuestionsOfMyAnswer(answerAuthorId);
+        assertThat(questionsOfMyAnswer).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("자신이 좋아요한 답변이 존재하는 질문들 가져오기")
+    @Transactional
+    void getQuestionsOfMyLikedAnswer(){
+        Question question1 = makePureQuestion();
+        Question question2 = makePureQuestion();
+        Question question3 = makePureQuestion();
+
+
+        Long answerAuthorId = createUniqueAuthor();
+        makeAnswerOfQuestion(answerAuthorId,List.of(question1,question2));
+        List<Answer> answersOfQuestion1 = answerService.getAnswersOfQuestion(saveMemberId, question1.getId());
+        List<Answer> answersOfQuestion2 = answerService.getAnswersOfQuestion(saveMemberId, question2.getId());
+
+        Long likeUserId = createUniqueAuthor();
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(likeUserId.toString(),"12345678"));
+        likeService.likePost(PostType.ANSWER, answersOfQuestion1.get(0).getId());
+        likeService.likePost(PostType.ANSWER, answersOfQuestion2.get(0).getId());
+
+        List<Question> questionsOfMyLikedAnswer = questionRepository.getQuestionsOfMyLikedAnswer(likeUserId);
+        assertThat(questionsOfMyLikedAnswer).hasSize(2);
+    }
+
     private void makeQuestionOfOtherAuthor() {
         Long questionAuthorId = createUniqueAuthor();
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
@@ -460,13 +520,13 @@ class QnAIntegrationTest {
             assertThat(answerOfQuestion.getText()).isEqualTo(answer.getText());
         }
 
-        private void makeAnswerOfQuestion(Long authorId, List<Question> questions) {
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
-            answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(1).getId(),authorId);
-        }
 
+    }
+    private void makeAnswerOfQuestion(Long authorId, List<Question> questions) {
+        answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+        answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+        answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(0).getId(),authorId);
+        answerService.createAnswerOfQuestion(createAnswerSaveDto(),questions.get(1).getId(),authorId);
     }
 
     @Nested

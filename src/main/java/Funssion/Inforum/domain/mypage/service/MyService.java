@@ -58,4 +58,16 @@ public class MyService {
     public List<Question> getMyQuestions(Long userId) {
         return questionRepository.getMyQuestions(userId, OrderType.NEW);
     }
+
+    public List<Question> getMyLikedQuestions(Long userId) {
+        return questionRepository.getMyLikedQuestions(userId);
+    }
+
+    public List<Question> getQuestionsOfMyAnswer(Long userId){
+        return questionRepository.getQuestionsOfMyAnswer(userId);
+    }
+
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
+        return questionRepository.getQuestionsOfMyLikedAnswer(userId);
+    }
 }

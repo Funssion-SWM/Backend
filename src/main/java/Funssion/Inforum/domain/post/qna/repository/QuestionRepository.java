@@ -25,4 +25,9 @@ public interface QuestionRepository {
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
+    List<Question> getMyLikedQuestions(Long userId);
+
+    List<Question> getQuestionsOfMyAnswer(Long userId);
+
+    List<Question> getQuestionsOfMyLikedAnswer(Long userId);
 }

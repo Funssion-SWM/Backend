@@ -45,7 +45,20 @@ public class MyController {
     public List<Question> getMyQuestions(@PathVariable @Min(1) Long userId ){
         return myService.getMyQuestions(userId);
     }
+    @GetMapping("/questions/liked")
+    public List<Question> getMyLikedQuestions(@PathVariable @Min(1) Long userId ){
+        return myService.getMyLikedQuestions(userId);
+    }
 
+    @GetMapping("/questions/answered")
+    public List<Question> getQuestionsOfMyAnswer(@PathVariable @Min(1) Long userId ){
+        return myService.getQuestionsOfMyAnswer(userId);
+    }
+
+    @GetMapping("/questions/answer/liked")
+    public List<Question> getQuestionsOfMyLikedAnswer(@PathVariable @Min(1) Long userId){
+        return myService.getQuestionsOfMyLikedAnswer(userId);
+    }
     @GetMapping("/history")
     public List<MyRecordNumDto> getHistory(
             @PathVariable @Min(1) Long userId,

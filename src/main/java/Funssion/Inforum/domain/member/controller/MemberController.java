@@ -6,10 +6,8 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
-import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
-import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -89,7 +87,6 @@ public class MemberController {
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
-        log.info("user id = {}",userId);
         Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
         boolean isLogin = !userId.equals("anonymousUser");
         return new ValidMemberDto(loginId, isLogin);

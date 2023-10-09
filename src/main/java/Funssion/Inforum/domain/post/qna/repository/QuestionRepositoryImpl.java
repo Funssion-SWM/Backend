@@ -109,6 +109,41 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
+    public List<Question> getMyLikedQuestions(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join member.like AS L " +
+                "on Q.id = L.post_id and L.post_type = 'QUESTION' " +
+                "where L.user_id = ? "+
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
+    }
+
+    @Override
+    public List<Question> getQuestionsOfMyAnswer(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join (select question_id from question.answer where author_id = ?) AS A " +
+                "on Q.id = A.question_id " +
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
+    }
+
+    @Override
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join (select question_id from question.answer AS QA join member.like AS ML " +
+                    "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
+                "on Q.id = A.question_id " +
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
+    }
+
+    @Override
     public Question getOneQuestion(Long questionId) {
         String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from question.info where id = ?";
