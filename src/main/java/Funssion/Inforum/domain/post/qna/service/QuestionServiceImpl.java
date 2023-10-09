@@ -5,9 +5,12 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
@@ -93,6 +97,31 @@ public class QuestionServiceImpl implements QuestionService {
         return questionRepository.getQuestionsOfMemo(userId, memoId);
     }
 
+    @Override
+    public List<Question> searchQuestionsBy(
+            String searchString,
+            Long userId,
+            OrderType orderBy,
+            Boolean isTag) {
+
+        if (isTag)
+            return getQuestionsSearchedByTag(searchString, userId, orderBy);
+
+        return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy);
+    }
+
+    private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy) {
+        if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
+            return questionRepository.findAllByTag(searchString, orderBy);
+
+        return questionRepository.findAllByTag(searchString, userId, orderBy);
+    }
+
+    private static List<String> getSearchStringList(String searchString) {
+        return Arrays.stream(searchString.split(" "))
+                .map(str -> "%" + str + "%")
+                .toList();
+    }
 
     @Override
     public QuestionDto getOneQuestion(Long loginId, Long questionId) {

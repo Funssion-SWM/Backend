@@ -5,6 +5,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -139,6 +141,63 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             throw new DuplicateSelectedAnswerException("두개의 답변을 채택할 순 없습니다.");
         }
     }
+
+    @Override
+    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
+        String sql = getSql(searchStringList, orderType);
+
+        return template.query(sql, questionRowMapper(), getParams(searchStringList));
+    }
+    private static String getSql(List<String> searchStringList, OrderType orderType) {
+        StringBuilder sql = new StringBuilder("select * from question.info where ");
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql.append("title ilike ? or ");
+        }
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql.append("text::text ilike ? ");
+            if (i != searchStringList.size() - 1) sql.append("or ");
+        }
+
+        sql.append(getOrderBySql(orderType));
+
+        return sql.toString();
+    }
+
+    private static Object[] getParams(List<String> searchStringList) {
+        ArrayList<String> params = new ArrayList<>();
+        params.addAll(searchStringList);
+        params.addAll(searchStringList);
+        return params.toArray();
+    }
+
+    @Override
+    public List<Question> findAllByTag(String tagText, OrderType orderType) {
+        String sql = "select * from question.info where ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, questionRowMapper(), tagText);
+    }
+
+    @Override
+    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType) {
+        String sql = "select * from question.info where author_id = ? and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, questionRowMapper(), userId, tagText);
+    }
+
+    private static String getOrderBySql(OrderType orderType) {
+        switch (orderType) {
+            case HOT -> {
+                return  " order by likes desc, id desc";
+            }
+            case NEW -> {
+                return  " order by id desc";
+            }
+        }
+        throw new BadRequestException("Invalid orderType value");
+    }
+
     @Override
     public Question updateLikesInQuestion(Long likes, Long questionId) {
         String sql = "update question.info " +
