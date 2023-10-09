@@ -28,7 +28,7 @@ public class NonSocialLoginFailureHandler implements AuthenticationFailureHandle
 
     private String convertFailureObjectToString() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        IsSuccessResponseDto isSuccessResponseDto = new IsSuccessResponseDto(false, "로그인에 실패하였습니다.");
+        IsSuccessResponseDto isSuccessResponseDto = new IsSuccessResponseDto(false, "아이디 또는 비밀번호를 잘못 입력하였습니다.");
         String successResponse = objectMapper.writeValueAsString(isSuccessResponseDto);
         return successResponse;
     }
