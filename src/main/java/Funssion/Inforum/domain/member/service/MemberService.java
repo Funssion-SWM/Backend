@@ -18,6 +18,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.jwt.TokenProvider;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -32,8 +33,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
@@ -51,6 +54,7 @@ public class MemberService {
     private final CommentRepository commentRepository;
     private final S3Repository s3Repository;
     private final FollowRepository followRepository;
+    private final ProfileRepository profileRepository;
 
     @Value("${aws.s3.profile-dir}")
     private String profileDir;
@@ -239,6 +243,14 @@ public class MemberService {
         answerRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
+
+    @Transactional
+    public void withdrawUser(Long userId) {
+        String anonymousUserName = UUID.randomUUID().toString().substring(0, 15);
+        profileRepository.updateProfile(userId, new MemberProfileEntity(null, anonymousUserName, "탈퇴한 유저입니다."));
+        memberRepository.deleteUser(userId);
+    }
+
 
     @Transactional(readOnly = true)
     public MemberProfileDto getMemberProfile(Long userId){

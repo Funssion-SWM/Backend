@@ -31,6 +31,12 @@ public class MemberProfileEntity {
         this.userTags = userTags;
     }
 
+    public MemberProfileEntity(String profileImageFilePath, String nickname, String introduce) {
+        this.profileImageFilePath = profileImageFilePath;
+        this.nickname = nickname;
+        this.introduce = introduce;
+    }
+
     public static RowMapper<MemberProfileEntity> MemberInfoRowMapper() {
         return ((rs, rowNum) ->
                 MemberProfileEntity.builder()
