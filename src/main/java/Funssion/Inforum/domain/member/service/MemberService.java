@@ -18,15 +18,21 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.jwt.TokenProvider;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
@@ -34,6 +40,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+    private final TokenProvider tokenProvider;
+    @Value("${jwt.domain}") private String domain;
+
     private final MemberRepository memberRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
@@ -47,7 +56,7 @@ public class MemberService {
     private String profileDir;
 
     @Transactional
-    public SaveMemberResponseDto requestMemberRegistration (MemberSaveDto memberSaveDto){
+    public SaveMemberResponseDto requestMemberRegistration (MemberSaveDto memberSaveDto, HttpServletRequest request, HttpServletResponse response) throws IOException {
         //중복 처리 한번더 검증
         if(!isValidEmail(memberSaveDto.getUserEmail()).isValid()){
             throw new DuplicateMemberException("이미 가입된 회원 이메일입니다.");
@@ -58,9 +67,51 @@ public class MemberService {
 
         NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
         SaveMemberResponseDto savedMember = memberRepository.save(member);
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(memberSaveDto.getUserEmail(), memberSaveDto.getUserPw());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        makeLoginForSavedUser(request, response, authentication);
         return savedMember;
     }
 
+    private void makeLoginForSavedUser(HttpServletRequest request, HttpServletResponse response, UsernamePasswordAuthenticationToken authentication) {
+        String accessToken = tokenProvider.createAccessToken(authentication);
+        String refreshToken = tokenProvider.createRefreshToken(authentication);
+
+        resolveResponseCookieByOrigin(request, response, accessToken, refreshToken);
+    }
+
+    private void resolveResponseCookieByOrigin(HttpServletRequest request, HttpServletResponse response, String accessToken, String refreshToken){
+        if(request.getServerName().equals("localhost") || request.getServerName().equals("dev.inforum.me")){
+            addCookie(accessToken, refreshToken, response,false);
+        }
+        else{
+            addCookie(accessToken, refreshToken, response,true);
+        }
+    }
+    private void addCookie(String accessToken, String refreshToken, HttpServletResponse response,boolean isHttpOnly) {
+        String accessCookieString = makeAccessCookieString(accessToken, isHttpOnly);
+        String refreshCookieString = makeRefreshCookieString(refreshToken, isHttpOnly);
+        response.setHeader("Set-Cookie", accessCookieString);
+        response.addHeader("Set-Cookie", refreshCookieString);
+    }
+
+    private String makeAccessCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "accessToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=3600;";
+        }
+    }
+
+    private String makeRefreshCookieString(String token,boolean isHttpOnly) {
+        if(isHttpOnly){
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000; SameSite=Lax; HttpOnly; Secure";
+        }else{
+            return "refreshToken=" + token + "; Path=/; Domain=" + domain + "; Max-Age=864000;";
+        }
+    }
     @Transactional
     public IsSuccessResponseDto requestNicknameRegistration(NicknameRequestDto nicknameRequestDto,Long userId){
         ValidatedDto isValidName = isValidName(nicknameRequestDto.getNickname());
