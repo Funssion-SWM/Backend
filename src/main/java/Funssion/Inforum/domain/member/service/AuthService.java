@@ -18,7 +18,6 @@ public class AuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        log.info("useremail = {}",userEmail);
         NonSocialMember member = nonSocialMemberRepository.findNonSocialMemberByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("이 이메일과 매칭되는 유저가 존재하지 않습니다 : " + userEmail));
         // non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. -> 토큰의 getName의 user_id가 들어갑니다.

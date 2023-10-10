@@ -25,6 +25,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -46,8 +47,8 @@ public class MemberController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto){ //dto로 바꿔야함
-        return memberService.requestMemberRegistration(memberSaveDto);
+    public SaveMemberResponseDto create(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid MemberSaveDto memberSaveDto) throws IOException { //dto로 바꿔야함
+        return memberService.requestMemberRegistration(memberSaveDto,request,response);
     }
 
     @PostMapping("/authenticate-email")
