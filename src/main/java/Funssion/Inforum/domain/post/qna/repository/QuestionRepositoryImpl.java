@@ -5,7 +5,6 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerException;
@@ -134,7 +133,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from question.info AS Q " +
-                "join (select question_id from question.answer where author_id = ?) AS A " +
+                "join (select distinct question_id from question.answer where author_id = ?) AS A " +
                 "on Q.id = A.question_id " +
                 "order by Q.id desc";
         return template.query(sql,questionRowMapper(),userId);
@@ -145,7 +144,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from question.info AS Q " +
-                "join (select question_id from question.answer AS QA join member.like AS ML " +
+                "join (select distinct question_id from question.answer AS QA join member.like AS ML " +
                     "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
                 "on Q.id = A.question_id " +
                 "order by Q.id desc";
