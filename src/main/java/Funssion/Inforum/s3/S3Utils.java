@@ -1,21 +1,14 @@
 package Funssion.Inforum.s3;
 
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.UUID;
 
 public abstract class S3Utils{
 
+    public static final int MAX_PROFILE_IMAGE_SIZE = 2_097_152;
     public static ObjectMetadata getObjectMetaData(MultipartFile file){
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
