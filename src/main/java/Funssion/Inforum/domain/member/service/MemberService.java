@@ -138,6 +138,9 @@ public class MemberService {
         return new ValidatedDto(isEmailAvailable,message);
     }
     public ValidatedDto isRegisteredEmail(String email){
+        if(memberRepository.findSocialMemberByEmail(email).isPresent()){
+            return new ValidatedDto(false,"구글 로그인으로 등록된 계정입니다.");
+        }
 
         boolean isEmailRegistered = memberRepository.findNonSocialMemberByEmail(email).isPresent();
         String message = isEmailRegistered ? "해당 이메일로 코드를 전송하겠습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
