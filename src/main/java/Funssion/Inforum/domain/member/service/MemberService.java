@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -133,7 +132,7 @@ public class MemberService {
     }
     public ValidatedDto isValidEmail(String email){
 
-        boolean isEmailAvailable = memberRepository.findNonSocialMemberByEmail(email).isEmpty();
+        boolean isEmailAvailable = memberRepository.findNonSocialMemberByEmail(email).isEmpty() && memberRepository.findSocialMemberByEmail(email).isEmpty();
         String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return new ValidatedDto(isEmailAvailable,message);
     }
