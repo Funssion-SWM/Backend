@@ -30,4 +30,6 @@ public interface MemberRepository {
     IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto);
 
     String findEmailByAuthCode(String code);
+
+    void deleteUser(Long userId);
 }

@@ -1,16 +1,14 @@
 package Funssion.Inforum.domain.mypage.controller;
 
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
-import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.service.MyService;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+import Funssion.Inforum.domain.post.qna.domain.Question;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +41,24 @@ public class MyController {
     @GetMapping("/memos/drafts")
     public List<MemoListDto> getMyDraftMemos(@PathVariable @Min(1) Long userId) {return myService.getMyDraftMemos(userId);}
 
+    @GetMapping("/questions")
+    public List<Question> getMyQuestions(@PathVariable @Min(1) Long userId ){
+        return myService.getMyQuestions(userId);
+    }
+    @GetMapping("/questions/liked")
+    public List<Question> getMyLikedQuestions(@PathVariable @Min(1) Long userId ){
+        return myService.getMyLikedQuestions(userId);
+    }
+
+    @GetMapping("/questions/answered")
+    public List<Question> getQuestionsOfMyAnswer(@PathVariable @Min(1) Long userId ){
+        return myService.getQuestionsOfMyAnswer(userId);
+    }
+
+    @GetMapping("/questions/answer/liked")
+    public List<Question> getQuestionsOfMyLikedAnswer(@PathVariable @Min(1) Long userId){
+        return myService.getQuestionsOfMyLikedAnswer(userId);
+    }
     @GetMapping("/history")
     public List<MyRecordNumDto> getHistory(
             @PathVariable @Min(1) Long userId,

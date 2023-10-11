@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 
@@ -12,6 +13,8 @@ public interface QuestionRepository {
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId);
 
     List<Question> getQuestions(Long userId, OrderType orderBy);
+    List<Question> getMyQuestions(Long userId, OrderType orderBy);
+
 
     Long getAuthorId(Long questionId);
 
@@ -23,4 +26,14 @@ public interface QuestionRepository {
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
+    List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType);
+    List<Question> findAllByTag(String tagText, OrderType orderType);
+    List<Question> findAllByTag(String tagText, Long userId, OrderType orderType);
+
+    void updateProfileImage(Long userId, String profileImageFilePath);
+    List<Question> getMyLikedQuestions(Long userId);
+
+    List<Question> getQuestionsOfMyAnswer(Long userId);
+
+    List<Question> getQuestionsOfMyLikedAnswer(Long userId);
 }

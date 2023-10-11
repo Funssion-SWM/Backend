@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -78,6 +79,15 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
+    public List<Question> getMyQuestions(Long userId,OrderType orderBy) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                        "from question.info AS Q "+
+                        "where Q.author_id = ? ";
+        return template.query(sql, questionRowMapper(),userId);
+    }
+
+    @Override
     public Long getAuthorId(Long questionId) {
         String sql = "select author_id from question.info where id = ?";
         try{
@@ -97,6 +107,48 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         "on Q.id = L.post_id";
 
         return template.query(sql,questionLikeRowMapper(),memoId, userId);
+    }
+
+    @Override
+    public void updateProfileImage(Long userId, String profileImageFilePath) {
+        String sql = "update question.info " +
+                "set author_image_path = ? " +
+                "where author_id = ?";
+
+        template.update(sql, profileImageFilePath, userId);
+    }
+    public List<Question> getMyLikedQuestions(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join member.like AS L " +
+                "on Q.id = L.post_id and L.post_type = 'QUESTION' " +
+                "where L.user_id = ? "+
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
+    }
+
+    @Override
+    public List<Question> getQuestionsOfMyAnswer(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join (select distinct question_id from question.answer where author_id = ?) AS A " +
+                "on Q.id = A.question_id " +
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
+    }
+
+    @Override
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
+        String sql =
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from question.info AS Q " +
+                "join (select distinct question_id from question.answer AS QA join member.like AS ML " +
+                    "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
+                "on Q.id = A.question_id " +
+                "order by Q.id desc";
+        return template.query(sql,questionRowMapper(),userId);
     }
 
     @Override
@@ -130,6 +182,63 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             throw new DuplicateSelectedAnswerException("두개의 답변을 채택할 순 없습니다.");
         }
     }
+
+    @Override
+    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
+        String sql = getSql(searchStringList, orderType);
+
+        return template.query(sql, questionRowMapper(), getParams(searchStringList));
+    }
+    private static String getSql(List<String> searchStringList, OrderType orderType) {
+        StringBuilder sql = new StringBuilder("select * from question.info where ");
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql.append("title ilike ? or ");
+        }
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql.append("text::text ilike ? ");
+            if (i != searchStringList.size() - 1) sql.append("or ");
+        }
+
+        sql.append(getOrderBySql(orderType));
+
+        return sql.toString();
+    }
+
+    private static Object[] getParams(List<String> searchStringList) {
+        ArrayList<String> params = new ArrayList<>();
+        params.addAll(searchStringList);
+        params.addAll(searchStringList);
+        return params.toArray();
+    }
+
+    @Override
+    public List<Question> findAllByTag(String tagText, OrderType orderType) {
+        String sql = "select * from question.info where ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, questionRowMapper(), tagText);
+    }
+
+    @Override
+    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType) {
+        String sql = "select * from question.info where author_id = ? and ? ilike any(tags)" + getOrderBySql(orderType);
+
+        return template.query(sql, questionRowMapper(), userId, tagText);
+    }
+
+    private static String getOrderBySql(OrderType orderType) {
+        switch (orderType) {
+            case HOT -> {
+                return  " order by likes desc, id desc";
+            }
+            case NEW -> {
+                return  " order by id desc";
+            }
+        }
+        throw new BadRequestException("Invalid orderType value");
+    }
+
     @Override
     public Question updateLikesInQuestion(Long likes, Long questionId) {
         String sql = "update question.info " +

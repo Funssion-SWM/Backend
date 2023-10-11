@@ -114,7 +114,8 @@ CREATE TABLE member.info (
     image_path varchar(300),
     created_date timestamp,
     follow_cnt int8 not null default 0,
-    follower_cnt int8 not null default 0
+    follower_cnt int8 not null default 0,
+    is_deleted bool not null default false
 );
 
 create table comment.info(

@@ -59,7 +59,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     public Optional<NonSocialMember> findNonSocialMemberByEmail(String email) {
-        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL,U.FOLLOW_CNT,U.FOLLOWER_CNT FROM member.info AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.EMAIL = ?";
+        String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.EMAIL,U.FOLLOW_CNT,U.FOLLOWER_CNT FROM member.info AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.IS_DELETED = false AND U.EMAIL = ?";
         try{
             NonSocialMember nonSocialMember = jdbcTemplate.queryForObject(sql,nonSocialmemberRowMapper(),email);
             return Optional.of(nonSocialMember);
@@ -68,7 +68,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
     public Optional<SocialMember> findSocialMemberByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE is_deleted = false and EMAIL = ?";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,socialMemberRowMapper(),email);
             return Optional.of(socialMember);
@@ -80,7 +80,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public Optional<Member> findByName(String name) {
-        String sql ="SELECT ID,EMAIL,NAME FROM member.info WHERE NAME = ?";
+        String sql ="SELECT ID,EMAIL,NAME FROM member.info WHERE IS_DELETED = false AND NAME = ?";
 
         try{
             Member member = jdbcTemplate.queryForObject(sql,memberEmailAndNameRowMapper(),name);
@@ -102,7 +102,7 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     @Override
     public String findEmailByNickname(String nickname) {
-        String sql ="select email from member.info where name = ?";
+        String sql ="select email from member.info where is_deleted = false and name = ?";
         try{
             return jdbcTemplate.queryForObject(sql, String.class, nickname);
         }catch(EmptyResultDataAccessException e){
@@ -215,6 +215,15 @@ public class MemberRepositoryImpl implements MemberRepository {
                 .email(email)
                 .loginType(LoginType.SOCIAL)
                 .build();
+    }
+
+    @Override
+    public void deleteUser(Long userId) {
+        String sql = "update member.info set is_deleted = true where id = ?";
+
+        if (jdbcTemplate.update(sql, userId) != 1) {
+            throw new BadRequestException("fail in deleting user : userId = " + userId);
+        }
     }
 
     private RowMapper<NonSocialMember> nonSocialmemberRowMapper(){

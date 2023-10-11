@@ -65,12 +65,12 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
                                 //users 포함한 end point 보안 적용 X
-                                .requestMatchers("/users/**").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll() // 개인 정보 수정은 권한 필요
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
                                 .requestMatchers(HttpMethod.GET,"/tags/**").permitAll()
                                 .requestMatchers("/oauth2/authorization/**").permitAll()
                                 .requestMatchers("/login/oauth2/code/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll() // 개인 정보 수정은 권한 필요
                                 .requestMatchers("/error/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/memos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/questions/**").permitAll()

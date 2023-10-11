@@ -4,18 +4,22 @@ import Funssion.Inforum.domain.mypage.domain.History;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 public class MyRecordNumDto {
     private final Long historyId;
     private final LocalDate date;
-    private final Long postCnt;
+    private final Long memoCnt;
+    private final Long blogCnt;
+    private final Long questionCnt;
+    private final Long answerCnt;
 
     public MyRecordNumDto(History history) {
         this.historyId = history.getId();
         this.date = history.getDate();
-        this.postCnt = history.getMemoCnt() + history.getBlogCnt() + history.getQuestionCnt();
+        this.memoCnt = history.getMemoCnt();
+        this.blogCnt = history.getBlogCnt();
+        this.questionCnt = history.getQuestionCnt();
+        this.answerCnt = history.getAnswerCnt();
     }
 }

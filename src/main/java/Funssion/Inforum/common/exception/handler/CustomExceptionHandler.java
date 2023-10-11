@@ -4,10 +4,12 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DuplicateException;
 import Funssion.Inforum.common.exception.etc.ImageIOException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import Funssion.Inforum.common.exception.etc.ValueTooLongException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.exception.response.ErrorResult;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.FieldError;
@@ -67,6 +69,13 @@ public class CustomExceptionHandler {
     public ErrorResult handleDataIntegrityViolationOfJSONB(DataIntegrityViolationException e){
         return new ErrorResult(BAD_REQUEST,e.getMessage());
     }
+
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(ValueTooLongException.class)
+    public ErrorResult handleDataIntegrityViolationOfJSONB(ValueTooLongException e){
+        return new ErrorResult(BAD_REQUEST,e.getMessage());
+    }
+
     @ResponseStatus(BAD_REQUEST)
     @ExceptionHandler(TypeMismatchException.class)
     public ErrorResult handleTypeMismatchEx (TypeMismatchException e) {
@@ -101,6 +110,11 @@ public class CustomExceptionHandler {
         return e.getErrorResult();
     }
 
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(PSQLException.class)
+    public ErrorResult handlePSQLException(PSQLException e){
+        return new ErrorResult(BAD_REQUEST, "DB exception occurred");
+    }
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Throwable.class)
     public ErrorResult handleGeneralEx(Throwable e) {

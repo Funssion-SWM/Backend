@@ -1,15 +1,16 @@
 package Funssion.Inforum.domain.member.controller;
 
 
+import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
-import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
-import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.post.utils.AuthUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +25,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,8 +47,8 @@ public class MemberController {
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public SaveMemberResponseDto create(@RequestBody @Valid MemberSaveDto memberSaveDto){ //dto로 바꿔야함
-        return memberService.requestMemberRegistration(memberSaveDto);
+    public SaveMemberResponseDto create(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid MemberSaveDto memberSaveDto) throws IOException { //dto로 바꿔야함
+        return memberService.requestMemberRegistration(memberSaveDto,request,response);
     }
 
     @PostMapping("/authenticate-email")
@@ -89,7 +91,6 @@ public class MemberController {
     @GetMapping("/check")
     public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
         String userId = context.getAuthentication().getName();
-        log.info("user id = {}",userId);
         Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
         boolean isLogin = !userId.equals("anonymousUser");
         return new ValidMemberDto(loginId, isLogin);
@@ -98,22 +99,14 @@ public class MemberController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) {
+        AuthUtils.logout(request, response);
+    }
 
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName())) {
-                    log.info("[Logout] User Id ={},", cookie.getValue());
-                }
-                else if ("refreshToken".equals(cookie.getName())){
-                    log.info("[Logout] refresh token invalidated");
-                }
-            }
-        }
-        ResponseCookie invalidateAccessCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        ResponseCookie invalidateRefreshCookie = ResponseCookie.from("refreshToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        response.addHeader("Set-Cookie", invalidateAccessCookie.toString());
-        response.addHeader("Set-Cookie",invalidateRefreshCookie.toString());
+    @PostMapping("/withdraw")
+    public void withdraw(HttpServletRequest request, HttpServletResponse response) {
+        Long userId = SecurityContextUtils.getAuthorizedUserId();
+        memberService.withdrawUser(userId);
+        AuthUtils.logout(request, response);
     }
 
     @PostMapping("/profile/{id}")
