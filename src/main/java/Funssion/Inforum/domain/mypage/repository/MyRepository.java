@@ -3,16 +3,11 @@ package Funssion.Inforum.domain.mypage.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.domain.mypage.domain.History;
-
 import Funssion.Inforum.domain.member.dto.response.IsProfileSavedDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
-import org.springframework.cglib.core.Local;
+import Funssion.Inforum.domain.mypage.domain.History;
 
-import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MyRepository {
