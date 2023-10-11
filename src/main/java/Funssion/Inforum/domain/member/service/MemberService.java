@@ -72,7 +72,7 @@ public class MemberService {
         NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
         SaveMemberResponseDto savedMember = memberRepository.save(member);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(memberSaveDto.getUserEmail(), memberSaveDto.getUserPw());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(savedMember.getId(), memberSaveDto.getUserPw());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         makeLoginForSavedUser(request, response, authentication);
