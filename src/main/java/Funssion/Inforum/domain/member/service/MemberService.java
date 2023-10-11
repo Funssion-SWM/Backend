@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,6 +42,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+
     private final TokenProvider tokenProvider;
     @Value("${jwt.domain}") private String domain;
 
@@ -133,7 +133,7 @@ public class MemberService {
     }
     public ValidatedDto isValidEmail(String email){
 
-        boolean isEmailAvailable = memberRepository.findNonSocialMemberByEmail(email).isEmpty();
+        boolean isEmailAvailable = memberRepository.findNonSocialMemberByEmail(email).isEmpty() && memberRepository.findSocialMemberByEmail(email).isEmpty();
         String message = isEmailAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return new ValidatedDto(isEmailAvailable,message);
     }
@@ -181,6 +181,8 @@ public class MemberService {
 
     private IsProfileSavedDto createMemberProfileWithImage(Long userId, MemberInfoDto memberInfoDto) {
         MultipartFile memberProfileImage = memberInfoDto.getImage();
+        checkImageSize(memberProfileImage);
+
         String imageName = S3Utils.generateImageNameOfS3(memberInfoDto, userId);
 
         checkAlreadyExists(userId);
@@ -193,6 +195,11 @@ public class MemberService {
 
     }
 
+    private void checkImageSize(MultipartFile image){
+        if (image.getSize() > S3Utils.MAX_PROFILE_IMAGE_SIZE){
+            throw new BadRequestException("프로필 이미지 사이즈는 2MB 이하로 등록 가능합니다.");
+        }
+    }
     private void checkAlreadyExists(Long userId) {
         if(!Optional.ofNullable(myRepository.findProfileImageNameById(userId)).isEmpty()){
             throw new BadRequestException("이미 존재하는 프로필정보를 최초 저장하는 이슈. -> Patch로 전송바람");
@@ -224,6 +231,8 @@ public class MemberService {
 
     private IsProfileSavedDto updateMemberProfileWithImage(Long userId, MemberInfoDto memberInfoDto) {
         MultipartFile memberProfileImage = memberInfoDto.getImage();
+        checkImageSize(memberProfileImage);
+
         String imageName = S3Utils.generateImageNameOfS3(memberInfoDto, userId);
 
         Optional<String> priorImageName = Optional.ofNullable(myRepository.findProfileImageNameById(userId));
