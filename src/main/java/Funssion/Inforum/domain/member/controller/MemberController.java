@@ -1,9 +1,9 @@
 package Funssion.Inforum.domain.member.controller;
 
 
-import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.dto.request.*;
@@ -11,7 +11,6 @@ import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.service.MailService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
@@ -160,6 +158,8 @@ public class MemberController {
                                                 @RequestPart(value = "introduce", required = false)String introduce,
                                                 @RequestPart(value = "tags", required = false) String tags){
 
+        if(isNotOwnerOfProfile(userId)) throw new UnAuthorizedException("해당 유저의 프로필 수정 권한이 없습니다.");
+
         List<String> tagList = exceptionHandleOfList(tags);
         MemberInfoDto memberInfoDto;
         try {
@@ -170,6 +170,9 @@ public class MemberController {
         return memberService.updateMemberProfile(userId,memberInfoDto);
     }
 
+    private boolean isNotOwnerOfProfile(Long userId) {
+        return !userId.equals(SecurityContextUtils.getAuthorizedUserId());
+    }
 
 
     @GetMapping("/find-email-by")
