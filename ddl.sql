@@ -1,6 +1,7 @@
 CREATE SCHEMA member;
 create schema post;
 create schema tag;
+create schema score;
 
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
@@ -218,3 +219,10 @@ create table post.answer(
     CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
 );
 
+create table score.info (
+    id bigserial primary key,
+    user_id int8 not null,
+    score_type varchar(15) not null,
+    post_id int8 not null,
+    created_date timestamp default current_timestamp
+);
