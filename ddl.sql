@@ -1,5 +1,4 @@
 CREATE SCHEMA member;
-create schema comment;
 create schema post;
 create schema tag;
 
