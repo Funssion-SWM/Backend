@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
@@ -284,7 +285,7 @@ class MemoRepositoryJdbcTest {
             searchStringList.add("%JDK란?%"); // memo2
             searchStringList.add("%jwt란?%"); // memo3
 
-            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW);
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, SecurityContextUtils.ANONYMOUS_USER_ID);
 
             assertThat(foundMemoList).containsExactly(createdMemo3, createdMemo2, createdMemo);
         }

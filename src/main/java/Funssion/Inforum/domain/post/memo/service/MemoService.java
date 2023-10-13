@@ -208,7 +208,7 @@ public class MemoService {
         if (isTag)
             return getMemoListDtosSearchedByTag(searchString, userId, orderBy);
 
-        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy)
+        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy, userId)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();

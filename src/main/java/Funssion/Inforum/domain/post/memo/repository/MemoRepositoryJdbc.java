@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -21,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @Slf4j
@@ -96,13 +98,17 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
 
     @Override
-    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
-        String sql = getSql(searchStringList, orderType);
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId) {
+        String sql = getSql(searchStringList, orderType, userId);
 
-        return template.query(sql, memoRowMapper(), getParams(searchStringList));
+        return template.query(sql, memoRowMapper(), getParams(userId, searchStringList));
     }
-    private static String getSql(List<String> searchStringList, OrderType orderType) {
+    private static String getSql(List<String> searchStringList, OrderType orderType, Long userId) {
         StringBuilder sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false) m where ");
+
+        if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
+            sql.append("author_id = ? ");
+        }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
             sql.append("title ilike ? or ");
@@ -118,8 +124,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return sql.toString();
     }
 
-    private static Object[] getParams(List<String> searchStringList) {
+    private static Object[] getParams(Long userId, List<String> searchStringList) {
         ArrayList<String> params = new ArrayList<>();
+        if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
+            params.add(userId.toString());
+        }
         params.addAll(searchStringList);
         params.addAll(searchStringList);
         return params.toArray();

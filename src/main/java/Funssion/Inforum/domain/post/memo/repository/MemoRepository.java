@@ -16,7 +16,7 @@ public interface MemoRepository {
     List<Memo> findAllByUserIdOrderById(Long userId);
     List<Memo> findAllLikedMemosByUserId(Long userId);
     List<Memo> findAllDraftMemosByUserId(Long userId);
-    List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType);
+    List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId);
     List<Memo> findAllByTag(String tagText, OrderType orderType);
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
     Memo findById(Long id);

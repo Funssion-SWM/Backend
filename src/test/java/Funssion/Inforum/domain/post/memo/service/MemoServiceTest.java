@@ -308,7 +308,7 @@ public class MemoServiceTest {
             @Test
             @DisplayName("텍스트로 메모 검색")
             void searchMemosBySearchString() {
-                given(memoRepository.findAllBySearchQuery(any(), any()))
+                given(memoRepository.findAllBySearchQuery(any(), any(), any()))
                         .willReturn(List.of(memo3, memo2, memo1));
 
                 List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, HOT, false);
