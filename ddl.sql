@@ -4,7 +4,7 @@ create schema comment;
 create schema post;
 create schema tag;
 create schema question;
-
+create schema score;
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
     tag_id bigserial,
@@ -105,17 +105,17 @@ CREATE TABLE member.dislike  (
 );
 
 CREATE TABLE member.info (
-    id serial PRIMARY KEY,
-    name varchar(15) NOT NULL,
-    email varchar(60) NOT NULL,
-    login_type int8 NOT NULL DEFAULT 0,
-    introduce varchar(100),
-    tags varchar array DEFAULT '{}',
-    image_path varchar(300),
-    created_date timestamp,
-    follow_cnt int8 not null default 0,
-    follower_cnt int8 not null default 0,
-    is_deleted bool not null default false
+                             id serial PRIMARY KEY,
+                             name varchar(15) NOT NULL,
+                             email varchar(60) NOT NULL,
+                             login_type int8 NOT NULL DEFAULT 0,
+                             introduce varchar(100),
+                             tags varchar array DEFAULT '{}',
+                             image_path varchar(300),
+                             created_date timestamp,
+                             follow_cnt int8 not null default 0,
+                             follower_cnt int8 not null default 0,
+                             is_deleted bool not null default false
 );
 
 create table comment.info(
@@ -204,4 +204,12 @@ CREATE TABLE "member".follow (
     user_id int8 NOT NULL,
     followed_user_id int8 NOT NULL,
     created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+create table score.info (
+    id bigserial primary key,
+    user_id int8 not null,
+    score_type varchar(15) not null,
+    post_id int8 not null,
+    created_date timestamp default current_timestamp
 );
