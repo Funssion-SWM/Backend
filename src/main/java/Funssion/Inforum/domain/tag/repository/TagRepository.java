@@ -66,14 +66,14 @@ public class TagRepository {
 
 
     public IsSuccessResponseDto updateTags(Long memoId,ArrayList<String> updatedTags) throws SQLException {
-        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where memo_id = ?", Array.class,memoId));
         comparePriorTagWithUpdateTag(updatedTags, priorTags,memoId);
 
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 수정되었습니다.");
     }
 
     public IsSuccessResponseDto deleteTags(Long memoId) throws SQLException {
-        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from memo.info where memo_id = ?;", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where memo_id = ?;", Array.class,memoId));
         for (String priorTagName : priorTags) {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
@@ -85,7 +85,7 @@ public class TagRepository {
 
     public List<String> findAllOrderByCountDesc(Long userId) {
         String sql = "select t.tag_name " +
-                "from memo.info m, tag.memo_to_tag mtt, tag.info t " +
+                "from post.memo m, tag.memo_to_tag mtt, tag.info t " +
                 "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
                 "group by t.tag_name " +
                 "order by count(1) desc";
@@ -95,8 +95,8 @@ public class TagRepository {
 
     public List<String> findAllOrderByCountDesc(Long userId, Integer tagCnt) {
         String sql = "select t.tag_name " +
-                "from memo.info m, tag.memo_to_tag mtt, tag.info t " +
-                "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.memo_id and mtt.tag_id = t.id " +
+                "from post.memo m, tag.memo_to_tag mtt, tag.info t " +
+                "where m.is_temporary = false and m.author_id = ? and mtt.memo_id = m.id and mtt.tag_id = t.id " +
                 "group by t.tag_name " +
                 "order by count(1) desc " +
                 "limit ?";

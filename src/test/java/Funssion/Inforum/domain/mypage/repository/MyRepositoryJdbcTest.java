@@ -45,15 +45,15 @@ class MyRepositoryJdbcTest {
     @DisplayName("히스토리 수정")
     void updateHistoryTest() {
         repository.createHistory(TEST_USERID, QUESTION);
-        repository.updateHistory(TEST_USERID, BLOG, PLUS, curDate.toLocalDate());
+        repository.updateHistory(TEST_USERID, MEMO, PLUS, curDate.toLocalDate());
         repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate());
 
         History updated = repository.findMonthlyHistoryByUserId(TEST_USERID, LocalDate.now().getYear(), LocalDate.now().getMonthValue()).get(0);
 
-        assertThat(updated.getBlogCnt()).isEqualTo(1);
+        assertThat(updated.getMemoCnt()).isEqualTo(1);
         assertThat(updated.getQuestionCnt()).isEqualTo(0);
 
-        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID + 1, MEMO, PLUS, curDate.toLocalDate()))
+        assertThatThrownBy(() -> repository.updateHistory(TEST_USERID + 1, ANSWER, PLUS, curDate.toLocalDate()))
                 .isInstanceOf(HistoryNotFoundException.class);
 
         assertThatThrownBy(() -> repository.updateHistory(TEST_USERID, QUESTION, MINUS, curDate.toLocalDate()))
