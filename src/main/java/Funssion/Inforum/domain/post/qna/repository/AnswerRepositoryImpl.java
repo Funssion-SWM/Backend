@@ -27,7 +27,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     @Override
     public Answer createAnswer(Answer answer) {
 
-        String sql = "insert into question.answer(question_id,author_id, author_name, author_image_path, text) " +
+        String sql = "insert into post.answer(question_id,author_id, author_name, author_image_path, text) " +
                 "values(?,?,?,?,?::jsonb)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con->{
@@ -49,7 +49,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
                 +" case when L.post_id = A.id then true else false end as is_like, "
                 +" case when DL.post_id = A.id then true else false end as is_dislike"
                 +" FROM (SELECT id, question_id, author_id, author_name, author_image_path, text, dislikes, likes, created_date, updated_date, is_selected, replies_count"
-                        +" FROM question.answer WHERE question_id = ?) AS A"
+                        +" FROM post.answer WHERE question_id = ?) AS A"
                         +" left join (select post_id from member.dislike where user_id = ? and post_type = '"+PostType.ANSWER+"') AS DL"
                         +" on A.id = DL.post_id "
                         +" left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.ANSWER+"') AS L"
@@ -60,7 +60,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public Long getAuthorIdOf(Long answerId) {
-        String sql = "select author_id from question.answer where id = ?";
+        String sql = "select author_id from post.answer where id = ?";
         try {
             return template.queryForObject(sql, Long.class, answerId);
         }catch(EmptyResultDataAccessException e){
@@ -70,7 +70,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public Answer updateAnswer(AnswerSaveDto answerSaveDto, Long answerId) {
-        String sql = "update question.answer set text = ?::jsonb, updated_date = ? where id = ?";
+        String sql = "update post.answer set text = ?::jsonb, updated_date = ? where id = ?";
 
         if(template.update(sql, answerSaveDto.getText(), LocalDateTime.now(), answerId)==0){
             throw new AnswerNotFoundException("update answer fail");
@@ -81,7 +81,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     public Answer getAnswerById(Long id){
         String sql = "select id, question_id, author_id, author_name, author_image_path, question_id, dislikes, text, likes, created_date, updated_date, is_selected, replies_count"
-                + " from question.answer where id = ?";
+                + " from post.answer where id = ?";
         try{
             return template.queryForObject(sql,answerRowMapper(),id);
         }catch(EmptyResultDataAccessException e){
@@ -93,15 +93,15 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     public void updateAnswersCountOfQuestion(Long questionId, Sign sign) {
         String sql = "";
         switch(sign){
-            case PLUS -> sql = "update question.info set answers = answers + 1 where id = ?";
-            case MINUS -> sql = "update question.info set answers = answers - 1 where id = ?";
+            case PLUS -> sql = "update post.question set answers = answers + 1 where id = ?";
+            case MINUS -> sql = "update post.question set answers = answers - 1 where id = ?";
         }
         if (template.update(sql,questionId) == 0) throw new AnswerNotFoundException("update likes fail");
     }
 
     @Override
     public Answer updateLikesInAnswer(Long likes, Long answerId) {
-        String sql = "update question.answer " +
+        String sql = "update post.answer " +
                 "set likes = ? " +
                 "where id = ?";
 
@@ -111,7 +111,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public Answer updateDisLikesInAnswer(Long disLikes, Long answerId) {
-        String sql = "update question.answer " +
+        String sql = "update post.answer " +
                 "set dislikes = ? " +
                 "where id = ?";
 
@@ -121,7 +121,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public void deleteAnswer(Long answerId) {
-        String sql = "delete from question.answer where id = ?";
+        String sql = "delete from post.answer where id = ?";
         if(template.update(sql,answerId)==0){
             throw new AnswerNotFoundException("삭제할 답변이 존재하지 않습니다.");
         }
@@ -129,7 +129,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public Answer select(Long answerId) {
-        String sql = "update question.answer set is_selected = true where id = ?";
+        String sql = "update post.answer set is_selected = true where id = ?";
         if(template.update(sql,answerId)==0){
             throw new AnswerNotFoundException("삭제할 답변이 존재하지 않습니다.");
         }
@@ -138,7 +138,7 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public void updateProfileImage(Long userId, String profileImageFilePath) {
-        String sql = "update question.answer " +
+        String sql = "update post.answer " +
                 "set author_image_path = ? " +
                 "where author_id = ?";
 

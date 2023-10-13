@@ -40,7 +40,7 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public Comment createComment(Comment comment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "insert into comment.info (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)"
+        String sql = "insert into post.comment (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)"
                 + "values (?, ?, ?, ?, ?, ?, ?)";
         int updatedRow = template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
@@ -60,12 +60,12 @@ public class CommentRepositoryImpl implements CommentRepository{
         return getCommentById(keyHolder.getKey().longValue());
     }
     private Comment getCommentById(Long commentId){
-        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, re_comments, post_type, comment_text, created_date, updated_date " +
-                "from comment.info where id =?";
+        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, recomments, post_type, comment_text, created_date, updated_date " +
+                "from post.comment where id =?";
         return template.queryForObject(sql,commentRowMapper(),commentId);
     }
     public void updateProfileImageOfComment(Long userId, String authorProfileImagePath){
-        String sql = "update comment.info " +
+        String sql = "update post.comment " +
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
@@ -73,7 +73,7 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     public void updateProfileImageOfReComment(Long userId, String authorProfileImagePath){
-        String sql = "update comment.re_comments " +
+        String sql = "update post.recomment " +
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
@@ -82,13 +82,13 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public PostIdAndTypeInfo getPostIdByCommentId(Long commentId) {
-        String sql = "select post_id, post_type from comment.info where id = ?";
+        String sql = "select post_id, post_type from post.comment where id = ?";
         return template.queryForObject(sql,postIdAndPostTypeRowMapper(),commentId);
     }
 
     @Override
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
-        String sql = "update comment.info set comment_text = ?, updated_date = ? where id = ?";
+        String sql = "update post.comment set comment_text = ?, updated_date = ? where id = ?";
         if (template.update(sql, commentUpdateDto.getCommentText(), LocalDateTime.now(), commentId) == 0) {
             throw new UpdateFailException("댓글 수정에 실패하였습니다.");
         }
@@ -99,7 +99,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
-        String sql = "update comment.re_comments set comment_text = ?, updated_date = ? where id = ?";
+        String sql = "update post.recomment set comment_text = ?, updated_date = ? where id = ?";
         if (template.update(sql, reCommentUpdateDto.getCommentText(), LocalDateTime.now(), reCommentId) == 0) {
             throw new UpdateFailException("대 댓글 수정에 실패하였습니다.");
         }
@@ -109,7 +109,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        String sql = "delete from comment.info where id = ?";
+        String sql = "delete from post.comment where id = ?";
         if(template.update(sql, commentId) == 0){
             throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
         }
@@ -126,14 +126,14 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     private void deleteReCommentsInTable(Long reCommentId) {
-        String sql = "delete from comment.re_comments where id =?";
+        String sql = "delete from post.recomment where id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
         }
     }
 
     private Long getParentCommentId(Long reCommentId) {
-        String sql = "select parent_id from comment.re_comments where id = ?";
+        String sql = "select parent_id from post.recomment where id = ?";
         return template.queryForObject(sql, Long.class, reCommentId);
     }
 
@@ -147,7 +147,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     private void insertReCommentInTable(ReComment reComment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "insert into comment.re_comments (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
+        String sql = "insert into post.recomment (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
                 + "values(?,?,?,?,?,?)";
         int updatedRow = template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
@@ -165,8 +165,8 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     private void updateNumberOfReCommentsOfComment(Long commentId, Boolean isDelete) {
-        String sql = isDelete? "update comment.info set re_comments = re_comments - 1 where id = ?"
-                :"update comment.info set re_comments = re_comments + 1 where id = ?";
+        String sql = isDelete? "update post.comment set recomments = recomments - 1 where id = ?"
+                :"update post.comment set recomments = recomments + 1 where id = ?";
         int updatedRow = template.update(sql, commentId);
         if (updatedRow != 1){
             throw new UpdateFailException("대댓글 수 갱신에 실패하였습니다.");
@@ -178,15 +178,15 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId) {
         String sql =
-                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.likes, COMMENT.re_comments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
+                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
-                "FROM (SELECT id, author_id, author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date " +
-                "FROM comment.info where post_type = ? and post_id = ?) COMMENT "+
+                "FROM (SELECT id, author_id, author_image_path, author_name, likes, recomments, comment_text, created_date, updated_date " +
+                "FROM post.comment where post_type = ? and post_id = ?) COMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON COMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = false " +
                         "order by COMMENT.created_date";
-//        String sql = "SELECT c.id, c.author_id, c.author_image_path, c.author_name, c.likes, c.re_comments, c.comment_text, c.created_date, c.updated_date, " +
+//        String sql = "SELECT c.id, c.author_id, c.author_image_path, c.author_name, c.likes, c.recomments, c.comment_text, c.created_date, c.updated_date, " +
 //                "CASE WHEN m.user_id = ? THEN TRUE ELSE FALSE END AS is_liked " + // 로그인된 사용자가 좋아요를 했는지 확인하는 부분
-//                "FROM comment.info c " +
+//                "FROM post.comment c " +
 //                "LEFT JOIN member.like_comment m ON c.id = m.comment_id AND m.is_recomment = false " +
 //                "WHERE c.post_type = ?";
         return template.query(sql, commentListRowMapper(), userId, postType.toString(),postId, userId);
@@ -198,7 +198,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                 "SELECT DISTINCT RECOMMENT.id, RECOMMENT.author_id, RECOMMENT.author_image_path, RECOMMENT.author_name, RECOMMENT.likes, RECOMMENT.comment_text, RECOMMENT.created_date, RECOMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
                 "FROM (SELECT id, author_id, author_image_path, author_name, likes, comment_text, created_date, updated_date " +
-                "FROM comment.re_comments where parent_id = ?) RECOMMENT "+
+                "FROM post.recomment where parent_id = ?) RECOMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON RECOMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = true " +
                         "order by RECOMMENT.created_date";
         return template.query(sql,reCommentListRowMapper(),userId,parentCommentId,userId);
@@ -226,11 +226,11 @@ public class CommentRepositoryImpl implements CommentRepository{
     private String sqlUpdatingDifferentPost(PostType postType, Long id){
         switch(postType){
             case MEMO:
-                return "update memo.info set replies_count = replies_count + 1 where memo_id = ?";
+                return "update post.memo set replies_count = replies_count + 1 where id = ?";
             case QUESTION:
-                return "update question.info set replies_count = replies_count + 1 where id = ?";
+                return "update post.question set replies_count = replies_count + 1 where id = ?";
             case ANSWER:
-                return "update question.answer set replies_count = replies_count + 1 where id = ?";
+                return "update post.answer set replies_count = replies_count + 1 where id = ?";
             default:
                 throw new IllegalArgumentException("잘못된 postType의 댓글입니다.");
         }
@@ -240,9 +240,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     public void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo) {
         String sql = "";
         switch(postIdAndTypeInfo.getPostType()){
-            case MEMO -> sql = "update memo.info set replies_count = replies_count - 1 where memo_id = ?";
-            case QUESTION -> sql = "update question.info set replies_count = replies_count - 1 where id = ?";
-            case ANSWER -> sql = "update question.answer set replies_count = replies_count - 1 where id = ?";
+            case MEMO -> sql = "update post.memo set replies_count = replies_count - 1 where id = ?";
+            case QUESTION -> sql = "update post.question set replies_count = replies_count - 1 where id = ?";
+            case ANSWER -> sql = "update post.answer set replies_count = replies_count - 1 where id = ?";
         }
         if (template.update(sql,postIdAndTypeInfo.getPostId()) == 0) throw new NotFoundException("댓글 수 업데이트 실패 (댓글 또는 메모가 존재하지 않음)");
     }
@@ -250,8 +250,8 @@ public class CommentRepositoryImpl implements CommentRepository{
     private Long updateLikesOfCommentsTable(Long commentId, boolean isReComment, boolean isCancel) {
         Long currentLikes = getLikesOfComment(commentId, isReComment); // 현재 좋아요 수
         String sql = isReComment ?
-                "update comment.re_comments set likes = ? where id = ?"
-                : "update comment.info set likes = ? where id = ?";
+                "update post.recomment set likes = ? where id = ?"
+                : "update post.comment set likes = ? where id = ?";
 
         Long updatedLikes = isCancel ? currentLikes - 1 : currentLikes + 1;
         template.update(sql, updatedLikes, commentId);
@@ -291,8 +291,8 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
-        String sql = "select id,author_id,author_image_path, author_name, likes, re_comments, comment_text, created_date, updated_date, 'false' as is_liked " +
-                "from comment.info " +
+        String sql = "select id,author_id,author_image_path, author_name, likes, recomments, comment_text, created_date, updated_date, 'false' as is_liked " +
+                "from post.comment " +
                 "where id = ?";
         try {
             return Optional.of(template.queryForObject(sql, commentListRowMapper(), commentId));
@@ -303,8 +303,8 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     private Long getLikesOfComment(Long commentId,boolean isReComment){
         String sql = "";
-        if (isReComment) sql = "select likes from comment.re_comments where id = ?";
-        else sql ="select likes from comment.info where id = ?";
+        if (isReComment) sql = "select likes from post.recomment where id = ?";
+        else sql ="select likes from post.comment where id = ?";
         try{
             return template.queryForObject(sql, Long.class, commentId);
         }catch(EmptyResultDataAccessException e){
@@ -314,8 +314,8 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public Long findAuthorIdByCommentId(Long commentId, Boolean isReComment){
         String sql = "";
-        if (isReComment) sql = "select author_id from comment.re_comments where id = ?";
-        else sql ="select author_id from comment.info where id =?";
+        if (isReComment) sql = "select author_id from post.recomment where id = ?";
+        else sql ="select author_id from post.comment where id =?";
         try {
             return template.queryForObject(sql, Long.class, commentId);
         }catch(EmptyResultDataAccessException e){
@@ -347,7 +347,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .isLike(rs.getBoolean("is_liked"))
                         .likes(rs.getLong("likes"))
-                        .reCommentsNumber(rs.getLong("re_comments"))
+                        .reCommentsNumber(rs.getLong("recomments"))
                         .build());
     };
 

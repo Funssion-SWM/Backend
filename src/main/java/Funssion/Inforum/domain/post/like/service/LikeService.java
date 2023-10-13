@@ -153,7 +153,6 @@ public class LikeService {
                 Long updatedLikes = answer.updateLikes(sign);
                 answerRepository.updateLikesInAnswer(updatedLikes,postId);
             }
-            case BLOG -> throw new NotYetImplementException();
             default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");
         }
     }

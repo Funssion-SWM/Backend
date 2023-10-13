@@ -39,7 +39,7 @@ create table member.profile (
     tags varchar(60),
 )
 
-create table comment.info(
+create table post.comment(
     id int8 primary key DEFAULT nextval('comment_seq'::regclass),
     author_id int8 not null,
     author_image_path varchar(300),
@@ -47,14 +47,14 @@ create table comment.info(
     post_type varchar not null,
     post_id int8 not null,
     likes int8 not null default 0,
-    re_comments int8 not null default 0,
+    recomments int8 not null default 0,
     comment_text text not null,
     created_date timestamp,
     updated_date timestamp
 );
 
 
-create table comment.re_comments(
+create table post.recomment(
     id int8 primary key DEFAULT nextval('re_comment_seq'::regclass),
     author_id int8 not null,
     author_image_path varchar(300),

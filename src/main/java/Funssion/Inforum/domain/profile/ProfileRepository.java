@@ -26,7 +26,7 @@ public class ProfileRepository {
     }
 
     private void updateAuthorProfileInMemo(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update memo.info " +
+        String sql = "update post.memo " +
                 "set author_image_path = ?, author_name = ? " +
                 "where author_id = ?";
 
@@ -34,7 +34,7 @@ public class ProfileRepository {
     }
 
     private void updateAuthorProfileInComment(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update comment.info " +
+        String sql = "update post.comment " +
                 "set author_image_path = ?, author_name = ? " +
                 "where author_id = ?";
 
@@ -42,7 +42,7 @@ public class ProfileRepository {
     }
 
     private void updateAuthorProfileInReComment(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update comment.re_comments " +
+        String sql = "update post.recomment " +
                 "set author_image_path = ?, author_name = ? " +
                 "where author_id = ?";
 
@@ -50,7 +50,7 @@ public class ProfileRepository {
     }
 
     private void updateAuthorProfileInQuestion(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update question.info " +
+        String sql = "update post.question " +
                 "set author_image_path = ?, author_name = ? " +
                 "where author_id = ?";
 
@@ -58,7 +58,7 @@ public class ProfileRepository {
     }
 
     private void updateAuthorProfileInAnswer(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update question.answer " +
+        String sql = "update post.answer " +
                 "set author_image_path = ?, author_name = ? " +
                 "where author_id = ?";
 

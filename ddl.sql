@@ -1,10 +1,8 @@
 CREATE SCHEMA member;
-CREATE SCHEMA memo;
-create schema comment;
 create schema post;
 create schema tag;
-create schema question;
 create schema score;
+
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
     tag_id bigserial,
@@ -44,26 +42,6 @@ values
     ('MySQL', true, 0),
     ('MongoDB', true, 0),
     ('PostgreSQL', true, 0);
-
-CREATE TABLE memo.info (
-    memo_id bigserial PRIMARY KEY,
-    author_id int8 NOT NULL,
-    author_name varchar,
-    author_image_path varchar,
-    memo_title varchar(255) NOT NULL,
-    memo_description varchar(255),
-    memo_text jsonb,
-    memo_color varchar(50),
-    likes int8 NOT NULL DEFAULT 0,
-    is_temporary boolean NOT NULL DEFAULT false,
-    created_date timestamp default current_timestamp,
-    updated_date timestamp default current_timestamp,
-    tags varchar array DEFAULT '{}',
-    replies_count int8 not null default 0,
-    is_created boolean NOT NULL DEFAULT true,
-    question_count int8 not null default 0,
-    constraint non_negative_question_count check (question_count >= 0)
-);
 
 CREATE TABLE member.auth (
     id bigserial PRIMARY KEY,
@@ -105,32 +83,24 @@ CREATE TABLE member.dislike  (
 );
 
 CREATE TABLE member.info (
-                             id serial PRIMARY KEY,
-                             name varchar(15) NOT NULL,
-                             email varchar(60) NOT NULL,
-                             login_type int8 NOT NULL DEFAULT 0,
-                             introduce varchar(100),
-                             tags varchar array DEFAULT '{}',
-                             image_path varchar(300),
-                             created_date timestamp,
-                             follow_cnt int8 not null default 0,
-                             follower_cnt int8 not null default 0,
-                             is_deleted bool not null default false
+    id serial PRIMARY KEY,
+    name varchar(15) NOT NULL,
+    email varchar(60) NOT NULL,
+    login_type int8 NOT NULL DEFAULT 0,
+    introduce varchar(100),
+    tags varchar array DEFAULT '{}',
+    image_path varchar(300),
+    created_date timestamp,
+    follow_cnt int8 not null default 0,
+    follower_cnt int8 not null default 0,
+    is_deleted bool not null default false
 );
 
-create table comment.info(
-    id serial primary key,
-    author_id int8 not null,
-    author_image_path varchar(300),
-    author_name VARCHAR(15) not null,
-    post_type varchar not null,
-    post_id int8 not null,
-    likes int8 not null default 0,
-    re_comments int8 not null default 0,
-    comment_text text not null,
-    created_date timestamp default current_timestamp,
-    updated_date timestamp default current_timestamp,
-    CONSTRAINT non_negative_re_comments CHECK (re_comments >= 0)
+CREATE TABLE "member".follow (
+    id bigserial NOT NULL,
+    user_id int8 NOT NULL,
+    followed_user_id int8 NOT NULL,
+    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE member.like_comment (
@@ -141,7 +111,36 @@ CREATE TABLE member.like_comment (
     CONSTRAINT like_comment_user_id_comment_id_is_recomment_key UNIQUE (user_id, comment_id, is_recomment)
 );
 
-CREATE TABLE comment.re_comments (
+CREATE TABLE "member".notification (
+    id bigserial PRIMARY KEY,
+    receiver_id int8 NOT NULL,
+    receiver_post_type varchar(10),
+    receiver_post_id int8,
+    sender_id int8 NOT NULL,
+    sender_name varchar(15) NOT NULL,
+    sender_image_path varchar(300) NOT NULL,
+    sender_post_type varchar(10),
+    sender_post_id int8,
+    notification_type varchar(20) NOT NULL,
+    created timestamp NOT NULL DEFAULT current_timestamp
+);
+
+create table post.comment(
+    id serial primary key,
+    author_id int8 not null,
+    author_image_path varchar(300),
+    author_name VARCHAR(15) not null,
+    post_type varchar not null,
+    post_id int8 not null,
+    likes int8 not null default 0,
+    recomments int8 not null default 0,
+    comment_text text not null,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    CONSTRAINT non_negative_recomments CHECK (recomments >= 0)
+);
+
+CREATE TABLE post.recomment (
     id serial primary key,
     author_id int8 NOT NULL,
     author_image_path varchar(300) NULL,
@@ -161,7 +160,28 @@ CREATE TABLE post.search_history (
     is_tag boolean
 );
 
-create table question.info(
+
+CREATE TABLE post.memo (
+    id bigserial PRIMARY KEY,
+    author_id int8 NOT NULL,
+    author_name varchar,
+    author_image_path varchar,
+    title varchar(255) NOT NULL,
+    description varchar(255),
+    text jsonb,
+    color varchar(50),
+    likes int8 NOT NULL DEFAULT 0,
+    is_temporary boolean NOT NULL DEFAULT false,
+    created_date timestamp default current_timestamp,
+    updated_date timestamp default current_timestamp,
+    tags varchar array DEFAULT '{}',
+    replies_count int8 not null default 0,
+    is_created boolean NOT NULL DEFAULT true,
+    question_count int8 not null default 0,
+    constraint non_negative_question_count check (question_count >= 0)
+);
+
+create table post.question(
     id bigserial primary key,
     author_id int8 NOT NULL,
     author_name varchar,
@@ -181,7 +201,7 @@ create table question.info(
     constraint non_negative_answers_count check (answers >= 0)
 );
 
-create table question.answer(
+create table post.answer(
     id bigserial primary key,
     question_id int8 not null,
     author_id int8 not null,
@@ -197,13 +217,6 @@ create table question.answer(
     CONSTRAINT non_negative_replies_count CHECK (replies_count >= 0),
     CONSTRAINT non_negative_likes CHECK (likes >= 0),
     CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
-);
-
-CREATE TABLE "member".follow (
-    id bigserial NOT NULL,
-    user_id int8 NOT NULL,
-    followed_user_id int8 NOT NULL,
-    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 create table score.info (
