@@ -93,7 +93,9 @@ CREATE TABLE member.info (
     created_date timestamp,
     follow_cnt int8 not null default 0,
     follower_cnt int8 not null default 0,
-    is_deleted bool not null default false
+    is_deleted bool not null default false,
+    score int8 not null default 0,
+    daily_get_score int not null default 0
 );
 
 CREATE TABLE "member".follow (

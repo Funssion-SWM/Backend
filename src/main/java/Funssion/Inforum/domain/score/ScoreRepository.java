@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.score;
 
 import Funssion.Inforum.common.constant.ScoreType;
+import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -19,7 +20,8 @@ public class ScoreRepository {
         this.template = new JdbcTemplate(dataSource);
     }
 
-    public Score saveHistoryOfScoreInfo(Long userId, ScoreType scoreType, Long postId){
+    public Score saveScoreHistory(Long userId, ScoreType scoreType, Long postId){
+
         String sql = "insert into score.info(user_id,score_type,post_id) values (?,?,?)";
         KeyHolder scoreKeyHolder = new GeneratedKeyHolder();
         template.update(con->{
@@ -32,6 +34,14 @@ public class ScoreRepository {
         long keyOfScore = scoreKeyHolder.getKey().longValue();
         return findScoreInfoById(keyOfScore);
     }
+
+    public void deleteScoreHistory(Long userId, ScoreType scoreType, Long postId){
+        String sql = "delete from score.info where user_id = ? and score_type = ? and post_id = ?";
+        if(template.update(sql, userId, scoreType, postId)==0) throw new HistoryNotFoundException("삭제할 score 정보가 존재하지 않습니다.");
+
+    }
+
+
 
 
     private Score findScoreInfoById(Long id){
