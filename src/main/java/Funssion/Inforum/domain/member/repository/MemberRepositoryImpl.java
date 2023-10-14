@@ -226,6 +226,12 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
 
+    @Override
+    public Long getDailyScore(Long userId) {
+        String sql = "select daily_get_score from member.info where id = ?";
+        return jdbcTemplate.queryForObject(sql,Long.class,userId);
+    }
+
     private RowMapper<NonSocialMember> nonSocialmemberRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override

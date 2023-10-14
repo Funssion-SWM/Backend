@@ -95,7 +95,8 @@ CREATE TABLE member.info (
     follower_cnt int8 not null default 0,
     is_deleted bool not null default false,
     score int8 not null default 0,
-    daily_get_score int not null default 0
+    daily_get_score int not null default 0,
+    constraint limit_daily_get_score check (daily_get_score <= 200)
 );
 
 CREATE TABLE "member".follow (
@@ -222,9 +223,11 @@ create table post.answer(
 );
 
 create table score.info (
-    id bigserial primary key,
     user_id int8 not null,
     score_type varchar(15) not null,
+    -- score은 해당 작업으로 벌어들인 점수를 의미하며, 하루 최대 제한을 넘겼을 경우에 고정된 타입의 점수와 다를 경우를 추적하기 위함입니다.
+    score int8 not null,
     post_id int8 not null,
-    created_date timestamp default current_timestamp
+    created_date timestamp default current_timestamp,
+    primary key (user_id,score_type,post_id)
 );

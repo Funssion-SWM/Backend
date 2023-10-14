@@ -32,4 +32,6 @@ public interface MemberRepository {
     String findEmailByAuthCode(String code);
 
     void deleteUser(Long userId);
+
+    Long getDailyScore(Long userId);
 }

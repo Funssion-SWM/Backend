@@ -14,6 +14,7 @@ public class Score {
     private final Long id;
     private final Long userId;
     private final ScoreType scoreType;
+    private final Long score;
     private final Long postId;
     private final LocalDateTime createdDate;
 }
