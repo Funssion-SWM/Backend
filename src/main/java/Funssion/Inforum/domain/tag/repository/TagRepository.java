@@ -66,14 +66,14 @@ public class TagRepository {
 
 
     public IsSuccessResponseDto updateTags(Long memoId,ArrayList<String> updatedTags) throws SQLException {
-        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where memo_id = ?", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where id = ?", Array.class,memoId));
         comparePriorTagWithUpdateTag(updatedTags, priorTags,memoId);
 
         return new IsSuccessResponseDto(true,"tag들이 성공적으로 수정되었습니다.");
     }
 
     public IsSuccessResponseDto deleteTags(Long memoId) throws SQLException {
-        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where memo_id = ?;", Array.class,memoId));
+        List<String> priorTags = TagUtils.createStringListFromArray( template.queryForObject("select tags from post.memo where id = ?", Array.class,memoId));
         for (String priorTagName : priorTags) {
             Long priorTagId = template.queryForObject("select id from tag.info where tag_name = ?", Long.class, priorTagName);
             subtractTagCount(priorTagName);
