@@ -104,10 +104,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return template.query(sql, memoRowMapper(), getParams(userId, searchStringList));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType, Long userId) {
-        StringBuilder sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false) m where ");
+        StringBuilder sql;
 
         if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
-            sql.append("author_id = ? ");
+            sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false and author_id = ?) m where ");
+        } else {
+            sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false) m where ");
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
@@ -125,9 +127,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     private static Object[] getParams(Long userId, List<String> searchStringList) {
-        ArrayList<String> params = new ArrayList<>();
+        ArrayList<Object> params = new ArrayList<>();
         if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
-            params.add(userId.toString());
+            params.add(userId);
         }
         params.addAll(searchStringList);
         params.addAll(searchStringList);

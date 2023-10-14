@@ -42,12 +42,14 @@ class MemoRepositoryJdbcTest {
     MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,false);
     MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green", testTags,false);
     MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue",testTags, false);
+    Long userId1 = 9999L;
+    Long userId2 = 10000L;
     Memo memo1 = Memo.builder()
             .title(form1.getMemoTitle())
             .text(form1.getMemoText())
             .description(form1.getMemoDescription())
             .color(form1.getMemoColor())
-            .authorId(9999L)
+            .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
             .createdDate(LocalDateTime.now())
@@ -61,7 +63,7 @@ class MemoRepositoryJdbcTest {
             .text(form2.getMemoText())
             .description(form2.getMemoDescription())
             .color(form2.getMemoColor())
-            .authorId(9999L)
+            .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
             .createdDate(LocalDateTime.now())
@@ -75,7 +77,7 @@ class MemoRepositoryJdbcTest {
             .text(form3.getMemoText())
             .description(form3.getMemoDescription())
             .color(form3.getMemoColor())
-            .authorId(10000L)
+            .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
             .createdDate(LocalDateTime.now())
@@ -89,7 +91,7 @@ class MemoRepositoryJdbcTest {
             .text(form3.getMemoText())
             .description(form3.getMemoDescription())
             .color(form3.getMemoColor())
-            .authorId(10000L)
+            .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
             .createdDate(LocalDateTime.now())
@@ -129,8 +131,8 @@ class MemoRepositoryJdbcTest {
             createdMemo2 = repository.create(memo2);
             createdMemo3 = repository.create(memo3);
 
-            likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo2.getId()));
-            likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo3.getId()));
+            likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo2.getId()));
+            likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo3.getId()));
         }
 
         @Nested
@@ -206,8 +208,8 @@ class MemoRepositoryJdbcTest {
             createdMemo3 = repository.create(memo3);
             createdMemo4 = repository.create(memo4);
 
-            likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo3.getId()));
-            likeRepository.create(new Like(9999L, PostType.MEMO, createdMemo2.getId()));
+            likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo3.getId()));
+            likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo2.getId()));
         }
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
@@ -253,7 +255,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("최신 순 특정 유저 메모 불러오기")
         void findAllByUserIdOrderByIdTest() {
-            List<Memo> memoList = repository.findAllByUserIdOrderById(9999L);
+            List<Memo> memoList = repository.findAllByUserIdOrderById(userId1);
 
             assertThat(memoList.size()).isEqualTo(2);
             assertThat(memoList.get(0)).isEqualTo(createdMemo2);
@@ -262,7 +264,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("최신 순 좋아요한 메모 불러오기")
         void findAllLikedMemosByUserIdTest() {
-            List<Memo> likedMemoList = repository.findAllLikedMemosByUserId(9999L);
+            List<Memo> likedMemoList = repository.findAllLikedMemosByUserId(userId1);
 
             assertThat(likedMemoList.size()).isEqualTo(2);
             assertThat(likedMemoList.get(0)).isEqualTo(createdMemo3);
@@ -271,7 +273,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("최신 순 임시 메모 글 불러오기")
         void findAllDraftMemosByUserIdTest() {
-            List<Memo> draftMemoList = repository.findAllDraftMemosByUserId(10000L);
+            List<Memo> draftMemoList = repository.findAllDraftMemosByUserId(userId2);
 
             assertThat(draftMemoList.size()).isEqualTo(1);
             assertThat(draftMemoList.get(0)).isEqualTo(createdMemo4);
@@ -288,6 +290,20 @@ class MemoRepositoryJdbcTest {
             List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, SecurityContextUtils.ANONYMOUS_USER_ID);
 
             assertThat(foundMemoList).containsExactly(createdMemo3, createdMemo2, createdMemo);
+        }
+
+        @Test
+        @DisplayName("메모 텍스트와 유저 id 로 검색")
+        void findAllBySearchQueryWithUserIdTest() {
+            List<String> searchStringList = new ArrayList<>();
+            searchStringList.add("%JPA란?%"); // memo1
+            searchStringList.add("%JDK란?%"); // memo2
+            searchStringList.add("%jwt란?%"); // memo3
+
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, userId1);
+
+            assertThat(foundMemoList).containsExactly(createdMemo2, createdMemo);
+
         }
 
         @Test
@@ -311,17 +327,17 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("메모 태그와 유저 ID로 검색")
         void findAllByTagAndUserID() {
-            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", 9999L, NEW);
+            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", userId1, NEW);
 
             assertThat(foundByJavaTagAndUser).contains(createdMemo, createdMemo2);
 
-            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", 9999L,NEW);
-            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", 9999L,NEW);
+            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", userId1,NEW);
+            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", userId1,NEW);
 
             assertThat(foundByJavaTagAndUser).isEqualTo(foundByLowerCaseJavaTagAndUser);
             assertThat(foundByJavaTagAndUser).isEqualTo(foundByUpperCaseJavaTagAndUser);
 
-            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", 10000L,NEW);
+            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", userId2,NEW);
 
             assertThat(foundByJWTTagAndUser).contains(createdMemo3);
         }
