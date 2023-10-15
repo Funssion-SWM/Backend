@@ -81,6 +81,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/memos/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/questions/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/answers/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/series/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/mypage/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/comments/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/search/**").permitAll()
