@@ -1,6 +1,6 @@
-package Funssion.Inforum.domain.series.dto.response;
+package Funssion.Inforum.domain.post.series.dto.response;
 
-import Funssion.Inforum.domain.series.domain.Series;
+import Funssion.Inforum.domain.post.series.domain.Series;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

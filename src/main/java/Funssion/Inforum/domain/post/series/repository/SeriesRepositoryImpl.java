@@ -1,12 +1,15 @@
-package Funssion.Inforum.domain.series.repository;
+package Funssion.Inforum.domain.post.series.repository;
 
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
-import Funssion.Inforum.domain.series.domain.Series;
-import Funssion.Inforum.domain.series.dto.request.SeriesRequestDto;
+import Funssion.Inforum.domain.post.series.domain.Series;
+import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Repository
 public class SeriesRepositoryImpl implements SeriesRepository {
 
@@ -61,22 +65,22 @@ public class SeriesRepositoryImpl implements SeriesRepository {
     public List<Series> findAllBy(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql = "SELECT * " +
                 "FROM post.series " +
-                "WHERE created > current_timestamp - interval ? " +
+                "WHERE created > current_timestamp - CAST(? AS INTERVAL) " +
                 "ORDER BY " + orderBySql(orderBy) +
                 "LIMIT ? OFFSET ?";
-
-        return template.query(sql, seriesRowMapper(), period.getInterval(), pageNum, pageNum * resultCntPerPage);
+        log.info("{}", sql);
+        return template.query(sql, seriesRowMapper(), period.getInterval(), resultCntPerPage, pageNum * resultCntPerPage);
     }
 
     @Override
     public List<Series> findAllBy(Long authorId, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql = "SELECT * " +
                 "FROM post.series " +
-                "WHERE author_id = ? and created > current_timestamp - interval ? " +
+                "WHERE author_id = ? and created > current_timestamp - CAST(? AS INTERVAL) " +
                 "ORDER BY " + orderBySql(orderBy) +
                 "LIMIT ? OFFSET ?";
 
-        return template.query(sql, seriesRowMapper(), authorId, period.getInterval(), pageNum, pageNum * resultCntPerPage);
+        return template.query(sql, seriesRowMapper(), authorId, period.getInterval(), resultCntPerPage, pageNum * resultCntPerPage);
     }
 
     @Override
@@ -85,14 +89,14 @@ public class SeriesRepositoryImpl implements SeriesRepository {
         params.add(period.getInterval());
         String sql = "SELECT * " +
                 "FROM post.series " +
-                "WHERE created > current_timestamp - interval ? and (" + searchConditionalStatement(searhStringList, params) + ") " +
+                "WHERE created > current_timestamp - CAST(? AS INTERVAL) and (" + searchConditionalStatement(searhStringList, params) + ") " +
                 "ORDER BY " + orderBySql(orderBy) +
                 "LIMIT ? OFFSET ?";
 
-        params.add(pageNum);
         params.add(resultCntPerPage);
+        params.add(resultCntPerPage * pageNum);
 
-        return template.query(sql, seriesRowMapper(), params);
+        return template.query(sql, seriesRowMapper(), params.toArray());
     }
 
     private String searchConditionalStatement(List<String> searhStringList, ArrayList<Object> params) {
@@ -100,12 +104,12 @@ public class SeriesRepositoryImpl implements SeriesRepository {
         String lastSeachString = searhStringList.get(searhStringList.size() - 1);
         for (String searchString : searhStringList) {
             if (searchString.equals(lastSeachString)) {
-                conditionalStatement.append("title = ? or description = ?");
+                conditionalStatement.append("title ilike ? or description ilike ?");
             } else {
-                conditionalStatement.append("title = ? or description = ? or ");
+                conditionalStatement.append("title ilike ? or description ilike ? or ");
             }
-            params.add(searchString);
-            params.add(searchString);
+            params.add("%" + searchString + "%");
+            params.add("%" + searchString + "%");
         }
         return conditionalStatement.toString();
     }
@@ -113,10 +117,10 @@ public class SeriesRepositoryImpl implements SeriesRepository {
     private String orderBySql(OrderType orderBy) {
         switch (orderBy) {
             case HOT -> {
-                return "likes desc, created desc ";
+                return "likes desc, id desc ";
             }
             case NEW -> {
-                return "created desc ";
+                return "id desc ";
             }
             default -> throw new BadRequestException("not matched order type");
         }
@@ -149,6 +153,22 @@ public class SeriesRepositoryImpl implements SeriesRepository {
         ) != 1) {
             throw new UpdateFailException("series update fail id = " + seriesId);
         };
+    }
+
+    @Override
+    public void updateLikes(Long seriesId, Sign sign) {
+        String sql = "UPDATE post.series " +
+                "SET likes = likes + ? " +
+                "WHERE id = ?";
+
+        try {
+            int updatedRows = template.update(sql, sign.getValue(), seriesId);
+            if (updatedRows != 1) {
+                throw new UpdateFailException("update likes in series fail id = " + seriesId);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("좋아요 수는 0 아래로 내려갈 수 없습니다.", e);
+        }
     }
 
     @Override

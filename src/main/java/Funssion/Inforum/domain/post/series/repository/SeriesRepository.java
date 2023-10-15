@@ -1,10 +1,10 @@
-package Funssion.Inforum.domain.series.repository;
+package Funssion.Inforum.domain.post.series.repository;
 
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.domain.series.domain.Series;
-import Funssion.Inforum.domain.series.dto.request.SeriesRequestDto;
-import org.springframework.web.multipart.MultipartFile;
+import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.domain.post.series.domain.Series;
+import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,5 +17,6 @@ public interface SeriesRepository {
     List<Series> findAllBy(Long authorId, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
     List<Series> findAllBy(List<String> searhStringList ,DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
     void update(Long id, SeriesRequestDto seriesRequestDto, String newThumbnailImagePath);
+    void updateLikes(Long seriesId, Sign sign);
     void delete(Long seriesId);
 }

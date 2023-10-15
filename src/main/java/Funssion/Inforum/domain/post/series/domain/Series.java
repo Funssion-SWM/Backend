@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.series.domain;
+package Funssion.Inforum.domain.post.series.domain;
 
 import Funssion.Inforum.domain.post.domain.Post;
 import lombok.Builder;

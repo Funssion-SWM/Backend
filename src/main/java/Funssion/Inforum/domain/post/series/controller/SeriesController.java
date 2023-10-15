@@ -1,13 +1,13 @@
-package Funssion.Inforum.domain.series.controller;
+package Funssion.Inforum.domain.post.series.controller;
 
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.series.dto.request.SeriesRequestDto;
-import Funssion.Inforum.domain.series.dto.response.SeriesCreateResponseDto;
-import Funssion.Inforum.domain.series.dto.response.SeriesListDto;
-import Funssion.Inforum.domain.series.dto.response.SeriesResponseDto;
-import Funssion.Inforum.domain.series.service.SeriesService;
+import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesCreateResponseDto;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesResponseDto;
+import Funssion.Inforum.domain.post.series.service.SeriesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

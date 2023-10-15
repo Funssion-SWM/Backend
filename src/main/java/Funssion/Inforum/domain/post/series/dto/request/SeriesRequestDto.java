@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.series.dto.request;
+package Funssion.Inforum.domain.post.series.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

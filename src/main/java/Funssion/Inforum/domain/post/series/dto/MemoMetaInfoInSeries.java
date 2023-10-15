@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.series.dto;
+package Funssion.Inforum.domain.post.series.dto;
 
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
