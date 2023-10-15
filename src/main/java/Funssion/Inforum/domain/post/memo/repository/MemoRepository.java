@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface MemoRepository {
 
     Memo create(Memo memo);
-    List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt);
+    List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt);
     List<Memo> findAllOrderById(Long pageNum, Long memoCnt);
     List<Memo> findAllByUserIdOrderById(Long userId);
     List<Memo> findAllLikedMemosByUserId(Long userId);
@@ -19,11 +20,14 @@ public interface MemoRepository {
     List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId);
     List<Memo> findAllByTag(String tagText, OrderType orderType);
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
+    List<Memo> findAllBySeriesId(Long seriesId);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated);
     Memo updateLikesInMemo(Long likes, Long memoId);
     void updateAuthorProfile(Long authorId, String authorProfileImagePath);
+    void updateSeriesIds(Long seriesId, Long authorId, List<Long> memoIdList);
+    void updateSeriesIdsToZero(Long seriesId, Long authorId);
     void delete(Long id);
     void updateQuestionsCountOfMemo(Long memoId, Sign sign);
 

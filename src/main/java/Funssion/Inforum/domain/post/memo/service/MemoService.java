@@ -6,6 +6,7 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -37,6 +38,7 @@ import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Service
 @Slf4j
@@ -51,14 +53,12 @@ public class MemoService {
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
 
-    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Long pageNum, Long memoCnt) {
+    public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long memoCnt) {
 
-        Integer days = DateType.toNumOfDays(date);
-
-        return getMemos(orderBy, days, pageNum, memoCnt);
+        return getMemos(orderBy, period, pageNum, memoCnt);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days, Long pageNum, Long memoCnt) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, DateType period, Long pageNum, Long memoCnt) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById(pageNum, memoCnt)
@@ -67,7 +67,7 @@ public class MemoService {
                         .toList();
             }
             case HOT -> {
-                return memoRepository.findAllByDaysOrderByLikes(days, pageNum, memoCnt)
+                return memoRepository.findAllByDaysOrderByLikes(period, pageNum, memoCnt)
                         .stream()
                         .map(MemoListDto::new)
                         .toList();
@@ -222,12 +222,6 @@ public class MemoService {
 
         return result.stream()
                 .map(MemoListDto::new)
-                .toList();
-    }
-
-    private static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
                 .toList();
     }
 

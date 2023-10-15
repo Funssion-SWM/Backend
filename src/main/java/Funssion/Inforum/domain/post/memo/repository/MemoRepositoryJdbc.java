@@ -1,9 +1,11 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
@@ -62,11 +64,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt) {
-        String sql = "select * from post.memo where created_date > current_date - CAST(? AS int) and is_temporary = false " +
+    public List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt) {
+        String sql = "select * from post.memo where created_date > current_date - interval ? and is_temporary = false " +
                 "order by likes desc, id desc " +
                 "limit ? offset ?";
-        return template.query(sql, memoRowMapper(), days, memoCnt, pageNum * memoCnt);
+        return template.query(sql, memoRowMapper(), period.getInterval(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
@@ -163,6 +165,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public List<Memo> findAllBySeriesId(Long seriesId) {
+        String sql = "select * from post.memo where series_id = ? order by series_order";
+        return template.query(sql, memoRowMapper(), seriesId);
+    }
+
+    @Override
     public Memo findById(Long id) {
         String sql = "select * from post.memo where id = ?";
         return template.query(sql, memoRowMapper(), id).stream().findAny().orElseThrow(() -> new MemoNotFoundException());
@@ -241,6 +249,36 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "where author_id = ?";
 
         template.update(sql, authorProfileImagePath, authorId);
+    }
+
+    @Override
+    public void updateSeriesIds(Long seriesId, Long authorId, List<Long> memoIdList) {
+        StringBuilder sql = new StringBuilder(
+                "UPDATE post.memo " +
+                "SET series_id = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
+                "WHERE is_temporary = false and author_Id = ? and id in (");
+        ArrayList<Object> params = new ArrayList<>();
+        params.add(seriesId);
+        params.add(authorId);
+
+        for (Long memoId : memoIdList.subList(0, memoIdList.size() - 1)) {
+            sql.append("?,");
+            params.add(memoId);
+        }
+        sql.append("?)");
+        params.add(memoIdList.get(memoIdList.size() - 1));
+
+        if (params.size() - 2 != template.update(sql.toString(), params.toArray()))
+            throw new UpdateFailException("update fail: request size, updated rows are not same.");
+    }
+
+    @Override
+    public void updateSeriesIdsToZero(Long seriesId, Long authorId) {
+        String sql = "UPDATE post.memo " +
+                    "SET series_id = 0 " +
+                    "WHERE is_temporary = false AND author_Id = ? AND series_id = ?";
+
+        template.update(sql, authorId, seriesId);
     }
 
     @Override

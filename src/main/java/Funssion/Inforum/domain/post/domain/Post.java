@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @SuperBuilder
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"id", "createdDate"})
 @AllArgsConstructor
 @NoArgsConstructor
 public class Post {
