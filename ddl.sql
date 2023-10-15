@@ -219,6 +219,19 @@ create table post.answer(
     CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
 );
 
+CREATE TABLE post.series (
+    id bigserial NOT NULL PRIMARY KEY,
+    title varchar(255) NOT NULL,
+    description varchar(255) NOT NULL,
+    thumbnail_image_path varchar NULL,
+    author_id int8 NOT NULL,
+    author_name varchar(15) NOT NULL,
+    author_image_path varchar NULL,
+    likes int4 NOT NULL DEFAULT 0,
+    created timestamp NOT NULL DEFAULT current_timestamp
+);
+
+
 create table score.info (
     id bigserial primary key,
     user_id int8 not null,

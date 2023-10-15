@@ -69,7 +69,7 @@ public class SeriesRepositoryImpl implements SeriesRepository {
     @Override
     public void update(Long seriesId, SeriesRequestDto seriesRequestDto, String newThumbnailImagePath) {
         String sql = "UPDATE post.series " +
-                        "SET title = ?, description = ?, thumbnail_imag_path = ? " +
+                        "SET title = ?, description = ?, thumbnail_image_path = ? " +
                         "where id = ?";
 
         if (template.update(

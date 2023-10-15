@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum PostType {
     MEMO("memo"),
+    SERIES("series"),
     QUESTION("question"),
     ANSWER("answer"),
     COMMENT("comment"),
