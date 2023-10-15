@@ -65,7 +65,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt) {
-        String sql = "select * from post.memo where created_date > current_date - interval ? and is_temporary = false " +
+        String sql = "select * from post.memo where created_date > current_date - CAST(? AS INTERVAL) and is_temporary = false " +
                 "order by likes desc, id desc " +
                 "limit ? offset ?";
         return template.query(sql, memoRowMapper(), period.getInterval(), memoCnt, pageNum * memoCnt);
