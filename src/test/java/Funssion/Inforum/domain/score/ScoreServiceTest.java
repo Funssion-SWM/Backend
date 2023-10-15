@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static Funssion.Inforum.domain.score.ScoreService.LIMIT_DAILY_SCORE;
+import static Funssion.Inforum.domain.score.Score.LIMIT_DAILY_SCORE;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

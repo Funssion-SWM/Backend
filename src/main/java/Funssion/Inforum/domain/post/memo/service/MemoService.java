@@ -1,10 +1,11 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.constant.ScoreType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -16,6 +17,7 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -37,6 +39,8 @@ import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
+import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
+import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @Slf4j
@@ -49,6 +53,7 @@ public class MemoService {
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
     private final MyRepository myRepository;
+    private final ScoreRepository scoreRepository;
     private final S3Repository s3Repository;
 
     public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Long pageNum, Long memoCnt) {
@@ -90,6 +95,9 @@ public class MemoService {
 
         if (!form.getIsTemporary())
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
+
+        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
+        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_MEMO), calculateDailyScore(userDailyScore,ScoreType.MAKE_MEMO));
 
         return createdMemo;
     }

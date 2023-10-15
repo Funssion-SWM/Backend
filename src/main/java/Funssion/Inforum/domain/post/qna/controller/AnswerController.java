@@ -8,6 +8,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.AnswerDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,19 +25,28 @@ import java.util.List;
 @RequestMapping("/answers")
 public class AnswerController {
     private final AnswerService answerService;
+    private final ScoreService scoreService;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public IsSuccessResponseDto createAnswerOfQuestion(@RequestBody @Validated AnswerSaveDto answerSaveDto, @RequestParam Long questionId){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
-        answerService.createAnswerOfQuestion(answerSaveDto,questionId,authorId);
+        answerService.createAnswerOfQuestion(answerSaveDto, questionId, authorId);
         return new IsSuccessResponseDto(true,"성공적으로 답변이 등록되었습니다.");
     }
     @GetMapping
     public List<AnswerDto> getAnswersOfQuestion(@RequestParam Long questionId){
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
         List<Answer> answers = answerService.getAnswersOfQuestion(loginId,questionId);
-        return answers.stream().map(answer->new AnswerDto(answer,loginId)).toList();
+        return answers.stream().map(answer->{
+            return addIsLikeAndScoreInfoByUserId(loginId, answer);
+        }).toList();
     }
+
+    private AnswerDto addIsLikeAndScoreInfoByUserId(Long loginId, Answer answer) {
+        return new AnswerDto(answer.setScoreInfo(scoreService.getScore(loginId)), loginId);
+    }
+
     @PatchMapping("/select/{questionId}")
     public IsSuccessResponseDto selectAnswer(@PathVariable Long questionId, @RequestParam Long answerId){
         Long loginId = AuthUtils.getUserId(CRUDType.CREATE);

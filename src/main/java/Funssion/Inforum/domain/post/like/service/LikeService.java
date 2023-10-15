@@ -1,10 +1,10 @@
 package Funssion.Inforum.domain.post.like.service;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.member.exception.NotYetImplementException;
 import Funssion.Inforum.domain.post.like.domain.DisLike;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.dto.response.DisLikeResponseDto;
@@ -16,21 +16,28 @@ import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.post.repository.PostRepository;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
+import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class LikeService {
 
+    public static final int LIMIT_LIKES_OF_SCORE = 50;
     private final LikeRepository likeRepository;
     private final MemoRepository memoRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-
+    private final ScoreRepository scoreRepository;
+    private final PostRepository postRepository;
     @Transactional(readOnly = true)
     public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
@@ -88,8 +95,19 @@ public class LikeService {
                     throw new BadRequestException("이미 좋아요한 게시물입니다.");
                 });
 
+        updateUserOfPostScore(postType, postId);
         updateLikesInPost(postType, postId, Sign.PLUS);
+
         likeRepository.create(new Like(userId, postType, postId));
+    }
+
+    private void updateUserOfPostScore(PostType postType, Long postId) {
+        Long authorId = postRepository.findAuthorId(postType, postId);
+        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
+
+        if(likeRepository.howManyLikesInPost(postType,postId) < LIMIT_LIKES_OF_SCORE) {
+            scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.LIKE), calculateDailyScore(userDailyScore, ScoreType.LIKE));
+        }
     }
 
     @Transactional

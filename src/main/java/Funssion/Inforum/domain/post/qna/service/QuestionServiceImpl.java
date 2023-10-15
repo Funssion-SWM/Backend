@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
@@ -9,8 +10,6 @@ import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -18,6 +17,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
+import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
+import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
+    private final ScoreRepository scoreRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -58,6 +61,9 @@ public class QuestionServiceImpl implements QuestionService {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
+
+        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
+        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_QUESTION), calculateDailyScore(userDailyScore,ScoreType.MAKE_QUESTION));
         return question;
     }
 

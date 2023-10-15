@@ -28,6 +28,7 @@ public class Answer extends Post {
     private final Long repliesCount;
 
     private Long dislikes;
+    private Long authorScore;
     private boolean isLike;
     private boolean isDisLike;
 
@@ -37,5 +38,9 @@ public class Answer extends Post {
             case MINUS -> dislikes--;
         }
         return dislikes;
+    }
+    public Answer setScoreInfo(Long authorScore){
+        this.authorScore = authorScore;
+        return this;
     }
 }

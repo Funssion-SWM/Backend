@@ -19,4 +19,6 @@ public interface LikeRepository {
     List<Like> findAllByUserIdAndPostType(Long userId, PostType postType);
     void deleteLike(Long userId, PostType postType, Long postId);
     void deleteDisLike(Long userId, PostType postType, Long postId);
+
+    Integer howManyLikesInPost(PostType postType, Long postId);
 }

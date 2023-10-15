@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+import static Funssion.Inforum.domain.score.Score.LIMIT_DAILY_SCORE;
+
 @Service
 @RequiredArgsConstructor
 public class ScoreService {
     private final ScoreRepository scoreRepository;
     private final MemberRepository memberRepository;
-    public static final Long LIMIT_DAILY_SCORE = 200L;
+
 
     @Transactional
     public Long checkUserDailyScoreAndAdd(Long userId, ScoreType scoreType,Long postId){
@@ -56,6 +58,9 @@ public class ScoreService {
             return scoreRepository.updateUserScoreAtDay(userId, scoreOfHistory.getScore(), dailyScore - scoreOfHistory.getScore());
         }
         return scoreRepository.updateUserScoreAtOtherDay(userId, scoreOfHistory.getScore());
+    }
+    public Long getScore(Long userId){
+        return scoreRepository.getScore(userId);
     }
 
     @Scheduled(cron = "0 00 00 * * ?")

@@ -23,33 +23,37 @@ public class ScoreRepository {
         this.template = new JdbcTemplate(dataSource);
     }
     public Long updateUserScoreAtDay(Long userId, Long addScore, Long updateDailyScore){
-        String sql = "update member.info set score = score + ?, daily_get_score = ? where user_id = ?";
+        String sql = "update member.info set score = score + ?, daily_get_score = ? where id = ?";
         if(template.update(sql,addScore, updateDailyScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
         return addScore;
     }
     public Long updateUserScoreAtOtherDay(Long userId, Long minusScore){
-        String sql = "update member.info set score = score - ? where user_id = ?";
+        String sql = "update member.info set score = score - ? where id = ?";
         if(template.update(sql,minusScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
         return minusScore;
     }
 
     public Long getUserDailyScore(Long userId){
-        String sql = "select daily_get_score from member.info where user_id = ?";
+        String sql = "select daily_get_score from member.info where id = ?";
         return template.queryForObject(sql, Long.class, userId);
     }
 
-    public Long saveScoreHistory(Long userId, ScoreType scoreType, Long score,Long postId){
+    public void saveScoreHistory(Long userId, ScoreType scoreType, Long score,Long postId){
         String sql = "insert into score.info(user_id,score_type,score,post_id) values (?,?,?,?)";
         KeyHolder scoreKeyHolder = new GeneratedKeyHolder();
         template.update(con->{
-            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"user_id","score_type","post_id"});
             psmt.setLong(1,userId);
             psmt.setString(2,scoreType.name());
             psmt.setLong(3,score);
             psmt.setLong(4,postId);
             return psmt;
         },scoreKeyHolder);
-        return scoreKeyHolder.getKey().longValue();
+    }
+
+    public Long getScore(Long userId){
+        String sql = "select score from member.info where id = ?";
+        return template.queryForObject(sql,Long.class,userId);
     }
 
     /**

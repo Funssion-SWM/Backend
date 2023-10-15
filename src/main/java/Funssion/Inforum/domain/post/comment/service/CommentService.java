@@ -1,10 +1,10 @@
 package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
-import Funssion.Inforum.domain.notification.domain.Notification;
 import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
@@ -18,6 +18,7 @@ import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,12 +27,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
+import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final MyRepository myRepository;
+    private final ScoreRepository scoreRepository;
     private final MemoRepository memoRepository;
     private final NotificationRepository notificationRepository;
 
@@ -48,6 +53,9 @@ public class CommentService {
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
         commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
+
+        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
+        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_COMMENT), calculateDailyScore(userDailyScore,ScoreType.MAKE_COMMENT));
 //        notificationRepository.save();
 
         return comment;

@@ -17,4 +17,19 @@ public class Score {
     private final Long score;
     private final Long postId;
     private final LocalDateTime createdDate;
+
+    public static final Long LIMIT_DAILY_SCORE = 200L;
+
+    public static Long calculateAddingScore(Long userDailyScore, ScoreType scoreType){
+        if(userDailyScore + scoreType.getScore() >= LIMIT_DAILY_SCORE) return LIMIT_DAILY_SCORE - userDailyScore;
+        else return scoreType.getScore();
+    }
+    public static Long calculateDailyScore(Long userDailyScore,ScoreType scoreType){
+        if (scoreType.equals(ScoreType.LIKE) || scoreType.equals(ScoreType.BEST_ANSWER)){
+            return userDailyScore;
+        }
+
+        if(userDailyScore + scoreType.getScore() >= LIMIT_DAILY_SCORE) return LIMIT_DAILY_SCORE;
+        else return userDailyScore + scoreType.getScore();
+    }
 }
