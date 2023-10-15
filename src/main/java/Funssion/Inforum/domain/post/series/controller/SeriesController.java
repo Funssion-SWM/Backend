@@ -8,6 +8,8 @@ import Funssion.Inforum.domain.post.series.dto.response.SeriesCreateResponseDto;
 import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
 import Funssion.Inforum.domain.post.series.dto.response.SeriesResponseDto;
 import Funssion.Inforum.domain.post.series.service.SeriesService;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,10 +39,13 @@ public class SeriesController {
 
     @PostMapping
     public SeriesCreateResponseDto createSeries(
-            @RequestPart @Validated SeriesRequestDto seriesRequestDto,
+            @RequestPart @NotEmpty(message = "시리즈 제목을 입력해주세요.") String title,
+            @RequestPart @NotEmpty(message = "시리즈 설명을 입력해주세요.") String description,
+            @RequestPart @Size(min = 2, message = "시리즈에 들어가는 메모는 2개 이상이어야 합니다.") List<Long> memoIdList,
             @RequestPart MultipartFile thumbnailImage
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
+        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, memoIdList);
         return seriesService.create(seriesRequestDto, thumbnailImage, authorId);
     }
 
@@ -51,11 +56,14 @@ public class SeriesController {
 
     @PostMapping("/{seriesId}")
     public SeriesResponseDto updateSeries(
-            @RequestPart @Validated SeriesRequestDto seriesRequestDto,
+            @RequestPart @NotEmpty(message = "시리즈 제목을 입력해주세요.") String title,
+            @RequestPart @NotEmpty(message = "시리즈 설명을 입력해주세요.") String description,
+            @RequestPart @Size(min = 2, message = "시리즈에 들어가는 메모는 2개 이상이어야 합니다.") List<Long> memoIdList,
             @RequestPart MultipartFile thumbnailImage,
             @PathVariable Long seriesId
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
+        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, memoIdList);
         return seriesService.update(seriesId, seriesRequestDto, thumbnailImage, authorId);
     }
 

@@ -11,11 +11,12 @@ import java.util.List;
 
 @Getter
 @Builder
+@RequiredArgsConstructor
 public class SeriesRequestDto {
     @NotEmpty(message = "시리즈 제목을 입력해주세요.")
-    private String title;
+    private final String title;
     @NotEmpty(message = "시리즈 설명을 입력해주세요.")
-    private String description;
+    private final String description;
     @Size(min = 2, message = "시리즈에 들어가는 메모는 2개 이상이어야 합니다.")
-    private List<Long> memoIdList;
+    private final List<Long> memoIdList;
 }
