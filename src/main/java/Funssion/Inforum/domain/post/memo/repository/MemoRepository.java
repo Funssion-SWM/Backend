@@ -19,11 +19,14 @@ public interface MemoRepository {
     List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId);
     List<Memo> findAllByTag(String tagText, OrderType orderType);
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
+    List<Memo> findAllBySeriesId(Long seriesId);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated);
     Memo updateLikesInMemo(Long likes, Long memoId);
     void updateAuthorProfile(Long authorId, String authorProfileImagePath);
+    void updateSeriesIds(Long seriesId, Long authorId, List<Long> memoIdList);
+    void updateSeriesIdsToZero(Long seriesId, Long authorId);
     void delete(Long id);
     void updateQuestionsCountOfMemo(Long memoId, Sign sign);
 
