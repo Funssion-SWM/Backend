@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.series.domain.Series;
 import Funssion.Inforum.domain.series.dto.request.SeriesRequestDto;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,6 +59,7 @@ class SeriesRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("시리즈 단일 조회하기")
     void findById() {
         Series saved1 = seriesRepository.findById(seriesId1).get();
         Series saved2 = seriesRepository.findById(seriesId2).get();
@@ -69,6 +71,7 @@ class SeriesRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("시리즈 수정하기")
     void update() {
         SeriesRequestDto requestDto =
                 SeriesRequestDto.builder()
@@ -86,6 +89,7 @@ class SeriesRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("시리즈 삭제하기")
     void delete() {
         seriesRepository.delete(seriesId1);
 

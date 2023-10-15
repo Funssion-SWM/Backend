@@ -1,30 +1,15 @@
 package Funssion.Inforum.common.constant;
 
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
+@Getter
 public enum DateType {
-    DAY, WEEK, MONTH, YEAR;
+    DAY("1 day"), WEEK("1 week"), MONTH("1 month"), YEAR("1 year");
 
-    public static Integer toNumOfDays(DateType type) {
-        switch (type) {
-            case DAY -> {
-                return 1;
-            }
-            case WEEK -> {
-                return 7;
-            }
-            case MONTH -> {
-                return 31;
-            }
-            case YEAR -> {
-                return 365;
-            }
-        }
-
-        throw new BadRequestException("Invalid Date Type");
-    }
-
-
+    private final String interval;
 
     public static DateType of(String period) {
         try {

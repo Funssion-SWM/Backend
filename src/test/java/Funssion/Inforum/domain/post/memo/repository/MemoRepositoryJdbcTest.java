@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static Funssion.Inforum.common.constant.DateType.*;
 import static Funssion.Inforum.common.constant.OrderType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -279,7 +281,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
         void findAllByDaysOrderByLikesTest() {
-            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(DAY, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(memoListCreatedAtToday.size()).isEqualTo(3);
             assertThat(memoListCreatedAtToday.get(0)).isEqualTo(createdMemo3);
@@ -288,11 +290,11 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 페이징하기")
         void findAllByDaysOrderByLikesWithPaging() {
-            List<Memo> memoListCreatedAtTodayInZeroPage = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, 2L);
+            List<Memo> memoListCreatedAtTodayInZeroPage = repository.findAllByDaysOrderByLikes(DAY, DEFAULT_PAGE_NUM, 2L);
 
             assertThat(memoListCreatedAtTodayInZeroPage).containsExactly(createdMemo3, createdMemo2);
 
-            List<Memo> memoListCreatedAtTodayInOnePage = repository.findAllByDaysOrderByLikes(1, 1L, 2L);
+            List<Memo> memoListCreatedAtTodayInOnePage = repository.findAllByDaysOrderByLikes(DAY, 1L, 2L);
 
             assertThat(memoListCreatedAtTodayInOnePage).containsExactly(createdMemo);
         }

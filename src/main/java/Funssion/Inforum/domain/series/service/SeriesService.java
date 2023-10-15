@@ -1,12 +1,16 @@
 package Funssion.Inforum.domain.series.service;
 
+import Funssion.Inforum.common.constant.DateType;
+import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.series.domain.Series;
 import Funssion.Inforum.domain.series.dto.MemoMetaInfoInSeries;
+import Funssion.Inforum.domain.series.dto.response.SeriesListDto;
 import Funssion.Inforum.domain.series.dto.response.SeriesResponseDto;
 import Funssion.Inforum.domain.series.repository.SeriesRepository;
 import Funssion.Inforum.domain.series.dto.request.SeriesRequestDto;
@@ -20,7 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 import static Funssion.Inforum.domain.post.qna.Constant.*;
 
 @Service
@@ -64,6 +70,33 @@ public class SeriesService {
                         .build()
         );
         return seriesId;
+    }
+
+    public List<SeriesListDto> getSeries(
+            Long authorId, String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage
+    ) {
+        List<Series> resultList = getSeriesList(authorId, searchString, period, orderBy, pageNum, resultCntPerPage);
+
+        return resultList.stream()
+                .map(SeriesListDto::valueOf)
+                .toList();
+    }
+
+    private List<Series> getSeriesList(Long authorId, String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+        List<Series> resultList;
+        if (Objects.nonNull(authorId)) {
+            resultList = seriesRepository.findAllBy(authorId, period, orderBy, pageNum, resultCntPerPage);
+        } else if (Objects.isNull(searchString)) {
+            resultList = seriesRepository.findAllBy(period, orderBy, pageNum, resultCntPerPage);
+        } else {
+            resultList = seriesRepository.findAllBy(getSearchStringList(searchString), period, orderBy, pageNum, resultCntPerPage);
+        }
+        return resultList;
+    }
+
+    @Transactional(readOnly = true)
+    public SeriesResponseDto getSeries(Long seriesId) {
+        return getSeriesResponse(seriesId);
     }
 
     @Transactional

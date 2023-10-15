@@ -183,7 +183,7 @@ public class MemoServiceTest {
                     .willReturn(List.of(memo3, memo2, memo1));
             given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3, memo1));
-            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(toNumOfDays(DAY)), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
+            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(DAY), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3));
 
             List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(WEEK, NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);

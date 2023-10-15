@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
@@ -63,11 +64,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt) {
-        String sql = "select * from post.memo where created_date > current_date - CAST(? AS int) and is_temporary = false " +
+    public List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt) {
+        String sql = "select * from post.memo where created_date > current_date - interval ? and is_temporary = false " +
                 "order by likes desc, id desc " +
                 "limit ? offset ?";
-        return template.query(sql, memoRowMapper(), days, memoCnt, pageNum * memoCnt);
+        return template.query(sql, memoRowMapper(), period.getInterval(), memoCnt, pageNum * memoCnt);
     }
 
     @Override

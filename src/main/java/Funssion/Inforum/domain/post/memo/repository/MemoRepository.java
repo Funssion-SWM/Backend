@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface MemoRepository {
 
     Memo create(Memo memo);
-    List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt);
+    List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt);
     List<Memo> findAllOrderById(Long pageNum, Long memoCnt);
     List<Memo> findAllByUserIdOrderById(Long userId);
     List<Memo> findAllLikedMemosByUserId(Long userId);
