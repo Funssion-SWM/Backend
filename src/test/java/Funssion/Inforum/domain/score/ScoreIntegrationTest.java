@@ -117,10 +117,10 @@ class ScoreIntegrationTest {
          *     MAKE_MEMO(50L), 체크 완료
          *     MAKE_QUESTION(30L), 체크 완료
          *     MAKE_ANSWER(20L), 체크 완료
-         *     SELECT_ANSWER(20L),
-         *     BEST_ANSWER(80L),
-         *     MAKE_COMMENT(5L),
-         *     LIKE(10L);
+         *     SELECT_ANSWER(20L), 체크 완료
+         *     BEST_ANSWER(80L), 체크 완료
+         *     MAKE_COMMENT(5L), 체크 완료
+         *     LIKE(10L); 체크완료
          */
         @Test
         @DisplayName("유저가 일별 최대 점수를 채우지 않았을 경우(질/답/채택/좋아요/댓글작성 모두 포함")
@@ -159,9 +159,7 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getScore(saveMemberId)).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer + scoreOfComment);
         }
 
-        private void setSecurityContextHolderForTestLikeMethod() {
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberId.toString(),"12345678"));
-        }
+
 
 
         @Test
@@ -175,10 +173,39 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(beforeTotalScore + Score.LIMIT_DAILY_SCORE - dailyScore);
         }
 
+        @Test
+        @DisplayName("좋아요를 50개 이상 받을 경우, 점수가 반영되지 않아야 한다")
+        void likesOverLimitDoNotApplyScore(){
+            MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
+
+            usersLikePost_50(memoDto); //매번 새로운 user설정해서 상황 가정함.
+            assertThat(likeRepository.howManyLikesInPost(PostType.MEMO,memoDto.getMemoId())).isEqualTo(50);
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
+            setSecurityContextHolderForTestLikeMethod();
+            likeService.likePost(PostType.MEMO,memoDto.getMemoId());
+            assertThat(likeRepository.howManyLikesInPost(PostType.MEMO,memoDto.getMemoId())).isEqualTo(51);
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
+        }
+
         private void setUserScoreForTest(Long beforeTotalScore, Long dailyScore) {
             scoreRepository.updateUserScoreAtDay(saveMemberIdForEachTest, beforeTotalScore, dailyScore);
         }
+        private void usersLikePost_50(MemoDto memoDto){
+            for(Long i = 11L; i < 61L; i++) {
+                setSecurityContextHolderForTestLikeMethodByDifferentUser(i);
+                likeService.likePost(PostType.MEMO,memoDto.getMemoId());
+            }
+        }
+
+        private void setSecurityContextHolderForTestLikeMethodByDifferentUser(Long username) {
+            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username.toString(),"12345678"));
+        }
     }
+    private void setSecurityContextHolderForTestLikeMethod() {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberId.toString(),"12345678"));
+    }
+
+
     private Question makePureQuestion() {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문 내용\", \"type\": \"text\"}]}]}")

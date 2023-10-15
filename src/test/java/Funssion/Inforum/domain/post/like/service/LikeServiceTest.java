@@ -7,9 +7,13 @@ import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.repository.PostRepository;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
@@ -17,8 +21,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static Funssion.Inforum.common.constant.PostType.*;
-import static org.assertj.core.api.Assertions.*;
+import static Funssion.Inforum.common.constant.PostType.MEMO;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,6 +31,8 @@ class LikeServiceTest {
 
     @Mock LikeRepository likeRepository;
     @Mock MemoRepository memoRepository;
+    @Mock PostRepository postRepository;
+    @Mock ScoreRepository scoreRepository;
     @InjectMocks LikeService likeService;
 
     MockedStatic<SecurityContextUtils> mockSecurityUtils;

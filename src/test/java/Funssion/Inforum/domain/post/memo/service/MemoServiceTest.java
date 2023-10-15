@@ -13,6 +13,7 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreRepository;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -27,10 +28,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.CRUDType.*;
+import static Funssion.Inforum.common.constant.CRUDType.READ;
 import static Funssion.Inforum.common.constant.DateType.*;
-import static Funssion.Inforum.common.constant.OrderType.*;
-import static org.assertj.core.api.Assertions.*;
+import static Funssion.Inforum.common.constant.OrderType.HOT;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +43,8 @@ public class MemoServiceTest {
     @Mock TagRepository tagRepository;
     @Mock MyRepository myRepository;
     @Mock S3Repository s3Repository;
+    @Mock
+    ScoreRepository scoreRepository;
     @InjectMocks MemoService memoService;
 
     MockedStatic<SecurityContextUtils> mockSecurityContextUtils;
