@@ -220,7 +220,7 @@ create table post.answer(
 );
 
 CREATE TABLE post.series (
-    id bigserial NOT NULL PRIMARY KEY,
+    id bigserial NOT NULL,
     title varchar(255) NOT NULL,
     description varchar(255) NOT NULL,
     thumbnail_image_path varchar NULL,
@@ -228,7 +228,9 @@ CREATE TABLE post.series (
     author_name varchar(15) NOT NULL,
     author_image_path varchar NULL,
     likes int4 NOT NULL DEFAULT 0,
-    created timestamp NOT NULL DEFAULT current_timestamp
+    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT non_negative_series_likes CHECK ((likes >= 0)),
+    CONSTRAINT series_pkey PRIMARY KEY (id)
 );
 
 
