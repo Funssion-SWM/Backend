@@ -34,14 +34,14 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private Object[] getAllParams(Notification notification) {
         ArrayList<Object> params = new ArrayList<>();
         params.add(notification.getReceiverId());
-        params.add(nullableEnumToString(notification.getReceiverPostType()));
+        params.add(nullableEnumToString(notification.getReceiverPostType().toString()));
         params.add(notification.getReceiverPostId());
         params.add(notification.getSenderId());
         params.add(notification.getSenderName());
         params.add(notification.getSenderImagePath());
-        params.add(nullableEnumToString(notification.getSenderPostType()));
+        params.add(nullableEnumToString(notification.getSenderPostType().toString()));
         params.add(notification.getSenderPostId());
-        params.add(nullableEnumToString(notification.getNotificationType()));
+        params.add(nullableEnumToString(notification.getNotificationType().toString()));
         return params.toArray();
     }
 
@@ -59,7 +59,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void deleteFollowNotification(Long senderId) {
-        String sql = "DELETE FROM member.notification WHERE sender_id = ? AND notification_type = NEW_FOLLOW";
+        String sql = "DELETE FROM member.notification WHERE sender_id = ? AND notification_type = NEW_FOLLOWER";
 
         if (template.update(sql, senderId) != 1) throw new DeleteFailException("");
     }

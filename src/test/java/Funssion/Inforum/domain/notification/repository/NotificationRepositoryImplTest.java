@@ -143,10 +143,29 @@ class NotificationRepositoryImplTest {
     class delete {
 
         @Test
-        @DisplayName("일반 케이스")
-        void success() {
+        @DisplayName("팔로우, 답변 채택을 제외한 알림 삭제")
+        void deleteExcludingNewFollowerNotification() {
+            List<Notification> notifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
             repository.delete(newPostFollowedNotification.getSenderPostType(), newPostFollowedNotification.getSenderPostId());
-//            repository.delete();
+            repository.delete(newCommentNotification.getSenderPostType(), newCommentNotification.getSenderPostId());
+            repository.delete(newAnswerNotification.getSenderPostType(), newAnswerNotification.getSenderPostId());
+            repository.delete(newQuestionNotification.getSenderPostType(), newQuestionNotification.getSenderPostId());
+
+            List<Notification> remainNotifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+
+            assertThat(notifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newFollowerNotification, newAnswerNotification,
+                    newQuestionNotification, newCommentNotification);
+
+            assertThat(remainNotifications).containsExactly(
+                    newAcceptedNotification, newFollowerNotification
+            );
+        }
+
+        @Test
+        @DisplayName("팔로우 알림 삭제")
+        void deleteNewFollowerNotification() {
 
         }
 
