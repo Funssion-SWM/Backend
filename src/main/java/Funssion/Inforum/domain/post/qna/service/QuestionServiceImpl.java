@@ -66,12 +66,12 @@ public class QuestionServiceImpl implements QuestionService {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
-
         sendNotification(memoId, createdQuestion);
         return createdQuestion;
     }
 
     private void sendNotification(Long memoId, Question createdQuestion) {
+        if (memoId.toString().equals(Constant.NONE_MEMO_QUESTION)) return;
         Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
         sendNotificationToLinkedMemoAuthor(receiverId, memoId, createdQuestion);
         sendNotificationToFollower(receiverId, createdQuestion);
