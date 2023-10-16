@@ -52,14 +52,14 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void delete(PostType senderPostType, Long senderPostId) {
-        String sql = "delete from member.notification where sender_post_type = ? and sender_post_id = ?";
+        String sql = "DELETE FROM member.notification WHERE sender_post_type = ? AND sender_post_id = ?";
 
         template.update(sql, senderPostType.toString(), senderPostId);
     }
 
     @Override
     public void deleteFollowNotification(Long senderId) {
-        String sql = "DELETE FROM member.notification WHERE sender_id = ? and notification_type = NEW_FOLLOW";
+        String sql = "DELETE FROM member.notification WHERE sender_id = ? AND notification_type = NEW_FOLLOW";
 
         if (template.update(sql, senderId) != 1) throw new DeleteFailException("");
     }

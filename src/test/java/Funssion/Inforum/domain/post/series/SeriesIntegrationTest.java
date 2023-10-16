@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
@@ -212,10 +213,10 @@ public class SeriesIntegrationTest {
                     .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
 
             mvc.perform(get("/series")
-                    .param("period", "day")
-                    .param("orderBy", "new")
-                    .param("pageNum", "0")
-                    .param("resultCntPerPage", "12"))
+                            .param("period", "day")
+                            .param("orderBy", "new")
+                            .param("pageNum", "0")
+                            .param("resultCntPerPage", "12"))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())))
                     .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));

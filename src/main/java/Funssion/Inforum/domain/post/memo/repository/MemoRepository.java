@@ -21,6 +21,7 @@ public interface MemoRepository {
     List<Memo> findAllByTag(String tagText, OrderType orderType);
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
     List<Memo> findAllBySeriesId(Long seriesId);
+    List<String> findTop3ColorsBySeriesId(Long seriesId);
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated);
