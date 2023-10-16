@@ -2,39 +2,37 @@ package Funssion.Inforum.domain.score;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-
-import static Funssion.Inforum.domain.score.Score.LIMIT_DAILY_SCORE;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ScoreService {
     private final ScoreRepository scoreRepository;
     private final MemberRepository memberRepository;
+    private final CommentRepository commentRepository;
 
 
     @Transactional
     public Long checkUserDailyScoreAndAdd(Long userId, ScoreType scoreType,Long postId){
         updateData result = getAddedScoreAndDailyScore(userId, scoreType);
         if(isChangedUserScore(result.addScore())){
-            scoreRepository.saveScoreHistory(userId,scoreType,postId, result.addScore());
+            scoreRepository.saveScoreHistory(userId, scoreType, result.addScore(), postId);
             return scoreRepository.updateUserScoreAtDay(userId, result.addScore(), result.updateDailyScore());
         }
         return 0L;
     }
-
     public updateData getAddedScoreAndDailyScore(Long userId, ScoreType scoreType) {
-        Long scoreOfScoreType = scoreType.getScore();
         Long currentUserDailyScore = scoreRepository.getUserDailyScore(userId);
-        Long addedUserDailyScore = currentUserDailyScore + scoreOfScoreType;
-        Long updateDailyScore = (addedUserDailyScore > LIMIT_DAILY_SCORE) ? LIMIT_DAILY_SCORE : addedUserDailyScore;
+        Long updateDailyScore = Score.calculateDailyScore(currentUserDailyScore,scoreType);
 
-        Long addScore = updateDailyScore - currentUserDailyScore;
+        Long addScore = Score.calculateAddingScore(currentUserDailyScore,scoreType);
         updateData result = new updateData(updateDailyScore, addScore);
         return result;
     }
@@ -45,19 +43,32 @@ public class ScoreService {
     @Transactional
     public void subtractUserScore(Long userId, ScoreType scoreType, Long postId){
         Long dailyScore = memberRepository.getDailyScore(userId);
-        scoreRepository.findScoreHistoryInfoById(userId, scoreType, postId).ifPresent(
+        Optional<Score> scoreHistoryInfoById = scoreRepository.findScoreHistoryInfoById(userId, scoreType, postId);
+
+        scoreHistoryInfoById.ifPresent(
                 scoreOfHistory -> {
-                    updateUserScoreWhetherTodayOrNot(userId, scoreType, postId, dailyScore, scoreOfHistory);
+                    minusUserScoreWhetherTodayOrNot(userId, dailyScore, scoreOfHistory);
+                    handleSpecialCaseOfComment(userId, scoreType, scoreHistoryInfoById);
                 }
         );
+
     }
 
-    public Long updateUserScoreWhetherTodayOrNot(Long userId, ScoreType scoreType, Long postId, Long dailyScore, Score scoreOfHistory) {
-        scoreRepository.deleteScoreHistory(userId, scoreType, postId);
-        if(isDeleteToday(scoreOfHistory)) {
-            return scoreRepository.updateUserScoreAtDay(userId, scoreOfHistory.getScore(), dailyScore - scoreOfHistory.getScore());
+    private void handleSpecialCaseOfComment(Long userId, ScoreType scoreType, Optional<Score> scoreHistoryInfoById) {
+        if(scoreType == ScoreType.MAKE_COMMENT){
+            commentRepository.findIfUserRegisterAnotherCommentOfPost(userId, scoreHistoryInfoById.get().getPostId()).ifPresent(anotherComment ->
+                    checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_COMMENT,anotherComment.getId())
+            );
         }
-        return scoreRepository.updateUserScoreAtOtherDay(userId, scoreOfHistory.getScore());
+    }
+
+
+    public Long minusUserScoreWhetherTodayOrNot(Long userId, Long dailyScore, Score scoreOfHistory) {
+        scoreRepository.deleteScoreHistory(scoreOfHistory);
+        if(isDeleteToday(scoreOfHistory)) {
+            return scoreRepository.updateUserScoreAtDay(userId, -scoreOfHistory.getScore(), dailyScore - scoreOfHistory.getScore());
+        }
+        return scoreRepository.updateUserScoreAtOtherDay(userId, -scoreOfHistory.getScore());
     }
     public Long getScore(Long userId){
         return scoreRepository.getScore(userId);

@@ -95,18 +95,19 @@ public class LikeService {
                     throw new BadRequestException("이미 좋아요한 게시물입니다.");
                 });
 
-        updateUserOfPostScore(postType, postId);
+        updateUserOfPostScore(userId,postType, postId);
         updateLikesInPost(postType, postId, Sign.PLUS);
 
         likeRepository.create(new Like(userId, postType, postId));
     }
 
-    private void updateUserOfPostScore(PostType postType, Long postId) {
+    private void updateUserOfPostScore(Long likerId,PostType postType, Long postId) {
         Long authorId = postRepository.findAuthorId(postType, postId);
         Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-
+        // Like의 경우에는 점수를 받는 사람이 행동의 당사자가 아닌, 포스트 작성자 이므로, service를 통해 처리하지 않고 직접 score repository 객체에서 로직을 작성합니다.
         if(likeRepository.howManyLikesInPost(postType,postId) < LIMIT_LIKES_OF_SCORE) {
-            scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.LIKE), calculateDailyScore(userDailyScore, ScoreType.LIKE));
+            Long addedScore = scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.LIKE), calculateDailyScore(userDailyScore, ScoreType.LIKE));
+            scoreRepository.saveScoreHistory(likerId,ScoreType.LIKE,addedScore,postId); //DB에는 좋아요를 한 사람의 정보가 좋아요 테이블에 들어갑니다.
         }
     }
 
@@ -114,12 +115,17 @@ public class LikeService {
     public void unlikePost(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
 
-
         likeRepository.findByUserIdAndPostInfo(userId, postType, postId)
                 .orElseThrow(() -> new BadRequestException("아직 좋아요하지 않은 게시물입니다."));
 
         updateLikesInPost(postType, postId, Sign.MINUS);
         likeRepository.deleteLike(userId, postType, postId);
+
+        scoreRepository.findScoreHistoryInfoById(userId, ScoreType.LIKE, postId).ifPresent((score)-> {
+            scoreRepository.deleteScoreHistory(score);
+            scoreRepository.updateUserScoreAtOtherDay(postRepository.findAuthorId(postType, postId),-score.getScore());
+        });
+
     }
 
     @Transactional

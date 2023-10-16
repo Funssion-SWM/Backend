@@ -17,7 +17,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -33,18 +33,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
-import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
-import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class QuestionServiceImpl implements QuestionService {
+    private final ScoreService scoreService;
+
     private final QuestionRepository questionRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
-    private final ScoreRepository scoreRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -62,8 +61,7 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
 
-        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_QUESTION), calculateDailyScore(userDailyScore,ScoreType.MAKE_QUESTION));
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_QUESTION,question.getId());
         return question;
     }
 
@@ -147,6 +145,8 @@ public class QuestionServiceImpl implements QuestionService {
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
+
+        scoreService.subtractUserScore(authorId,ScoreType.MAKE_QUESTION, willBeDeletedQuestion.getId());
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
     }
 

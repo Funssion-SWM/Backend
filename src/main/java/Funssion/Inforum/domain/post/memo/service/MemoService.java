@@ -18,6 +18,7 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -39,8 +40,6 @@ import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
-import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
-import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @Slf4j
@@ -49,6 +48,8 @@ public class MemoService {
 
     @Value("${aws.s3.memo-dir}")
     private String MEMO_DIR;
+
+    private final ScoreService scoreService;
 
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
@@ -95,8 +96,7 @@ public class MemoService {
 
         if (!form.getIsTemporary()) {
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
-            Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-            scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_MEMO), calculateDailyScore(userDailyScore,ScoreType.MAKE_MEMO));
+            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getMemoId());
         }
 
 
@@ -184,8 +184,10 @@ public class MemoService {
 
         s3Repository.deleteAll("memos/" + memoId);
 
-        if (!memo.getIsTemporary())
+        if (!memo.getIsTemporary()) {
             myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
+            scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,memo.getId());
+        }
     }
 
     private static void checkPermission(Long userId, Memo savedMemo) {

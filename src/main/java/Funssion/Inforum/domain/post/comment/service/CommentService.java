@@ -19,6 +19,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
-import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
+    private final ScoreService scoreService;
+
     private final CommentRepository commentRepository;
     private final MyRepository myRepository;
     private final ScoreRepository scoreRepository;
@@ -53,10 +53,8 @@ public class CommentService {
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
         commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
-
-        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_COMMENT), calculateDailyScore(userDailyScore,ScoreType.MAKE_COMMENT));
-//        notificationRepository.save();
+        if(scoreRepository.findCommentScoreHistoryInfoById(authorId).isEmpty())
+            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_COMMENT,comment.getId());
 
         return comment;
     }
@@ -70,6 +68,7 @@ public class CommentService {
     public IsSuccessResponseDto deleteComment(Long commentId) {
         PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
+        scoreService.subtractUserScore(commentRepository.findAuthorIdByCommentId(commentId,false),ScoreType.MAKE_COMMENT,commentId);
         return commentRepository.deleteComment(commentId);
     }
 

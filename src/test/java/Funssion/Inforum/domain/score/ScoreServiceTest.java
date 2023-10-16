@@ -85,7 +85,7 @@ class ScoreServiceTest {
 
             Assertions.assertThatCode(()->scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,1L)).doesNotThrowAnyException();
 
-            verify(scoreRepository, times(1)).updateUserScoreAtOtherDay(userId,ScoreType.MAKE_MEMO.getScore());
+            verify(scoreRepository, times(1)).updateUserScoreAtOtherDay(userId,-ScoreType.MAKE_MEMO.getScore());
         }
         @Test
         @DisplayName("유저가 어떤 행동으로 점수를 얻은 시점이 그 당일일 때, 그 행동을 되돌리는 경우")
@@ -105,7 +105,7 @@ class ScoreServiceTest {
 
             Assertions.assertThatCode(()->scoreService.subtractUserScore(userId,score.getScoreType(),score.getPostId())).doesNotThrowAnyException();
 
-            verify(scoreRepository, times(1)).updateUserScoreAtDay(userId,ScoreType.MAKE_MEMO.getScore(),LIMIT_DAILY_SCORE - score.getScore());
+            verify(scoreRepository, times(1)).updateUserScoreAtDay(userId,-ScoreType.MAKE_MEMO.getScore(),LIMIT_DAILY_SCORE - score.getScore());
         }
     }
 

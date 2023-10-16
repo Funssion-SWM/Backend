@@ -44,7 +44,7 @@ public class AnswerController {
     }
 
     private AnswerDto addIsLikeAndScoreInfoByUserId(Long loginId, Answer answer) {
-        return new AnswerDto(answer.setScoreInfo(scoreService.getScore(loginId)), loginId);
+        return new AnswerDto(answer.setScoreInfo(scoreService.getScore(answer.getAuthorId())), loginId);
     }
 
     @PatchMapping("/select/{questionId}")
@@ -58,7 +58,7 @@ public class AnswerController {
     public AnswerDto getAnswerBy(@PathVariable Long answerId){
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
         Answer answer = answerService.getAnswerBy(answerId);
-        return new AnswerDto(answer,loginId);
+        return addIsLikeAndScoreInfoByUserId(loginId,answer);
     }
 
     @PatchMapping("/{answerId}")

@@ -14,6 +14,7 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -45,6 +46,8 @@ public class MemoServiceTest {
     @Mock S3Repository s3Repository;
     @Mock
     ScoreRepository scoreRepository;
+    @Mock
+    ScoreService scoreService;
     @InjectMocks MemoService memoService;
 
     MockedStatic<SecurityContextUtils> mockSecurityContextUtils;

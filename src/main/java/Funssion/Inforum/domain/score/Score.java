@@ -21,6 +21,9 @@ public class Score {
     public static final Long LIMIT_DAILY_SCORE = 200L;
 
     public static Long calculateAddingScore(Long userDailyScore, ScoreType scoreType){
+        if (scoreType.equals(ScoreType.LIKE) || scoreType.equals(ScoreType.BEST_ANSWER)){
+            return scoreType.getScore();
+        }
         if(userDailyScore + scoreType.getScore() >= LIMIT_DAILY_SCORE) return LIMIT_DAILY_SCORE - userDailyScore;
         else return scoreType.getScore();
     }

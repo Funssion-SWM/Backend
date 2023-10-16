@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.score;
 import Funssion.Inforum.common.exception.notfound.RankNotFoundException;
 
 public enum Rank {
-    BRONZE_5(0, Bronze.INTERVAL),
+    BRONZE_5(100, Bronze.INTERVAL),
     BRONZE_4(BRONZE_5.getMax() + Bronze.INTERVAL, Bronze.INTERVAL),
     BRONZE_3(BRONZE_4.getMax() + Bronze.INTERVAL, Bronze.INTERVAL),
     BRONZE_2(BRONZE_3.getMax() + Bronze.INTERVAL, Bronze.INTERVAL),

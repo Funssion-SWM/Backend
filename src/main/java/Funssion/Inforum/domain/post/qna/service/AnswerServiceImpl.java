@@ -13,6 +13,7 @@ import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -27,12 +28,12 @@ import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.UPDATE;
 import static Funssion.Inforum.common.constant.PostType.ANSWER;
-import static Funssion.Inforum.domain.score.Score.calculateAddingScore;
-import static Funssion.Inforum.domain.score.Score.calculateDailyScore;
 
 @Service
 @RequiredArgsConstructor
 public class AnswerServiceImpl implements AnswerService {
+    private final ScoreService scoreService;
+
     private final AnswerRepository answerRepository;
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
@@ -51,9 +52,7 @@ public class AnswerServiceImpl implements AnswerService {
         Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         answerRepository.updateAnswersCountOfQuestion(questionId,Sign.PLUS);
         createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
-        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_ANSWER), calculateDailyScore(userDailyScore,ScoreType.MAKE_ANSWER));
-
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_ANSWER,answer.getId());
         return answer;
     }
 
@@ -88,6 +87,8 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.updateAnswersCountOfQuestion(willBeDeletedAnswer.getQuestionId(),Sign.MINUS);
         s3Repository.deleteFromText(ANSWER_DIR, willBeDeletedAnswer.getText());
         createOrUpdateHistory(authorId,willBeDeletedAnswer.getCreatedDate(), Sign.MINUS);
+
+        scoreService.subtractUserScore(authorId,ScoreType.MAKE_ANSWER,answerId);
         answerRepository.deleteAnswer(answerId);
     }
 
@@ -108,20 +109,18 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer selectAnswer(Long loginId, Long questionId, Long answerId) {
         if(isNotUserAuthorOfQuestion(loginId, questionId)) throw new UnAuthorizedException("답변을 채택할 권한이 없습니다.");
         questionRepository.solveQuestion(questionId);
-        updateScoreOfQuestionUser(loginId);
+        updateScoreOfQuestionUser(loginId,questionId);
         updateScoreOfAnswerUser(answerId);
         return answerRepository.select(answerId);
     }
 
     private void updateScoreOfAnswerUser(Long answerId) {
         Long authorIdOfAnswer = answerRepository.getAuthorIdOf(answerId);
-        Long userDailyScore = scoreRepository.getUserDailyScore(authorIdOfAnswer);
-        scoreRepository.updateUserScoreAtDay(authorIdOfAnswer, calculateAddingScore(userDailyScore, ScoreType.BEST_ANSWER), calculateDailyScore(userDailyScore,ScoreType.BEST_ANSWER));
+        scoreService.checkUserDailyScoreAndAdd(authorIdOfAnswer,ScoreType.BEST_ANSWER,answerId);
     }
 
-    private void updateScoreOfQuestionUser(Long loginId) {
-        Long userDailyScore = scoreRepository.getUserDailyScore(loginId);
-        scoreRepository.updateUserScoreAtDay(loginId, calculateAddingScore(userDailyScore, ScoreType.SELECT_ANSWER), calculateDailyScore(userDailyScore,ScoreType.SELECT_ANSWER));
+    private void updateScoreOfQuestionUser(Long questionAuthorId, Long questionId) {
+        scoreService.checkUserDailyScoreAndAdd(questionAuthorId,ScoreType.SELECT_ANSWER,questionId);
     }
 
     private boolean isNotUserAuthorOfQuestion(Long loginId, Long questionId) {
