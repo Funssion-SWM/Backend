@@ -259,22 +259,17 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public void updateSeriesIds(Long seriesId, Long authorId, List<Long> memoIdList) {
-        StringBuilder sql = new StringBuilder(
-                "UPDATE post.memo " +
-                "SET series_id = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
-                "WHERE is_temporary = false and author_Id = ? and id in (");
-        ArrayList<Object> params = new ArrayList<>();
-        params.add(seriesId);
-        params.add(authorId);
 
-        for (Long memoId : memoIdList.subList(0, memoIdList.size() - 1)) {
-            sql.append("?,");
-            params.add(memoId);
+        int updatedRows = 0;
+        for (Long memoId : memoIdList) {
+            String sql = "UPDATE post.memo " +
+                    "SET series_id = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
+                    "WHERE id = ? and author_id = ? and is_temporary = false";
+
+            updatedRows += template.update(sql, seriesId, memoId, authorId);
         }
-        sql.append("?)");
-        params.add(memoIdList.get(memoIdList.size() - 1));
 
-        if (params.size() - 2 != template.update(sql.toString(), params.toArray()))
+        if (memoIdList.size() != updatedRows)
             throw new UpdateFailException("update fail: request size, updated rows are not same.");
     }
 
