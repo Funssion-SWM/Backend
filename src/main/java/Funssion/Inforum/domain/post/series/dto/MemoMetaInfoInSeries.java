@@ -10,4 +10,5 @@ import lombok.RequiredArgsConstructor;
 public class MemoMetaInfoInSeries {
     private final Long id;
     private final String title;
+    private final String color;
 }

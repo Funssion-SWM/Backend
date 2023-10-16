@@ -171,6 +171,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public List<String> findTop3ColorsBySeriesId(Long seriesId) {
+        String sql = "SELECT color FROM post.memo WHERE series_id = ? ORDER BY series_order LIMIT 3";
+        return template.queryForList(sql, String.class, seriesId);
+    }
+
+    @Override
     public Memo findById(Long id) {
         String sql = "select * from post.memo where id = ?";
         return template.query(sql, memoRowMapper(), id).stream().findAny().orElseThrow(() -> new MemoNotFoundException());

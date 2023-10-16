@@ -77,8 +77,11 @@ public class SeriesService {
         List<Series> resultList = getSeriesList(authorId, searchString, period, orderBy, pageNum, resultCntPerPage);
 
         return resultList.stream()
-                .map(SeriesListDto::valueOf)
-                .toList();
+                .map(series -> {
+                    SeriesListDto seriesListDto = SeriesListDto.valueOf(series);
+                    seriesListDto.setTopThreeColors(memoRepository.findTop3ColorsBySeriesId(series.getId()));
+                    return seriesListDto;
+                }).toList();
     }
 
     private List<Series> getSeriesList(Long authorId, String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
@@ -120,7 +123,7 @@ public class SeriesService {
         SeriesResponseDto response = SeriesResponseDto.valueOf(getValidatedSeries(seriesId));
         List<MemoMetaInfoInSeries> memoMetaInfoList =
                 memoRepository.findAllBySeriesId(seriesId).stream()
-                        .map((memo -> new MemoMetaInfoInSeries(memo.getId(), memo.getTitle())))
+                        .map((memo -> new MemoMetaInfoInSeries(memo.getId(), memo.getTitle(), memo.getColor())))
                         .toList();
         response.setMemoMetaInfo(memoMetaInfoList);
         return response;
