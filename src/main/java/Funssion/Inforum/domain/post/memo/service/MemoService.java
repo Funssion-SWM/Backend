@@ -93,11 +93,12 @@ public class MemoService {
         );
         tagRepository.saveTags(createdMemo.getMemoId(),form.getMemoTags());
 
-        if (!form.getIsTemporary())
+        if (!form.getIsTemporary()) {
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
+            Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
+            scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_MEMO), calculateDailyScore(userDailyScore,ScoreType.MAKE_MEMO));
+        }
 
-        Long userDailyScore = scoreRepository.getUserDailyScore(authorId);
-        scoreRepository.updateUserScoreAtDay(authorId, calculateAddingScore(userDailyScore, ScoreType.MAKE_MEMO), calculateDailyScore(userDailyScore,ScoreType.MAKE_MEMO));
 
         return createdMemo;
     }
