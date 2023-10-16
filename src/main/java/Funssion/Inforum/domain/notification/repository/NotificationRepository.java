@@ -10,6 +10,6 @@ public interface NotificationRepository {
 
     void save(Notification notification);
     void delete(PostType senderPostType, Long senderPostId);
-    void deleteFollowNotification(Long senderId);
+    void deleteFollowNotification(Long receiverId, Long senderId);
     List<Notification> find30DaysNotificationsMaximum20ByUserId(Long receiverId);
 }

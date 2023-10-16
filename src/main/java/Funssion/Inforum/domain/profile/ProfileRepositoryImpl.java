@@ -2,7 +2,9 @@ package Funssion.Inforum.domain.profile;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -49,5 +51,22 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             template.update(sql, newImageURL, userId);
         }
+    }
+
+    @Override
+    public AuthorProfile findAuthorProfile(PostType postType, Long postId) {
+        String sql = "SELECT author_id, author_name, author_image_path " +
+                "FROM post." + postType.getValue() + " " +
+                "WHERE id = ?";
+
+        return template.queryForObject(sql, authorProfileRowMapper(), postId);
+    }
+
+    private RowMapper<AuthorProfile> authorProfileRowMapper() {
+        return (rs, rowNum) -> AuthorProfile.builder()
+                .id(rs.getLong("author_id"))
+                .name(rs.getString("author_name"))
+                .profileImagePath("author_image_path")
+                .build();
     }
 }
