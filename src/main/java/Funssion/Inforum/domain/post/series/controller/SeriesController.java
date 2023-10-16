@@ -47,7 +47,7 @@ public class SeriesController {
             @RequestPart @NotEmpty(message = "시리즈 제목을 입력해주세요.") String title,
             @RequestPart @NotEmpty(message = "시리즈 설명을 입력해주세요.") String description,
             @RequestPart @Size(min = 2, message = "시리즈에 들어가는 메모는 2개 이상이어야 합니다.") String memoIdList,
-            @RequestPart MultipartFile thumbnailImage
+            @RequestPart(required = false) MultipartFile thumbnailImage
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
         SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, CustomListUtils.toLongList(memoIdList));
@@ -55,7 +55,7 @@ public class SeriesController {
     }
 
     @GetMapping("/{seriesId}")
-    public SeriesResponseDto getSingleSeries(@PathVariable Long seriesId) {
+    public SeriesResponseDto getSingleSeries(@PathVariable @Min(1) Long seriesId) {
         return seriesService.getSeries(seriesId);
     }
 
