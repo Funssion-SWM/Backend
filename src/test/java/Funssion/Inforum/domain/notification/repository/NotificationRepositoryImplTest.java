@@ -146,7 +146,7 @@ class NotificationRepositoryImplTest {
         @DisplayName("일반 케이스")
         void success() {
             repository.delete(newPostFollowedNotification.getSenderPostType(), newPostFollowedNotification.getSenderPostId());
-            repository.delete();
+//            repository.delete();
 
         }
 

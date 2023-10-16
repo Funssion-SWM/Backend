@@ -19,6 +19,7 @@ import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.ProfileRepositoryImpl;
 import Funssion.Inforum.jwt.TokenProvider;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -248,11 +249,7 @@ public class MemberService {
     }
 
     private IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
-        memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
-        commentRepository.updateProfileImageOfComment(userId, memberProfileEntity.getProfileImageFilePath());
-        commentRepository.updateProfileImageOfReComment(userId,memberProfileEntity.getProfileImageFilePath() );
-        questionRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
-        answerRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
+        profileRepository.updateAuthorImagePathInPost(userId, memberProfileEntity.getProfileImageFilePath());
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 

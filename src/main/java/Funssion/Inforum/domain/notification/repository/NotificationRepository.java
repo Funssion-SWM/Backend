@@ -9,6 +9,7 @@ import java.util.List;
 public interface NotificationRepository {
 
     void save(Notification notification);
-    void delete(NotificationType notificationType, PostType senderPostType, Long senderPostId);
+    void delete(PostType senderPostType, Long senderPostId);
+    void deleteFollowNotification(Long senderId);
     List<Notification> find30DaysNotificationsMaximum20ByUserId(Long seriesId);
 }
