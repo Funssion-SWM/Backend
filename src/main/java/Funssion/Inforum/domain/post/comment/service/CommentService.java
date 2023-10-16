@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.post.comment.service;
 
+import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -18,6 +19,8 @@ import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,13 +29,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.PostType.*;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
     private final CommentRepository commentRepository;
     private final MyRepository myRepository;
-    private final MemoRepository memoRepository;
+    private final ProfileRepository profileRepository;
     private final NotificationRepository notificationRepository;
 
     /*
@@ -44,13 +50,32 @@ public class CommentService {
     public Comment createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
-        Comment comment = commentRepository.createComment(new Comment(
+        Comment createdComment = commentRepository.createComment(new Comment(
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
-        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
-//        notificationRepository.save();
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), createdComment.getPostId());
+        sendNotificationToPostAuthor(
+                commentSaveDto.getPostTypeWithComment(),
+                commentSaveDto.getPostId(),
+                createdComment);
 
-        return comment;
+        return createdComment;
+    }
+
+    private void sendNotificationToPostAuthor(PostType receiverPostType, Long receiverPostId, Comment createdComment) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(profileRepository.findAuthorId(receiverPostType, receiverPostId))
+                        .receiverPostType(receiverPostType)
+                        .receiverPostId(receiverPostId)
+                        .senderId(createdComment.getAuthorId())
+                        .senderName(createdComment.getAuthorName())
+                        .senderImagePath(createdComment.getAuthorImagePath())
+                        .senderPostType(COMMENT)
+                        .senderPostId(createdComment.getId())
+                        .notificationType(NEW_COMMENT)
+                        .build()
+        );
     }
 
     @Transactional
@@ -62,6 +87,7 @@ public class CommentService {
     public IsSuccessResponseDto deleteComment(Long commentId) {
         PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
+        notificationRepository.delete(COMMENT, commentId);
         return commentRepository.deleteComment(commentId);
     }
 
@@ -74,10 +100,27 @@ public class CommentService {
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
-        commentRepository.createReComment(new ReComment(
-                authorId,authorProfile, LocalDateTime.now(),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
+        ReComment createdRecomment = commentRepository.createReComment(new ReComment(
+                authorId, authorProfile, LocalDateTime.now(), null, reCommentSaveDto.getParentCommentId(), reCommentSaveDto.getCommentText())
         );
+        sendNotificationToCommentAuthor(reCommentSaveDto.getParentCommentId(), createdRecomment);
         return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
+    }
+
+    private void sendNotificationToCommentAuthor(Long receiverPostId, ReComment createdReComment) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(profileRepository.findAuthorId(COMMENT, receiverPostId))
+                        .receiverPostType(COMMENT)
+                        .receiverPostId(receiverPostId)
+                        .senderId(createdReComment.getAuthorId())
+                        .senderName(createdReComment.getAuthorName())
+                        .senderImagePath(createdReComment.getAuthorImagePath())
+                        .senderPostType(RECOMMENT)
+                        .senderPostId(createdReComment.getId())
+                        .notificationType(NEW_COMMENT)
+                        .build()
+        );
     }
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
@@ -85,6 +128,7 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        notificationRepository.delete(RECOMMENT, reCommentId);
         return commentRepository.deleteReComment(reCommentId);
     }
 

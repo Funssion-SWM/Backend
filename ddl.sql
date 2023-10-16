@@ -118,7 +118,7 @@ CREATE TABLE "member".notification (
     receiver_post_id int8,
     sender_id int8 NOT NULL,
     sender_name varchar(15) NOT NULL,
-    sender_image_path varchar(300) NOT NULL,
+    sender_image_path varchar(300),
     sender_post_type varchar(10),
     sender_post_id int8,
     notification_type varchar(20) NOT NULL,

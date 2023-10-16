@@ -102,7 +102,7 @@ class NotificationRepositoryImplTest {
                     .receiverPostId(1L)
                     .senderId(userId2)
                     .senderName("jinu")
-                    .senderPostId(1L)
+                    .senderPostId(2L)
                     .senderPostType(PostType.QUESTION)
                     .senderImagePath("https://image")
                     .notificationType(NotificationType.NEW_ACCEPTED)
@@ -166,7 +166,20 @@ class NotificationRepositoryImplTest {
         @Test
         @DisplayName("팔로우 알림 삭제")
         void deleteNewFollowerNotification() {
+            List<Notification> notifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+            repository.deleteFollowNotification(userId1, userId2);
 
+            List<Notification> remainNotifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+
+            assertThat(notifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newFollowerNotification, newAnswerNotification,
+                    newQuestionNotification, newCommentNotification);
+
+            assertThat(remainNotifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newAnswerNotification, newQuestionNotification,
+                    newCommentNotification);
         }
 
     }

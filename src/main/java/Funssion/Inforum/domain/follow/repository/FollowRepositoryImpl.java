@@ -66,4 +66,13 @@ public class FollowRepositoryImpl implements FollowRepository {
 
         return template.query(sql, MemberProfileEntity.MemberInfoRowMapper(),userId);
     }
+
+    @Override
+    public List<Long> findFollowedUserIdByUserId(Long userId) {
+        String sql = "SELECT i.id " +
+                "FROM member.follow f, member.info i " +
+                "WHERE f.followed_user_id = ? and f.user_id = i.id";
+
+        return template.queryForList(sql, Long.class, userId);
+    }
 }

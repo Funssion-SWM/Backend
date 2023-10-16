@@ -2,7 +2,9 @@ package Funssion.Inforum.domain.profile;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -19,6 +21,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     @Override
     public void updateProfile(Long userId, MemberProfileEntity memberProfile) {
         updateAuthorProfile(userId, memberProfile);
+        updateSenderProfile(userId, memberProfile);
         updateUserProfile(userId, memberProfile);
     }
 
@@ -30,6 +33,14 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
         }
+    }
+
+    private void updateSenderProfile(Long userId, MemberProfileEntity memberProfile) {
+        String sql = "UPDATE member.notification " +
+                "SET sender_image_path = ?, sender_name = ? " +
+                "WHERE id = ?";
+
+        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
     }
 
     private void updateUserProfile(Long userId, MemberProfileEntity memberProfile) {
@@ -49,5 +60,41 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             template.update(sql, newImageURL, userId);
         }
+
+        updateSenderProfile(userId, newImageURL);
+    }
+
+    private void updateSenderProfile(Long userId, String newImageURL) {
+        String sql = "UPDATE member.notification " +
+                "SET sender_image_path = ? " +
+                "WHERE id = ?";
+
+        template.update(sql, newImageURL, userId);
+    }
+
+    @Override
+    public AuthorProfile findAuthorProfile(PostType postType, Long postId) {
+        String sql = "SELECT author_id, author_name, author_image_path " +
+                "FROM post." + postType.getValue() + " " +
+                "WHERE id = ?";
+
+        return template.queryForObject(sql, authorProfileRowMapper(), postId);
+    }
+
+    private RowMapper<AuthorProfile> authorProfileRowMapper() {
+        return (rs, rowNum) -> AuthorProfile.builder()
+                .id(rs.getLong("author_id"))
+                .name(rs.getString("author_name"))
+                .profileImagePath("author_image_path")
+                .build();
+    }
+
+    @Override
+    public Long findAuthorId(PostType postType, Long postId) {
+        String sql = "SELECT author_id " +
+                "FROM post." + postType.getValue() + " " +
+                "WHERE id = ?";
+
+        return template.queryForObject(sql, Long.class, postId);
     }
 }

@@ -13,4 +13,5 @@ public interface FollowRepository {
     Optional<Follow> findByUserIdAndFollowedUserId(Long userId, Long followedUserId);
     List<MemberProfileEntity> findFollowingProfilesByUserId(Long userId);
     List<MemberProfileEntity> findFollowedProfilesByUserId(Long userId);
+    List<Long> findFollowedUserIdByUserId(Long userId);
 }

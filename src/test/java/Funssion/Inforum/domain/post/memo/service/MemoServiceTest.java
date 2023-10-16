@@ -4,9 +4,11 @@ import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
@@ -25,6 +27,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
@@ -40,6 +43,8 @@ public class MemoServiceTest {
     @Mock TagRepository tagRepository;
     @Mock MyRepository myRepository;
     @Mock S3Repository s3Repository;
+    @Mock FollowRepository followRepository;
+    @Mock NotificationRepository notificationRepository;
     @InjectMocks MemoService memoService;
 
     MockedStatic<SecurityContextUtils> mockSecurityContextUtils;
@@ -349,6 +354,8 @@ public class MemoServiceTest {
                     .willReturn(memo1);
             given(tagRepository.saveTags(any(), any()))
                     .willReturn(new IsSuccessResponseDto(true, "save success"));
+            given(followRepository.findFollowedUserIdByUserId(any()))
+                    .willReturn(Collections.emptyList());
             willThrow(HistoryNotFoundException.class)
                     .given(myRepository)
                     .updateHistory(any(), any(), any(), any());
@@ -433,6 +440,8 @@ public class MemoServiceTest {
                         .willReturn(memo4);
                 given(memoRepository.updateContentInMemo(memoSaveDto, memoID4, Boolean.TRUE))
                         .willReturn(memo2);
+                given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID4, memoSaveDto);
 
@@ -448,6 +457,8 @@ public class MemoServiceTest {
                         .willReturn(memo5);
                 given(memoRepository.updateContentInMemo(memoSaveDto, memoID5))
                         .willReturn(memo2);
+                given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID5, memoSaveDto);
 
@@ -469,6 +480,8 @@ public class MemoServiceTest {
                         .willReturn(memo2);
                 given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
                         .willReturn(memo4);
+                given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
 
@@ -501,6 +514,8 @@ public class MemoServiceTest {
                     .willReturn(memo4);
             given(tagRepository.updateTags(eq(memoID4), any()))
                     .willThrow(SQLException.class);
+            given(followRepository.findFollowedUserIdByUserId(any()))
+                    .willReturn(Collections.emptyList());
 
             assertThatThrownBy(() -> memoService.updateMemo(memoID4, memoSaveDto))
                     .isInstanceOf(ArrayToListException.class);
