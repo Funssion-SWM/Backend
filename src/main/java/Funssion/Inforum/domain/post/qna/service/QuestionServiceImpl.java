@@ -69,12 +69,13 @@ public class QuestionServiceImpl implements QuestionService {
         return createdQuestion;
     }
 
-    private void sendNotificationToLinkedMemoAuthor(Long memoId, Question createdQuestion) {
+    private void sendNotificationToLinkedMemoAuthor(Long receiverPostId, Question createdQuestion) {
+        Long receiverId = profileRepository.findAuthorId(MEMO, receiverPostId);
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(profileRepository.findAuthorId(MEMO, memoId))
+                        .receiverId(receiverId)
                         .receiverPostType(MEMO)
-                        .receiverPostId(memoId)
+                        .receiverPostId(receiverPostId)
                         .senderId(createdQuestion.getAuthorId())
                         .senderPostType(QUESTION)
                         .senderPostId(createdQuestion.getId())

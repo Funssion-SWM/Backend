@@ -15,6 +15,7 @@ import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -126,7 +127,25 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer selectAnswer(Long loginId, Long questionId, Long answerId) {
         if(isNotUserAuthorOfQuestion(loginId, questionId)) throw new UnAuthorizedException("답변을 채택할 권한이 없습니다.");
         questionRepository.solveQuestion(questionId);
+        sendNotificationToSelectedAnswerAuthor(answerId, loginId, questionId);
         return answerRepository.select(answerId);
+    }
+
+    private void sendNotificationToSelectedAnswerAuthor(Long receiverPostId, Long senderId, Long senderPostId) {
+        AuthorProfile senderProfile = profileRepository.findAuthorProfile(QUESTION, senderPostId);
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(profileRepository.findAuthorId(ANSWER, receiverPostId))
+                        .receiverPostType(ANSWER)
+                        .receiverPostId(receiverPostId)
+                        .senderId(senderId)
+                        .senderPostType(QUESTION)
+                        .senderPostId(senderPostId)
+                        .senderName(senderProfile.getName())
+                        .senderImagePath(senderProfile.getProfileImagePath())
+                        .notificationType(NEW_ACCEPTED)
+                        .build()
+        );
     }
 
     private boolean isNotUserAuthorOfQuestion(Long loginId, Long questionId) {
