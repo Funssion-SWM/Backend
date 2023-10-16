@@ -21,6 +21,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     @Override
     public void updateProfile(Long userId, MemberProfileEntity memberProfile) {
         updateAuthorProfile(userId, memberProfile);
+        updateSenderProfile(userId, memberProfile);
         updateUserProfile(userId, memberProfile);
     }
 
@@ -32,6 +33,14 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
         }
+    }
+
+    private void updateSenderProfile(Long userId, MemberProfileEntity memberProfile) {
+        String sql = "UPDATE member.notification " +
+                "SET sender_image_path = ?, sender_name = ? " +
+                "WHERE id = ?";
+
+        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
     }
 
     private void updateUserProfile(Long userId, MemberProfileEntity memberProfile) {
@@ -51,6 +60,16 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             template.update(sql, newImageURL, userId);
         }
+
+        updateSenderProfile(userId, newImageURL);
+    }
+
+    private void updateSenderProfile(Long userId, String newImageURL) {
+        String sql = "UPDATE member.notification " +
+                "SET sender_image_path = ? " +
+                "WHERE id = ?";
+
+        template.update(sql, newImageURL, userId);
     }
 
     @Override
