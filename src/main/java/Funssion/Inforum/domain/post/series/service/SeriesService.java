@@ -45,14 +45,20 @@ public class SeriesService {
             MultipartFile thumbnailImage,
             Long authorId
     ) {
-        String imageName = S3Utils.generateImageNameOfS3(authorId);
-        String uploadedImagePath = s3Repository.upload(thumbnailImage, SERIES_DIR, imageName);
+        String uploadedImagePath = uploadThumbnailImage(thumbnailImage, authorId);
 
         Long seriesId = createSeriesAndGetSeriesId(seriesRequestDto, authorId, uploadedImagePath);
 
         memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
 
         return new SeriesCreateResponseDto(seriesId);
+    }
+
+    private String uploadThumbnailImage(MultipartFile thumbnailImage, Long authorId) {
+        if (Objects.nonNull(thumbnailImage)) {
+            String imageName = S3Utils.generateImageNameOfS3(authorId);
+            return s3Repository.upload(thumbnailImage, SERIES_DIR, imageName);
+        }
     }
 
     private Long createSeriesAndGetSeriesId(SeriesRequestDto seriesRequestDto, Long authorId, String uploadedImagePath) {
@@ -110,8 +116,7 @@ public class SeriesService {
     ) {
         deleteSeriesInfoInOtherStorage(seriesId, authorId);
 
-        String imageName = S3Utils.generateImageNameOfS3(authorId);
-        String uploadedImagePath = s3Repository.upload(thumbnailImage, SERIES_DIR, imageName);
+        String uploadedImagePath = uploadThumbnailImage(thumbnailImage, authorId);
 
         seriesRepository.update(seriesId, seriesRequestDto, uploadedImagePath);
         memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
