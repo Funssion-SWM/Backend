@@ -199,6 +199,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
+                        .seriesId(rs.getLong("series_id"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))
                         .build());

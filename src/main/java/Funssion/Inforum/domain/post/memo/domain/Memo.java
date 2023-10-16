@@ -26,6 +26,7 @@ public class Memo extends Post {
     private List<String> memoTags;
     private Boolean isTemporary;
     private Boolean isCreated;
+    private Long seriesId;
 
 
 

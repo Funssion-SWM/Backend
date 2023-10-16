@@ -148,7 +148,9 @@ public class SeriesService {
             throw new UnAuthorizedException("다른 유저의 게시물을 수정 또는 삭제할 수 없습니다.");
         }
 
-        s3Repository.delete(SERIES_DIR, willBeDeletedSeries.getThumbnailImagePath());
+        if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath())) {
+            s3Repository.delete(SERIES_DIR, willBeDeletedSeries.getThumbnailImagePath());
+        }
         memoRepository.updateSeriesIdsToZero(NULL_SERIES_ID, authorId);
     }
 
