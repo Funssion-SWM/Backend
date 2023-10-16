@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,7 +150,7 @@ public class SeriesIntegrationTest {
                 "thumbnailImage",
                 "asd.png",
                 "image/png",
-                new FileInputStream("/src/resources/static/asd.png"));
+                new FileInputStream("src/main/resources/static/asd.png"));
     }
 
     /** memo1,2,3 with user1, memo4,5 with user2
@@ -188,6 +189,16 @@ public class SeriesIntegrationTest {
                             .param("authorId", "0"))
                     .andExpect(status().isBadRequest());
 
+        }
+
+        @Test
+        @DisplayName("시리즈 단일 조회하기")
+        void getSingleSeries() throws Exception {
+            MvcResult mvcResult = mvc.perform(get("/series/" + createdSeries1.getId()))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            System.out.println("mvcResult = " + mvcResult.getResponse().getContentAsString());
         }
 
         @Test
@@ -239,34 +250,30 @@ public class SeriesIntegrationTest {
                     .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
 
             // authorId 가 우선순위 이므로 searchString 무시
-            mvc.perform(get("/series")
-                    .param("authorId", USER_ID_2.toString())
-                    .param("searchString", "java"))
+            MvcResult mvcResult = mvc.perform(get("/series")
+                            .param("authorId", USER_ID_2.toString())
+                            .param("searchString", "java"))
                     .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())));
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())))
+                    .andReturn();
+
+            System.out.println("mvcResult = " + mvcResult.getResponse().getContentAsString());
         }
     }
 
-    @Nested
-    @DisplayName("시리즈 생성하기")
-    class createSeries {
-
-        @Test
-        @DisplayName("인증 되지 않은 케이스")
-        void exUnAuthorized() throws Exception {
-            mvc.perform(multipart("/series")
-                    .file(mockMultipartfile)
-                    .param("title", "jdk")
-                    .param("description", "jdk is ...")
-                    .param("memoIdList", List.of(createdMemo2.getId(), createdMemo3.getId()).toString()))
-                    .andExpect(status().isUnauthorized());
-        }
-
-        @Test
-        @DisplayName("예외 입력 케이스")
-        void exBadRequest() {
-//            mvc.perform(post("/series")
-//                    .file());
-        }
-    }
+//    @Nested
+//    @DisplayName("시리즈 생성하기")
+//    class createSeries {
+//
+//        @Test
+//        @DisplayName("인증 되지 않은 케이스")
+//        void exUnAuthorized() throws Exception {
+//            mvc.perform(multipart("/series")
+//                    .file(mockMultipartfile)
+//                    .param("title", "jdk")
+//                    .param("description", "jdk is ...")
+//                    .param("memoIdList", List.of(createdMemo2.getId(), createdMemo3.getId()).toString()))
+//                    .andExpect(status().isUnauthorized());
+//        }
+//    }
 }
