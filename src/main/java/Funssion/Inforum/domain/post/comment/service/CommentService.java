@@ -130,6 +130,7 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        notificationRepository.delete(RECOMMENT, reCommentId);
         return commentRepository.deleteReComment(reCommentId);
     }
 

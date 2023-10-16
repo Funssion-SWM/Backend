@@ -1,11 +1,14 @@
 package Funssion.Inforum.domain.post.qna.service;
 
+import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
@@ -24,7 +27,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.UPDATE;
+import static Funssion.Inforum.common.constant.NotificationType.*;
 import static Funssion.Inforum.common.constant.PostType.ANSWER;
+import static Funssion.Inforum.common.constant.PostType.QUESTION;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
     private final QuestionRepository questionRepository;
+    private final NotificationRepository notificationRepository;
 
     @Value("${aws.s3.answer-dir}")
     private String ANSWER_DIR;
@@ -43,10 +49,27 @@ public class AnswerServiceImpl implements AnswerService {
         if(isAuthorOfQuestionCreateAnswer(questionId, authorId)){
             throw new BadRequestException("자신이 작성한 질문 글에 답변을 달 수 없습니다.");
         }
-        Answer answer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
+        Answer createdAnswer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         answerRepository.updateAnswersCountOfQuestion(questionId,Sign.PLUS);
-        createOrUpdateHistory(authorId,answer.getCreatedDate(), Sign.PLUS);
-        return answer;
+        createOrUpdateHistory(authorId,createdAnswer.getCreatedDate(), Sign.PLUS);
+        sendNotificationToQuestionAuthor(questionId, createdAnswer);
+        return createdAnswer;
+    }
+
+    private void sendNotificationToQuestionAuthor(Long questionId, Answer createdAnswer) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(questionRepository.getAuthorId(questionId))
+                        .receiverPostType(QUESTION)
+                        .receiverPostId(questionId)
+                        .senderId(createdAnswer.getAuthorId())
+                        .senderPostType(ANSWER)
+                        .senderPostId(createdAnswer.getId())
+                        .senderName(createdAnswer.getAuthorName())
+                        .senderImagePath(createdAnswer.getAuthorImagePath())
+                        .notificationType(NEW_ANSWER)
+                        .build()
+        );
     }
 
     private boolean isAuthorOfQuestionCreateAnswer(Long questionId, Long authorId) {
@@ -80,6 +103,7 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.updateAnswersCountOfQuestion(willBeDeletedAnswer.getQuestionId(),Sign.MINUS);
         s3Repository.deleteFromText(ANSWER_DIR, willBeDeletedAnswer.getText());
         createOrUpdateHistory(authorId,willBeDeletedAnswer.getCreatedDate(), Sign.MINUS);
+        notificationRepository.delete(ANSWER, answerId);
         answerRepository.deleteAnswer(answerId);
     }
 
