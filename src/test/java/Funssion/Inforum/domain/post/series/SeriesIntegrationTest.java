@@ -194,11 +194,13 @@ public class SeriesIntegrationTest {
         @Test
         @DisplayName("시리즈 단일 조회하기")
         void getSingleSeries() throws Exception {
-            MvcResult mvcResult = mvc.perform(get("/series/" + createdSeries1.getId()))
+            mvc.perform(get("/series/" + createdSeries1.getId()))
                     .andExpect(status().isOk())
-                    .andReturn();
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
 
-            System.out.println("mvcResult = " + mvcResult.getResponse().getContentAsString());
+            mvc.perform(get("/series/" + createdSeries2.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())));
         }
 
         @Test
@@ -250,14 +252,12 @@ public class SeriesIntegrationTest {
                     .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
 
             // authorId 가 우선순위 이므로 searchString 무시
-            MvcResult mvcResult = mvc.perform(get("/series")
+            mvc.perform(get("/series")
                             .param("authorId", USER_ID_2.toString())
                             .param("searchString", "java"))
                     .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())))
-                    .andReturn();
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())));
 
-            System.out.println("mvcResult = " + mvcResult.getResponse().getContentAsString());
         }
     }
 

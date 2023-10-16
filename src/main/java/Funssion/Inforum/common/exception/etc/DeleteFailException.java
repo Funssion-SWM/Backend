@@ -5,12 +5,13 @@ import Funssion.Inforum.common.exception.response.ErrorResult;
 import org.springframework.http.HttpStatus;
 
 public class DeleteFailException extends GeneralException {
+    private static final String DEFAULT_MESSAGE = "delete failed: ";
 
     public DeleteFailException(String message) {
-        super(message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message));
+        super(DEFAULT_MESSAGE + message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message));
     }
 
     public DeleteFailException(String message, Throwable cause) {
-        super(message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message), cause);
+        super(DEFAULT_MESSAGE + message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message), cause);
     }
 }

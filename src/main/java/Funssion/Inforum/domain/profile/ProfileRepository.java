@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.profile;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,52 +18,18 @@ public class ProfileRepository {
     }
 
     public void updateProfile(Long userId, MemberProfileEntity memberProfile) {
-        updateAuthorProfileInMemo(userId, memberProfile);
-        updateAuthorProfileInComment(userId, memberProfile);
-        updateAuthorProfileInReComment(userId, memberProfile);
-        updateAuthorProfileInQuestion(userId, memberProfile);
-        updateAuthorProfileInAnswer(userId, memberProfile);
+        updateAuthorProfile(userId, memberProfile);
         updateUserProfile(userId, memberProfile);
     }
 
-    private void updateAuthorProfileInMemo(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update post.memo " +
-                "set author_image_path = ?, author_name = ? " +
-                "where author_id = ?";
+    private void updateAuthorProfile(Long userId, MemberProfileEntity memberProfile) {
+        for (PostType postType : PostType.values()) {
+            String sql = "UPDATE post." + postType.getValue() + " " +
+                    "SET author_image_path = ?, author_name = ? " +
+                    "WHERE author_id = ?";
 
-        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
-    }
-
-    private void updateAuthorProfileInComment(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update post.comment " +
-                "set author_image_path = ?, author_name = ? " +
-                "where author_id = ?";
-
-        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
-    }
-
-    private void updateAuthorProfileInReComment(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update post.recomment " +
-                "set author_image_path = ?, author_name = ? " +
-                "where author_id = ?";
-
-        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
-    }
-
-    private void updateAuthorProfileInQuestion(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update post.question " +
-                "set author_image_path = ?, author_name = ? " +
-                "where author_id = ?";
-
-        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
-    }
-
-    private void updateAuthorProfileInAnswer(Long userId, MemberProfileEntity memberProfile) {
-        String sql = "update post.answer " +
-                "set author_image_path = ?, author_name = ? " +
-                "where author_id = ?";
-
-        template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
+            template.update(sql, memberProfile.getProfileImageFilePath(), memberProfile.getNickname(), userId);
+        }
     }
 
     private void updateUserProfile(Long userId, MemberProfileEntity memberProfile) {
