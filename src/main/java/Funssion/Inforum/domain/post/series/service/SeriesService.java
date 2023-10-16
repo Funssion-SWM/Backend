@@ -55,10 +55,10 @@ public class SeriesService {
     }
 
     private String uploadThumbnailImage(MultipartFile thumbnailImage, Long authorId) {
-        if (Objects.nonNull(thumbnailImage)) {
-            String imageName = S3Utils.generateImageNameOfS3(authorId);
-            return s3Repository.upload(thumbnailImage, SERIES_DIR, imageName);
-        }
+        if (Objects.isNull(thumbnailImage)) return null;
+
+        String imageName = S3Utils.generateImageNameOfS3(authorId);
+        return s3Repository.upload(thumbnailImage, SERIES_DIR, imageName);
     }
 
     private Long createSeriesAndGetSeriesId(SeriesRequestDto seriesRequestDto, Long authorId, String uploadedImagePath) {
