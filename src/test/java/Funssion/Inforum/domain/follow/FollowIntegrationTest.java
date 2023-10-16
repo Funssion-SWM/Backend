@@ -16,7 +16,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.blankString;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -226,6 +228,14 @@ public class FollowIntegrationTest {
             mvc.perform(get("/followers")
                             .param("userId", testUserId3))
                     .andExpect(content().string(containsString("\"userId\":" + savedMember1.getId())));
+        }
+
+        @Test
+        @DisplayName("특정 유저를 팔로우한 유저 id 조회하기")
+        void findFollowedUserIdByUserId() {
+            List<Long> followedUserIdList = followRepository.findFollowedUserIdByUserId(savedMember2.getId());
+
+            assertThat(followedUserIdList).containsOnly(savedMember1.getId(), savedMember3.getId());
         }
     }
 

@@ -6,6 +6,7 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -35,8 +36,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.NotificationType.NEW_ANSWER;
-import static Funssion.Inforum.common.constant.NotificationType.NEW_QUESTION;
+import static Funssion.Inforum.common.constant.NotificationType.*;
 import static Funssion.Inforum.common.constant.PostType.*;
 
 @Service
@@ -49,6 +49,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final S3Repository s3Repository;
     private final NotificationRepository notificationRepository;
     private final ProfileRepository profileRepository;
+    private final FollowRepository followRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -65,12 +66,18 @@ public class QuestionServiceImpl implements QuestionService {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
-        sendNotificationToLinkedMemoAuthor(memoId, createdQuestion);
+
+        sendNotification(memoId, createdQuestion);
         return createdQuestion;
     }
 
-    private void sendNotificationToLinkedMemoAuthor(Long receiverPostId, Question createdQuestion) {
-        Long receiverId = profileRepository.findAuthorId(MEMO, receiverPostId);
+    private void sendNotification(Long memoId, Question createdQuestion) {
+        Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
+        sendNotificationToLinkedMemoAuthor(receiverId, memoId, createdQuestion);
+        sendNotificationToFollower(receiverId, createdQuestion);
+    }
+
+    private void sendNotificationToLinkedMemoAuthor(Long receiverId, Long receiverPostId, Question createdQuestion) {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
@@ -84,6 +91,26 @@ public class QuestionServiceImpl implements QuestionService {
                         .notificationType(NEW_QUESTION)
                         .build()
         );
+    }
+
+    private void sendNotificationToFollower(Long receivedUserId, Question createdQuestion) {
+        List<Long> followerIdList =
+                followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
+
+        for (Long receiverId : followerIdList) {
+            if (receiverId.equals(receivedUserId)) continue;
+            notificationRepository.save(
+                    Notification.builder()
+                            .receiverId(receiverId)
+                            .senderId(createdQuestion.getAuthorId())
+                            .senderPostType(QUESTION)
+                            .senderPostId(createdQuestion.getId())
+                            .senderName(createdQuestion.getAuthorName())
+                            .senderImagePath(createdQuestion.getAuthorImagePath())
+                            .notificationType(NEW_POST_FOLLOWED)
+                            .build()
+            );
+        }
     }
 
     private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {

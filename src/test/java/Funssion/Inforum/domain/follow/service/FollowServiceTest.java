@@ -4,7 +4,10 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.domain.Follow;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,10 @@ class FollowServiceTest {
     FollowRepository followRepository;
     @Mock
     MemberRepository memberRepository;
+    @Mock
+    NotificationRepository notificationRepository;
+    @Mock
+    MyRepository myRepository;
     @InjectMocks
     FollowService followService;
 
@@ -61,6 +68,8 @@ class FollowServiceTest {
         void success() {
             given(SecurityContextUtils.getAuthorizedUserId())
                     .willReturn(userId1);
+            given(myRepository.findProfileByUserId(userId1))
+                    .willReturn(new MemberProfileEntity());
 
             followService.follow(userId2);
         }
