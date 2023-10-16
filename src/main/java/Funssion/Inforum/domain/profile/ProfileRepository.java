@@ -8,4 +8,5 @@ public interface ProfileRepository {
     void updateProfile(Long userId, MemberProfileEntity memberProfile);
     void updateAuthorImagePathInPost(Long userId, String newImageURL);
     AuthorProfile findAuthorProfile(PostType postType, Long postId);
+    Long findAuthorId(PostType postType, Long postId);
 }

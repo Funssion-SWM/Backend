@@ -14,6 +14,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -39,6 +40,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final S3Repository s3Repository;
     private final QuestionRepository questionRepository;
     private final NotificationRepository notificationRepository;
+    private final ProfileRepository profileRepository;
 
     @Value("${aws.s3.answer-dir}")
     private String ANSWER_DIR;
@@ -59,7 +61,7 @@ public class AnswerServiceImpl implements AnswerService {
     private void sendNotificationToQuestionAuthor(Long questionId, Answer createdAnswer) {
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(questionRepository.getAuthorId(questionId))
+                        .receiverId(profileRepository.findAuthorId(QUESTION, questionId))
                         .receiverPostType(QUESTION)
                         .receiverPostId(questionId)
                         .senderId(createdAnswer.getAuthorId())

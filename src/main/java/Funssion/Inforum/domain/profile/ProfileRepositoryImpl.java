@@ -69,4 +69,13 @@ public class ProfileRepositoryImpl implements ProfileRepository {
                 .profileImagePath("author_image_path")
                 .build();
     }
+
+    @Override
+    public Long findAuthorId(PostType postType, Long postId) {
+        String sql = "SELECT author_id " +
+                "FROM post." + postType.getValue() + " " +
+                "WHERE id = ?";
+
+        return template.queryForObject(sql, Long.class, postId);
+    }
 }

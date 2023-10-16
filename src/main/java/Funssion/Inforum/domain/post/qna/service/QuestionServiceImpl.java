@@ -9,6 +9,8 @@ import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
@@ -18,6 +20,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -32,7 +35,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.PostType.QUESTION;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_ANSWER;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_QUESTION;
+import static Funssion.Inforum.common.constant.PostType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +47,8 @@ public class QuestionServiceImpl implements QuestionService {
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
+    private final NotificationRepository notificationRepository;
+    private final ProfileRepository profileRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -56,9 +63,26 @@ public class QuestionServiceImpl implements QuestionService {
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
-        Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
-        createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
-        return question;
+        Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
+        createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
+        sendNotificationToLinkedMemoAuthor(memoId, createdQuestion);
+        return createdQuestion;
+    }
+
+    private void sendNotificationToLinkedMemoAuthor(Long memoId, Question createdQuestion) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(profileRepository.findAuthorId(MEMO, memoId))
+                        .receiverPostType(MEMO)
+                        .receiverPostId(memoId)
+                        .senderId(createdQuestion.getAuthorId())
+                        .senderPostType(QUESTION)
+                        .senderPostId(createdQuestion.getId())
+                        .senderName(createdQuestion.getAuthorName())
+                        .senderImagePath(createdQuestion.getAuthorImagePath())
+                        .notificationType(NEW_QUESTION)
+                        .build()
+        );
     }
 
     private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {
@@ -141,6 +165,7 @@ public class QuestionServiceImpl implements QuestionService {
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
+        notificationRepository.delete(QUESTION, questionId);
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
     }
 

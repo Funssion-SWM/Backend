@@ -50,24 +50,24 @@ public class CommentService {
     public Comment createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
-        Comment comment = commentRepository.createComment(new Comment(
+        Comment createdComment = commentRepository.createComment(new Comment(
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
-        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), comment.getPostId());
-        addNotificationToPostAuthor(commentSaveDto, comment);
+        commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), createdComment.getPostId());
+        sendNotificationToPostAuthor(
+                commentSaveDto.getPostTypeWithComment(),
+                commentSaveDto.getPostId(),
+                createdComment);
 
-        return comment;
+        return createdComment;
     }
 
-    private void addNotificationToPostAuthor(CommentSaveDto commentSaveDto, Comment createdComment) {
-        PostType postTypeWithComment = commentSaveDto.getPostTypeWithComment();
-        Long postId = commentSaveDto.getPostId();
-        AuthorProfile authorProfile = profileRepository.findAuthorProfile(postTypeWithComment, postId);
+    private void sendNotificationToPostAuthor(PostType receiverPostType, Long receiverPostId, Comment createdComment) {
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(authorProfile.getId())
-                        .receiverPostType(postTypeWithComment)
-                        .receiverPostId(postId)
+                        .receiverId(profileRepository.findAuthorId(receiverPostType, receiverPostId))
+                        .receiverPostType(receiverPostType)
+                        .receiverPostId(receiverPostId)
                         .senderId(createdComment.getAuthorId())
                         .senderName(createdComment.getAuthorName())
                         .senderImagePath(createdComment.getAuthorImagePath())
@@ -103,18 +103,16 @@ public class CommentService {
         ReComment createdRecomment = commentRepository.createReComment(new ReComment(
                 authorId, authorProfile, LocalDateTime.now(), null, reCommentSaveDto.getParentCommentId(), reCommentSaveDto.getCommentText())
         );
-        addNotificationToPostAuthor(reCommentSaveDto, createdRecomment);
+        sendNotificationToCommentAuthor(reCommentSaveDto.getParentCommentId(), createdRecomment);
         return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
     }
 
-    private void addNotificationToPostAuthor(ReCommentSaveDto reCommentSaveDto, ReComment createdReComment) {
-        Long parentCommentId = reCommentSaveDto.getParentCommentId();
-        AuthorProfile authorProfile = profileRepository.findAuthorProfile(COMMENT, parentCommentId);
+    private void sendNotificationToCommentAuthor(Long receiverPostId, ReComment createdReComment) {
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(authorProfile.getId())
+                        .receiverId(profileRepository.findAuthorId(COMMENT, receiverPostId))
                         .receiverPostType(COMMENT)
-                        .receiverPostId(parentCommentId)
+                        .receiverPostId(receiverPostId)
                         .senderId(createdReComment.getAuthorId())
                         .senderName(createdReComment.getAuthorName())
                         .senderImagePath(createdReComment.getAuthorImagePath())
