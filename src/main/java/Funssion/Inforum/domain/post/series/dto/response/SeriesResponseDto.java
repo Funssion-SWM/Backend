@@ -11,13 +11,17 @@ import java.util.List;
 @Getter
 public class SeriesResponseDto {
     private final Long id;
+    private final String title;
+    private final String description;
     private List<MemoMetaInfoInSeries> memoInfoList;
     private final Long likes;
     private final LocalDateTime created;
 
     @Builder
-    public SeriesResponseDto(Long id, Long likes, LocalDateTime created) {
+    public SeriesResponseDto(Long id, String title, String description, Long likes, LocalDateTime created) {
         this.id = id;
+        this.title = title;
+        this.description = description;
         this.likes = likes;
         this.created = created;
     }
@@ -25,6 +29,8 @@ public class SeriesResponseDto {
     public static SeriesResponseDto valueOf(Series series) {
         return SeriesResponseDto.builder()
                 .id(series.getId())
+                .title(series.getTitle())
+                .description(series.getDescription())
                 .likes(series.getLikes())
                 .created(series.getCreatedDate())
                 .build();
