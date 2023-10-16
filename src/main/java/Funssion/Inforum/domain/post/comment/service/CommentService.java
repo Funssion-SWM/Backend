@@ -100,10 +100,29 @@ public class CommentService {
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
-        commentRepository.createReComment(new ReComment(
-                authorId,authorProfile, LocalDateTime.now(),null, reCommentSaveDto.getParentCommentId(),reCommentSaveDto.getCommentText())
+        ReComment createdRecomment = commentRepository.createReComment(new ReComment(
+                authorId, authorProfile, LocalDateTime.now(), null, reCommentSaveDto.getParentCommentId(), reCommentSaveDto.getCommentText())
         );
+        addNotificationToPostAuthor(reCommentSaveDto, createdRecomment);
         return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
+    }
+
+    private void addNotificationToPostAuthor(ReCommentSaveDto reCommentSaveDto, ReComment createdReComment) {
+        Long parentCommentId = reCommentSaveDto.getParentCommentId();
+        AuthorProfile authorProfile = profileRepository.findAuthorProfile(COMMENT, parentCommentId);
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(authorProfile.getId())
+                        .receiverPostType(COMMENT)
+                        .receiverPostId(parentCommentId)
+                        .senderId(createdReComment.getAuthorId())
+                        .senderName(createdReComment.getAuthorName())
+                        .senderImagePath(createdReComment.getAuthorImagePath())
+                        .senderPostType(RECOMMENT)
+                        .senderPostId(createdReComment.getId())
+                        .notificationType(NEW_COMMENT)
+                        .build()
+        );
     }
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
