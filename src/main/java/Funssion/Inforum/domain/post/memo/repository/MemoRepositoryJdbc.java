@@ -277,7 +277,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public void updateSeriesIdsToZero(Long seriesId, Long authorId) {
         String sql = "UPDATE post.memo " +
-                    "SET series_id = 0 " +
+                    "SET series_id = NULL " +
                     "WHERE is_temporary = false AND author_Id = ? AND series_id = ?";
 
         template.update(sql, authorId, seriesId);
