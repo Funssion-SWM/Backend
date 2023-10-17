@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.member.entity;
 
-import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
 import Funssion.Inforum.domain.tag.TagUtils;
 import lombok.AllArgsConstructor;

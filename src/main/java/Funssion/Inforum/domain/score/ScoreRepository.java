@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.score;
 
 import Funssion.Inforum.common.constant.ScoreType;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,12 +23,12 @@ public class ScoreRepository {
     public Long updateUserScoreAtDay(Long userId, Long addScore, Long updateDailyScore){
         String sql = "update member.info set score = score + ?, daily_get_score = ? where id = ?";
         if(template.update(sql,addScore, updateDailyScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
-        return addScore;
+        return getScore(userId);
     }
     public Long updateUserScoreAtOtherDay(Long userId, Long minusScore){
         String sql = "update member.info set score = score + ? where id = ?";
         if(template.update(sql,minusScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
-        return minusScore;
+        return getScore(userId);
     }
 
     public Long getUserDailyScore(Long userId){
@@ -100,5 +101,16 @@ public class ScoreRepository {
     public void initializeAllUsersDailyScore() {
         String sql = "update member.info set daily_get_score = 0";
         template.update(sql);
+    }
+
+    public String getRank(Long userId) {
+        String sql = "select rank from member.info where id = ?";
+        return template.queryForObject(sql,String.class,userId);
+    }
+
+    public Rank updateRank(Rank beUpdateRank, Long userId) {
+        String sql = "update member.info set rank = ? where id = ?";
+        if(template.update(sql,beUpdateRank.toString(),userId)==0) throw new UpdateFailException("rank가 변경되어야 하지만 변경되지 않았습니다.");
+        return beUpdateRank;
     }
 }

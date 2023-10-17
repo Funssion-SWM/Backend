@@ -160,8 +160,32 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getScore(saveMemberId)).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer + scoreOfComment);
         }
 
+        @Test
+        @DisplayName("유저의 등급이 갱신되는지 확인")
+        void addScoreAndUpdateRank(){
+            Long scoreOfAnswer = ScoreType.MAKE_ANSWER.getScore();
+            Long scoreOfBestAnswer = ScoreType.BEST_ANSWER.getScore();
 
+            Question question = makePureQuestion();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberIdForEachTest);
+            assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_5.toString());
 
+            answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion.getId());
+            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
+            assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_4.toString());
+
+        }
+
+        @Test
+        @DisplayName("유저의 등급이 좋아요로 갱신되는지 확인")
+        void addScoreWhenLikeAndUpdateRank(){
+            Long howManyUserLikes = 50L;
+            MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(50L);
+            manyUsersLikeMemo(howManyUserLikes,memoDto);
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore() + ScoreType.LIKE.getScore() * howManyUserLikes);
+            assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.SILVER_5.toString());
+        }
 
         @Test
         @DisplayName("유저가 포스트를 작성하면 일일 최대 점수를 넘어갈때")
@@ -179,7 +203,7 @@ class ScoreIntegrationTest {
         void likesOverLimitDoNotApplyScore(){
             MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
 
-            usersLikePost_50(memoDto); //매번 새로운 user설정해서 상황 가정함.
+            manyUsersLikeMemo(50L,memoDto); //매번 새로운 user설정해서 상황 가정함.
             assertThat(likeRepository.howManyLikesInPost(PostType.MEMO,memoDto.getMemoId())).isEqualTo(50);
             assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
             setSecurityContextHolderForTestLikeMethod();
@@ -230,16 +254,7 @@ class ScoreIntegrationTest {
         private void setUserScoreForTest(Long beforeTotalScore, Long dailyScore) {
             scoreRepository.updateUserScoreAtDay(saveMemberIdForEachTest, beforeTotalScore, dailyScore);
         }
-        private void usersLikePost_50(MemoDto memoDto){
-            for(Long i = 11L; i < 61L; i++) {
-                setSecurityContextHolderForTestLikeMethodByDifferentUser(i);
-                likeService.likePost(PostType.MEMO,memoDto.getMemoId());
-            }
-        }
 
-        private void setSecurityContextHolderForTestLikeMethodByDifferentUser(Long username) {
-            SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username.toString(),"12345678"));
-        }
     }
     @Nested
     @DisplayName("유저의 Score가 감소하는 경우")
@@ -312,7 +327,37 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.findScoreHistoryInfoById(comment.getAuthorId(), ScoreType.MAKE_COMMENT, comment.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(comment.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
         }
+        @Test
+        @DisplayName("좋아요를 취소하면 랭크와 점수가 일치하지 않을 때 등급이 하락하는지 확인")
+        void addScoreWhenLikeAndUpdateRank(){
+            MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(50L);
+            manyUsersLikeMemo(5L,memoDto);
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(100L);
+            assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.BRONZE_4.toString());
+            likeService.unlikePost(PostType.MEMO, memoDto.getMemoId());
+            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(90L);
+            assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.BRONZE_5.toString());
 
+        }
+        @Test
+        @DisplayName("당일 삭제시 랭크 감소여부 확인 - 메모 확인")
+        void deleteMemoThenRankUpdated(){
+            MemoDto memoDto1 = createMemo();
+            MemoDto memoDto2 = createMemo();// 두개의 메모를 작성
+            assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_4.toString());
+            memoService.deleteMemo(memoDto1.getMemoId());
+            assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_5.toString());
+        }
+    }
+    private void manyUsersLikeMemo(Long howManyUser , MemoDto memoDto){
+        for(Long i = 11L; i < howManyUser + 11L; i++) {
+            setSecurityContextHolderForTestLikeMethodByDifferentUser(i);
+            likeService.likePost(PostType.MEMO,memoDto.getMemoId());
+        }
+    }
+    private void setSecurityContextHolderForTestLikeMethodByDifferentUser(Long username) {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username.toString(),"12345678"));
     }
     private Long setSecurityContextHolderForTestLikeMethod() {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberId.toString(),"12345678"));
