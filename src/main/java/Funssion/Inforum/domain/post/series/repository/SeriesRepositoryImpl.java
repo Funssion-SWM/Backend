@@ -141,7 +141,6 @@ public class SeriesRepositoryImpl implements SeriesRepository {
             params.add("%" + searchString + "%");
             params.add("%" + searchString + "%");
         }
-        if (conditionalStatement.isEmpty()) return "true";
         return conditionalStatement.toString();
     }
 
