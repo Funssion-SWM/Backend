@@ -40,8 +40,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into post.memo (author_id, author_name, author_image_path, title, description, text, color, tags, is_temporary, is_created) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
+        String sql = "INSERT into post.memo (author_id, author_name, author_image_path, title, description, text, color, tags, is_temporary, is_created, author_rank) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?,?);";
         List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
@@ -55,6 +55,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setArray(8,TagUtils.createSqlArray(template,listOfTagsInMemo));
             psmt.setBoolean(9, memo.getIsTemporary());
             psmt.setBoolean(10, !memo.getIsTemporary());
+            psmt.setString(11,memo.getRank());
             return psmt;
         }, keyHolder);
         long createdMemoId = keyHolder.getKey().longValue();
@@ -201,6 +202,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .seriesId(rs.getLong("series_id"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))
+                        .rank(rs.getString("author_rank"))
                         .build());
     }
 

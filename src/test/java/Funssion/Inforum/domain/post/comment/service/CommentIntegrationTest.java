@@ -22,6 +22,7 @@ import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -317,6 +318,7 @@ class CommentIntegrationTest {
                 .isSelected(false)
                 .likes(0L)
                 .repliesCount(0L)
+                .rank(Rank.BRONZE_5.toString())
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문입니다.\", \"type\": \"text\"}]}]}")
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
@@ -331,6 +333,7 @@ class CommentIntegrationTest {
                 .authorImagePath("이미지경로")
                 .memoId(memoId)
                 .answersCount(0L)
+                .rank(Rank.BRONZE_5.toString())
                 .isSolved(false)
                 .likes(0L)
                 .title("질문 제목")
@@ -353,6 +356,7 @@ class CommentIntegrationTest {
                 .color(form1.getMemoColor())
                 .authorId(saveMemberId)
                 .authorName("Jinu")
+                .rank(Rank.BRONZE_5.toString())
                 .authorImagePath("http:jinu")
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())

@@ -28,6 +28,7 @@ import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerExcepti
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.score.Rank;
 import Funssion.Inforum.domain.score.ScoreRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -398,6 +399,7 @@ class QnAIntegrationTest {
                 .authorId(9999L)
                 .authorName("Jinu")
                 .authorImagePath("http:jinu")
+                .rank(Rank.BRONZE_5.toString())
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .isTemporary(false)

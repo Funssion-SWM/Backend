@@ -5,5 +5,5 @@ import Funssion.Inforum.domain.score.Rank;
 
 public interface PostRepository {
     Long findAuthorId(PostType postType, Long postId);
-    void updateRankOfAllPostTypeAndNotification(Rank updateRank, Long postId);
+    void updateRankOfAllPostTypeAndNotification(Rank updateRank, Long userId);
 }

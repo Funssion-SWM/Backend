@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.score;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.post.repository.PostRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +30,8 @@ class ScoreServiceTest {
     ScoreRepository scoreRepository;
     @Mock
     MemberRepository memberRepository;
+    @Mock
+    PostRepository postRepository;
     @InjectMocks
     ScoreService scoreService;
     Long userId = 1L;
@@ -106,6 +109,7 @@ class ScoreServiceTest {
                     .build();
             when(memberRepository.getDailyScore(userId)).thenReturn(LIMIT_DAILY_SCORE);
             when(scoreRepository.findScoreHistoryInfoById(userId,ScoreType.MAKE_MEMO,1L)).thenReturn(Optional.ofNullable(score));
+            when(scoreRepository.getRank(userId)).thenReturn(Rank.BRONZE_4.toString());
 
             Assertions.assertThatCode(()->scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,1L)).doesNotThrowAnyException();
 
@@ -115,7 +119,7 @@ class ScoreServiceTest {
         @DisplayName("유저가 어떤 행동으로 점수를 얻은 시점이 그 당일일 때, 그 행동을 되돌리는 경우")
         void minusScoreToday(){
             LocalDateTime now = LocalDateTime.now();
-
+            Rank userRank = Rank.BRONZE_4;
             Score score = Score.builder()
                     .id(1L)
                     .userId(userId)
@@ -125,8 +129,8 @@ class ScoreServiceTest {
                     .postId(1L)
                     .build();
             when(memberRepository.getDailyScore(userId)).thenReturn(LIMIT_DAILY_SCORE);
+            when(scoreRepository.getRank(userId)).thenReturn(userRank.toString());
             when(scoreRepository.findScoreHistoryInfoById(userId,score.getScoreType(),score.getPostId())).thenReturn(Optional.ofNullable(score));
-
             Assertions.assertThatCode(()->scoreService.subtractUserScore(userId,score.getScoreType(),score.getPostId())).doesNotThrowAnyException();
 
             verify(scoreRepository, times(1)).updateUserScoreAtDay(userId,-ScoreType.MAKE_MEMO.getScore(),LIMIT_DAILY_SCORE - score.getScore());

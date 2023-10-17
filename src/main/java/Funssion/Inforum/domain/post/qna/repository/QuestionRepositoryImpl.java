@@ -34,8 +34,8 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     public Question createQuestion(Question question) {
         List<String> questionTags = question.getTags();
 
-        String sql = "insert into post.question(author_id, author_name, author_image_path, title, text, tags, memo_id, description) " +
-                "values(?,?,?,?,?::jsonb,?,?,?)";
+        String sql = "insert into post.question(author_id, author_name, author_image_path, title, text, tags, memo_id, description,author_rank) " +
+                "values(?,?,?,?,?::jsonb,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con->{
             PreparedStatement psmt = con.prepareStatement(sql,new String[]{"id"});
@@ -47,6 +47,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             psmt.setArray(6, TagUtils.createSqlArray(template,questionTags));
             psmt.setLong(7,question.getMemoId());
             psmt.setString(8,question.getDescription());
+            psmt.setString(9,question.getRank());
             return psmt;
         },keyHolder);
         return this.getOneQuestion(keyHolder.getKey().longValue());
@@ -69,7 +70,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getQuestions(Long userId,OrderType orderBy) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
                 "case when L.post_id = Q.id then true else false end as is_like "+
                 "from post.question AS Q "+
                 "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
@@ -81,7 +82,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getMyQuestions(Long userId,OrderType orderBy) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_rank, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                         "from post.question AS Q "+
                         "where Q.author_id = ? ";
         return template.query(sql, questionRowMapper(),userId);
@@ -99,9 +100,9 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getQuestionsOfMemo(Long userId,Long memoId) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
                 "case when L.post_id = Q.id then true else false end as is_like "+
-                "from (select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, memo_id " +
+                "from (select id, author_id, author_name, author_image_path,author_rank, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, memo_id " +
                         "from post.question where memo_id = ?) AS Q "+
                         "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
                         "on Q.id = L.post_id";
@@ -119,7 +120,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
     public List<Question> getMyLikedQuestions(Long userId) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank,Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join member.like AS L " +
                 "on Q.id = L.post_id and L.post_type = 'QUESTION' " +
@@ -131,7 +132,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getQuestionsOfMyAnswer(Long userId) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join (select distinct question_id from post.answer where author_id = ?) AS A " +
                 "on Q.id = A.question_id " +
@@ -142,7 +143,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join (select distinct question_id from post.answer AS QA join member.like AS ML " +
                     "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
@@ -153,7 +154,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public Question getOneQuestion(Long questionId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
+        String sql = "select id, author_id, author_name, author_image_path, author_rank, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
                 "from post.question where id = ?";
         try{
             return template.queryForObject(sql,questionRowMapper(),questionId);
@@ -271,6 +272,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .rank(rs.getString("author_rank"))
                         .title(rs.getString("title"))
                         .text(rs.getString("text"))
                         .description(rs.getString("description"))
@@ -292,6 +294,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .rank(rs.getString("author_rank"))
                         .title(rs.getString("title"))
                         .text(rs.getString("text"))
                         .description(rs.getString("description"))

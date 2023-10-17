@@ -1,11 +1,9 @@
 package Funssion.Inforum.domain.post.series.repository;
 
-import Funssion.Inforum.common.constant.DateType;
-import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.domain.post.series.domain.Series;
 import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,10 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.DateType.*;
-import static Funssion.Inforum.common.constant.OrderType.*;
-import static Funssion.Inforum.common.constant.Sign.*;
-import static org.assertj.core.api.Assertions.*;
+import static Funssion.Inforum.common.constant.DateType.DAY;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
+import static Funssion.Inforum.common.constant.Sign.MINUS;
+import static Funssion.Inforum.common.constant.Sign.PLUS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -41,6 +41,7 @@ class SeriesRepositoryImplTest {
             .thumbnailImagePath("https://tmbimage")
             .authorId(USER_ID_1)
             .authorName("jinu")
+            .rank(Rank.BRONZE_5.toString())
             .authorImagePath("https://image")
             .likes(0L)
             .build();
@@ -49,6 +50,7 @@ class SeriesRepositoryImplTest {
             .description("jpa is ...")
             .thumbnailImagePath("https://tmbimage")
             .authorId(USER_ID_2)
+            .rank(Rank.BRONZE_5.toString())
             .authorName("jinu2")
             .authorImagePath("https://image2")
             .likes(0L)
@@ -57,6 +59,7 @@ class SeriesRepositoryImplTest {
             .title("jdk")
             .description("jdk is ...")
             .authorId(USER_ID_1)
+            .rank(Rank.BRONZE_5.toString())
             .authorName("jinu")
             .likes(0L)
             .build();

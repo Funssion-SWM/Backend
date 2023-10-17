@@ -89,6 +89,7 @@ public class QuestionServiceImpl implements QuestionService {
                         .receiverPostId(receiverPostId)
                         .senderId(createdQuestion.getAuthorId())
                         .senderPostType(QUESTION)
+                        .senderRank(createdQuestion.getRank())
                         .senderPostId(createdQuestion.getId())
                         .senderName(createdQuestion.getAuthorName())
                         .senderImagePath(createdQuestion.getAuthorImagePath())

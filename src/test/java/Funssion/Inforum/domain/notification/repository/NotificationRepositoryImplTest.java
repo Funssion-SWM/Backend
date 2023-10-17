@@ -3,7 +3,7 @@ package Funssion.Inforum.domain.notification.repository;
 import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.notification.domain.Notification;
-import org.assertj.core.api.Assertions;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
@@ -36,6 +35,7 @@ class NotificationRepositoryImplTest {
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderImagePath("https://image")
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderPostType(PostType.COMMENT)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_COMMENT)
@@ -50,6 +50,7 @@ class NotificationRepositoryImplTest {
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderImagePath("https://image")
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderPostType(PostType.ANSWER)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_ANSWER)
@@ -63,6 +64,7 @@ class NotificationRepositoryImplTest {
                     .receiverPostId(1L)
                     .senderId(userId2)
                     .senderName("jinu")
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderImagePath("https://image")
                     .senderPostType(PostType.QUESTION)
                     .senderPostId(1L)
@@ -76,6 +78,7 @@ class NotificationRepositoryImplTest {
                     .receiverPostId(0L)
                     .senderId(userId2)
                     .senderName("jinu")
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderImagePath("https://image")
                     .senderPostId(0L)
                     .notificationType(NotificationType.NEW_FOLLOWER)
@@ -88,6 +91,7 @@ class NotificationRepositoryImplTest {
                     .receiverPostId(0L)
                     .senderId(userId2)
                     .senderName("jinu")
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderImagePath("https://image")
                     .senderPostType(PostType.MEMO)
                     .senderPostId(1L)
@@ -103,6 +107,7 @@ class NotificationRepositoryImplTest {
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderPostId(2L)
+                    .senderRank(Rank.BRONZE_5.toString())
                     .senderPostType(PostType.QUESTION)
                     .senderImagePath("https://image")
                     .notificationType(NotificationType.NEW_ACCEPTED)

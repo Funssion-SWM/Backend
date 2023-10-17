@@ -20,6 +20,7 @@ public class Notification {
     private final String senderName;
     private final String senderImagePath;
     private final PostType senderPostType;
+    private final String senderRank;
     private final Long senderPostId;
     private final NotificationType notificationType;
     private final LocalDateTime created;

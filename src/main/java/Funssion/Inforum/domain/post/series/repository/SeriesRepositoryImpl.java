@@ -34,8 +34,8 @@ public class SeriesRepositoryImpl implements SeriesRepository {
     }
     @Override
     public Long create(Series series) {
-        String sql = "INSERT into post.series (author_id, author_name, author_image_path, title, description, thumbnail_image_path) " +
-                "VALUES (?, ?, ?, ?, ?, ?);";
+        String sql = "INSERT into post.series (author_id, author_name, author_image_path, title, description, thumbnail_image_path, author_rank) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con -> {
@@ -46,6 +46,7 @@ public class SeriesRepositoryImpl implements SeriesRepository {
             psmt.setString(4, series.getTitle());
             psmt.setString(5, series.getDescription());
             psmt.setString(6, series.getThumbnailImagePath());
+            psmt.setString(7,series.getRank());
             return psmt;
         }, keyHolder);
 
@@ -134,6 +135,7 @@ public class SeriesRepositoryImpl implements SeriesRepository {
                 .thumbnailImagePath(rs.getString("thumbnail_image_path"))
                 .authorId(rs.getLong("author_id"))
                 .authorName(rs.getString("author_name"))
+                .rank(rs.getString("author_rank"))
                 .authorImagePath(rs.getString("author_image_path"))
                 .likes(rs.getLong("likes"))
                 .createdDate(rs.getTimestamp("created").toLocalDateTime())

@@ -40,8 +40,8 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public Comment createComment(Comment comment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "insert into post.comment (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date)"
-                + "values (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "insert into post.comment (author_id, author_image_path, author_name, post_type, post_id, comment_text, created_date,author_rank)"
+                + "values (?, ?, ?, ?, ?, ?, ?, ?)";
         int updatedRow = template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
             psmt.setLong(1, comment.getAuthorId());
@@ -51,6 +51,7 @@ public class CommentRepositoryImpl implements CommentRepository{
             psmt.setLong(5, comment.getPostId());
             psmt.setString(6, comment.getCommentText());
             psmt.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now())); // 생성자에서부터 바꿔야할 필요 있음. 반드시 리뷰할것.
+            psmt.setString(8,comment.getRank());
             return psmt;
         }, keyHolder);
 
@@ -60,7 +61,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         return getCommentById(keyHolder.getKey().longValue());
     }
     private Comment getCommentById(Long commentId){
-        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, recomments, post_type, comment_text, created_date, updated_date " +
+        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date, author_rank " +
                 "from post.comment where id =?";
         return template.queryForObject(sql,commentRowMapper(),commentId);
     }
@@ -94,7 +95,7 @@ public class CommentRepositoryImpl implements CommentRepository{
     public Optional<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long commentId){
         Comment commentUserWantsToDelete = findCommentUserWantsToDelete(userId, commentId);
 
-        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, recomments, post_type, comment_text, created_date, updated_date" +
+        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
                 " from post.comment where author_id = ? and post_type = ? and post_id = ? and id != ?";
         try {
             return Optional.ofNullable(template.queryForObject(sql, commentRowMapper(), userId,commentUserWantsToDelete.getPostTypeWithComment().toString(),commentUserWantsToDelete.getPostId(),commentId));
@@ -103,7 +104,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         }
     }
     private Comment findCommentUserWantsToDelete(Long userId, Long postId){
-        String sql = "select id,post_id, author_id,author_image_path, author_name, likes, recomments, post_type, comment_text, created_date, updated_date" +
+        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
                 " from post.comment where author_id = ? and id = ?";
         return template.queryForObject(sql, commentRowMapper(), userId,postId);
 
@@ -170,8 +171,8 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     private Long insertReCommentInTable(ReComment reComment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        String sql = "insert into post.recomment (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
-                + "values(?,?,?,?,?,?)";
+        String sql = "insert into post.recomment (author_id, author_image_path, author_name, parent_id, comment_text, created_date,author_rank)"
+                + "values(?,?,?,?,?,?,?)";
         int updatedRow = template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
             psmt.setLong(1, reComment.getAuthorId());
@@ -180,6 +181,7 @@ public class CommentRepositoryImpl implements CommentRepository{
             psmt.setLong(4, reComment.getParentCommentId());
             psmt.setString(5, reComment.getCommentText());
             psmt.setTimestamp(6, Timestamp.valueOf(reComment.getCreatedDate()));
+            psmt.setString(7, reComment.getRank());
             return psmt;
         }, keyHolder);
         if (updatedRow != 1){
@@ -203,9 +205,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId) {
         String sql =
-                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
+                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.author_rank, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
-                "FROM (SELECT id, author_id, author_image_path, author_name, likes, recomments, comment_text, created_date, updated_date " +
+                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date " +
                 "FROM post.comment where post_type = ? and post_id = ?) COMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON COMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = false " +
                         "order by COMMENT.created_date";
@@ -220,9 +222,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public List<ReCommentListDto> getReCommentsAtComment(Long parentCommentId,Long userId) {
         String sql =
-                "SELECT DISTINCT RECOMMENT.id, RECOMMENT.author_id, RECOMMENT.author_image_path, RECOMMENT.author_name, RECOMMENT.likes, RECOMMENT.comment_text, RECOMMENT.created_date, RECOMMENT.updated_date,"+
+                "SELECT DISTINCT RECOMMENT.id, RECOMMENT.author_id, RECOMMENT.author_image_path, RECOMMENT.author_name, RECOMMENT.author_rank, RECOMMENT.likes, RECOMMENT.comment_text, RECOMMENT.created_date, RECOMMENT.updated_date,"+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
-                "FROM (SELECT id, author_id, author_image_path, author_name, likes, comment_text, created_date, updated_date " +
+                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, comment_text, created_date, updated_date " +
                 "FROM post.recomment where parent_id = ?) RECOMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON RECOMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = true " +
                         "order by RECOMMENT.created_date";
@@ -316,7 +318,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
-        String sql = "select id,author_id,author_image_path, author_name, likes, recomments, comment_text, created_date, updated_date, 'false' as is_liked " +
+        String sql = "select id,author_id,author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, 'false' as is_liked " +
                 "from post.comment " +
                 "where id = ?";
         try {
@@ -367,6 +369,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .authorRank(rs.getString("author_rank"))
                         .commentText(rs.getString("comment_text"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
@@ -389,6 +392,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
+                        .rank(rs.getString("author_rank"))
                         .build());
     };
     private RowMapper<ReComment> reCommentRowMapper() {
@@ -399,6 +403,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .rank(rs.getString("author_rank"))
                         .commentText(rs.getString("comment_text"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
@@ -412,6 +417,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .authorRank(rs.getString("author_rank"))
                         .commentText(rs.getString("comment_text"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())

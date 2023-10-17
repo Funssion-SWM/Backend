@@ -30,7 +30,7 @@ public class ScoreService {
             scoreRepository.saveScoreHistory(userId, scoreType, updatedUserScoreInfo.addScore(), postId);
             if(doesRankUpAfterUpdating(userId, updatedUserScoreInfo,beforeRank)){
                 Rank updatedRank = updateRank(userId, beforeRank, true);
-                postRepository.updateRankOfAllPostTypeAndNotification(updatedRank,postId);
+                postRepository.updateRankOfAllPostTypeAndNotification(updatedRank,userId);
             }
         }
         return beforeRank;
@@ -72,7 +72,7 @@ public class ScoreService {
                     Rank beforeRank = Rank.valueOf(scoreRepository.getRank(userId));
                     if(doesRankDownAfterUpdating(userId, dailyScore, scoreOfHistory, beforeRank)){
                         Rank updatedRank = updateRank(userId, beforeRank, false);
-                        postRepository.updateRankOfAllPostTypeAndNotification(updatedRank,postId);
+                        postRepository.updateRankOfAllPostTypeAndNotification(updatedRank,userId);
                     }
                     handleSpecialCaseOfComment(userId, scoreType, scoreHistoryInfoById);
                 }

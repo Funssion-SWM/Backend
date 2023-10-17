@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.series.domain.Series;
 import Funssion.Inforum.domain.post.series.repository.SeriesRepository;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,24 +14,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
@@ -51,6 +44,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_1)
             .authorName("jinu")
             .authorImagePath("https://image")
+            .rank(Rank.BRONZE_5.toString())
             .title("java is")
             .description("java is ...")
             .text("{\"content\" : \"java is good\"}")
@@ -62,6 +56,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_1)
             .authorName("jinu")
             .authorImagePath("https://image")
+            .rank(Rank.BRONZE_5.toString())
             .title("jpa is")
             .description("jpa is ...")
             .text("{\"content\" : \"jpa is good\"}")
@@ -73,6 +68,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_1)
             .authorName("jinu")
             .authorImagePath("https://image")
+            .rank(Rank.BRONZE_5.toString())
             .title("jsp is")
             .description("jsp is ...")
             .text("{\"content\" : \"jsp is good\"}")
@@ -84,6 +80,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_2)
             .authorName("jinu2")
             .authorImagePath("https://image2")
+            .rank(Rank.BRONZE_5.toString())
             .title("jpa is")
             .description("jpa is ...")
             .text("{\"content\" : \"jpa is good\"}")
@@ -95,6 +92,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_2)
             .authorName("jinu2")
             .authorImagePath("https://image2")
+            .rank(Rank.BRONZE_5.toString())
             .title("jpa is")
             .description("jpa is ...")
             .text("{\"content\" : \"jpa is good\"}")
@@ -111,6 +109,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_1)
             .authorName("jinu")
             .authorImagePath("https://image")
+            .rank(Rank.BRONZE_5.toString())
             .title("java is")
             .description("java is good")
             .thumbnailImagePath("https://java")
@@ -120,6 +119,7 @@ public class SeriesIntegrationTest {
             .authorId(USER_ID_2)
             .authorName("jinu2")
             .authorImagePath("https://image2")
+            .rank(Rank.BRONZE_5.toString())
             .title("jpa is")
             .description("jpa is good")
             .thumbnailImagePath("https://java")

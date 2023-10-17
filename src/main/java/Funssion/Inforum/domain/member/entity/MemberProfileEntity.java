@@ -22,9 +22,11 @@ public class MemberProfileEntity {
     private List<String> userTags;
     private Long followCnt;
     private Long followerCnt;
+    private String rank;
 
-    public MemberProfileEntity(String profileImageFilePath, String nickname, String introduce, List<String> userTags) {
+    public MemberProfileEntity(String profileImageFilePath, String rank,String nickname, String introduce, List<String> userTags) {
         this.profileImageFilePath = profileImageFilePath;
+        this.rank = rank;
         this.nickname = nickname;
         this.introduce = introduce;
         this.userTags = userTags;
@@ -46,9 +48,12 @@ public class MemberProfileEntity {
                         .userTags(TagUtils.createStringListFromArray(rs.getArray("tags")))
                         .followCnt(rs.getLong("follow_cnt"))
                         .followerCnt(rs.getLong("follower_cnt"))
+                        .rank(rs.getString("rank"))
                         .build()
         );
     }
+
+
     public static MemberProfileEntity generateWithNoProfileImage(MemberInfoDto memberInfoDto){
         return MemberProfileEntity.builder()
                 .profileImageFilePath(null)
