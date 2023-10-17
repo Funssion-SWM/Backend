@@ -112,9 +112,10 @@ public class SeriesService {
             Long seriesId,
             SeriesRequestDto seriesRequestDto,
             MultipartFile thumbnailImage,
-            Long authorId
+            Long authorId,
+            Boolean isEmpty
     ) {
-        deleteSeriesInfoInOtherStorage(seriesId, authorId);
+        deleteSeriesInfoInOtherStorage(seriesId, authorId, isEmpty);
 
         String uploadedImagePath = uploadThumbnailImage(thumbnailImage, authorId);
 
@@ -136,19 +137,19 @@ public class SeriesService {
 
     @Transactional
     public void delete(Long seriesId, Long authorId) {
-        deleteSeriesInfoInOtherStorage(seriesId, authorId);
+        deleteSeriesInfoInOtherStorage(seriesId, authorId, Boolean.TRUE);
 
         seriesRepository.delete(seriesId);
     }
 
-    private void deleteSeriesInfoInOtherStorage(Long seriesId, Long authorId) {
+    private void deleteSeriesInfoInOtherStorage(Long seriesId, Long authorId, Boolean isEmpty) {
         Series willBeDeletedSeries = getValidatedSeries(seriesId);
 
         if (!willBeDeletedSeries.getAuthorId().equals(authorId)) {
             throw new UnAuthorizedException("다른 유저의 게시물을 수정 또는 삭제할 수 없습니다.");
         }
 
-        if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath())) {
+        if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath()) && isEmpty) {
             s3Repository.delete(SERIES_DIR, willBeDeletedSeries.getThumbnailImagePath());
         }
         memoRepository.updateSeriesIdsToZero(NULL_SERIES_ID, authorId);

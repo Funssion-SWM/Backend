@@ -64,12 +64,13 @@ public class SeriesController {
             @RequestPart @NotEmpty(message = "시리즈 제목을 입력해주세요.") String title,
             @RequestPart @NotEmpty(message = "시리즈 설명을 입력해주세요.") String description,
             @RequestPart @NotEmpty(message = "시리즈에 들어갈 메모를 선택해주세요") String memoIdList,
+            @RequestPart Boolean isEmpty,
             @RequestPart(required = false) MultipartFile thumbnailImage,
             @PathVariable Long seriesId
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
         SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, CustomListUtils.toLongList(memoIdList));
-        return seriesService.update(seriesId, seriesRequestDto, thumbnailImage, authorId);
+        return seriesService.update(seriesId, seriesRequestDto, thumbnailImage, authorId, isEmpty);
     }
 
     @DeleteMapping("/{seriesId}")
