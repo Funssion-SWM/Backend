@@ -186,6 +186,21 @@ public class SeriesRepositoryImpl implements SeriesRepository {
     }
 
     @Override
+    public void update(Long seriesId, SeriesRequestDto seriesRequestDto) {
+        String sql = "UPDATE post.series " +
+                "SET title = ?, description = ? " +
+                "where id = ?";
+
+        if (template.update(
+                sql,
+                seriesRequestDto.getTitle(), seriesRequestDto.getDescription(),
+                seriesId
+        ) != 1) {
+            throw new UpdateFailException("series update fail id = " + seriesId);
+        };
+    }
+
+    @Override
     public void updateLikes(Long seriesId, Sign sign) {
         String sql = "UPDATE post.series " +
                 "SET likes = likes + ? " +

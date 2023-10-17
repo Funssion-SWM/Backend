@@ -112,12 +112,19 @@ public class SeriesService {
             Boolean isEmpty
     ) {
         deleteSeriesInfoInOtherStorage(seriesId, authorId, thumbnailImage, isEmpty);
-        String uploadedImagePath = getUploadedImagePath(thumbnailImage, authorId, isEmpty);
-
-        seriesRepository.update(seriesId, seriesRequestDto, uploadedImagePath);
+        updateSeries(seriesId, seriesRequestDto, thumbnailImage, authorId, isEmpty);
         memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
 
         return getSeriesResponse(seriesId);
+    }
+
+    private void updateSeries(Long seriesId, SeriesRequestDto seriesRequestDto, MultipartFile thumbnailImage, Long authorId, Boolean isEmpty) {
+        if (!isEmpty && Objects.isNull(thumbnailImage)) {
+            seriesRepository.update(seriesId, seriesRequestDto);
+        } else {
+            String uploadedImagePath = getUploadedImagePath(thumbnailImage, authorId, isEmpty);
+            seriesRepository.update(seriesId, seriesRequestDto, uploadedImagePath);
+        }
     }
 
     private String getUploadedImagePath(MultipartFile thumbnailImage, Long authorId, Boolean isEmpty) {

@@ -18,6 +18,7 @@ public interface SeriesRepository {
     List<Series> findAllBy(List<String> searhStringList ,DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
     List<Series> findLikedBy(Long userId, Long pageNum, Long resultCntPerPage);
     void update(Long id, SeriesRequestDto seriesRequestDto, String newThumbnailImagePath);
+    void update(Long seriesId, SeriesRequestDto seriesRequestDto);
     void updateLikes(Long seriesId, Sign sign);
     void delete(Long seriesId);
 }

@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.notification.dto.response;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.domain.Post;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,8 +42,8 @@ public class NotificationListDto {
                 .build();
     }
 
-    public void setPostInfoToShow(PostType postTypeToShow, Long postIdToShow) {
-        this.postTypeToShow = postTypeToShow;
-        this.postIdToShow = postIdToShow;
+    public void setPostInfoToShow(PostIdAndTypeInfo postInfoToShow) {
+        this.postTypeToShow = postInfoToShow.getPostType();
+        this.postIdToShow = postInfoToShow.getPostId();
     }
 }
