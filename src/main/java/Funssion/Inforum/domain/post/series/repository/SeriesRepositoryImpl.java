@@ -3,12 +3,15 @@ package Funssion.Inforum.domain.post.series.repository;
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.GeneralException;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DeleteFailException;
+import Funssion.Inforum.common.exception.etc.EnumParseException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.post.series.domain.Series;
 import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -63,33 +66,10 @@ public class SeriesRepositoryImpl implements SeriesRepository {
 
     @Override
     public List<Series> findAllBy(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
-        String sql = "SELECT * " +
-                "FROM post.series " +
-                "WHERE created > current_timestamp - CAST(? AS INTERVAL) " +
-                "ORDER BY " + orderBySql(orderBy) +
-                "LIMIT ? OFFSET ?";
-        log.info("{}", sql);
-        return template.query(sql, seriesRowMapper(), period.getInterval(), resultCntPerPage, pageNum * resultCntPerPage);
-    }
-
-    @Override
-    public List<Series> findAllBy(Long authorId, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
-        String sql = "SELECT * " +
-                "FROM post.series " +
-                "WHERE author_id = ? and created > current_timestamp - CAST(? AS INTERVAL) " +
-                "ORDER BY " + orderBySql(orderBy) +
-                "LIMIT ? OFFSET ?";
-
-        return template.query(sql, seriesRowMapper(), authorId, period.getInterval(), resultCntPerPage, pageNum * resultCntPerPage);
-    }
-
-    @Override
-    public List<Series> findAllBy(List<String> searhStringList, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         ArrayList<Object> params = new ArrayList<>();
-        params.add(period.getInterval());
         String sql = "SELECT * " +
                 "FROM post.series " +
-                "WHERE created > current_timestamp - CAST(? AS INTERVAL) and (" + searchConditionalStatement(searhStringList, params) + ") " +
+                "WHERE " + periodConditionalStatement(period, orderBy, params) + " " +
                 "ORDER BY " + orderBySql(orderBy) +
                 "LIMIT ? OFFSET ?";
 
@@ -97,6 +77,56 @@ public class SeriesRepositoryImpl implements SeriesRepository {
         params.add(resultCntPerPage * pageNum);
 
         return template.query(sql, seriesRowMapper(), params.toArray());
+    }
+
+    @Override
+    public List<Series> findAllBy(Long authorId, Long pageNum, Long resultCntPerPage) {
+        String sql = "SELECT * " +
+                "FROM post.series " +
+                "WHERE author_id = ? " +
+                "ORDER BY id desc " +
+                "LIMIT ? OFFSET ?";
+
+        return template.query(sql, seriesRowMapper(), authorId, resultCntPerPage, pageNum * resultCntPerPage);
+    }
+
+    @Override
+    public List<Series> findAllBy(List<String> searhStringList, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+        ArrayList<Object> params = new ArrayList<>();
+        String sql = "SELECT * " +
+                "FROM post.series " +
+                "WHERE " + periodConditionalStatement(period, orderBy, params) + " AND (" + searchConditionalStatement(searhStringList, params) + ") " +
+                "ORDER BY " + orderBySql(orderBy) +
+                "LIMIT ? OFFSET ?";
+
+        params.add(resultCntPerPage);
+        params.add(resultCntPerPage * pageNum);
+
+        return template.query(sql, seriesRowMapper(), params.toArray());
+    }
+
+    private String periodConditionalStatement(DateType period, OrderType orderBy, ArrayList<Object> params) {
+        switch (orderBy) {
+            case NEW -> {
+                return "true";
+            }
+            case HOT -> {
+                params.add(period.getInterval());
+                return "created > current_timestamp - CAST(? AS INTERVAL)";
+            }
+            default -> throw new EnumParseException();
+        }
+    }
+
+    @Override
+    public List<Series> findLikedBy(Long userId, Long pageNum, Long resultCntPerPage) {
+        String sql = "SELECT * " +
+                "FROM post.series s, member.like l " +
+                "WHERE l.post_type = 'SERIES' AND s.id = l.post_id AND l.user_id = ? " +
+                "ORDER By s.id desc " +
+                "LIMIT ? OFFSET ?";
+
+        return template.query(sql, seriesRowMapper(), userId, resultCntPerPage, pageNum * resultCntPerPage);
     }
 
     private String searchConditionalStatement(List<String> searhStringList, ArrayList<Object> params) {

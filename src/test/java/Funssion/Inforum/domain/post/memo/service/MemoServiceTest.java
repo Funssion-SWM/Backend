@@ -600,8 +600,6 @@ public class MemoServiceTest {
         void deleteMemoWithLoginArrayEx() throws SQLException {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
                     .willReturn(userID1);
-            given(memoRepository.findAllBySeriesId(any()))
-                    .willReturn(List.of(memo1, memo2, memo3));
             given(memoRepository.findById(memoID1))
                     .willReturn(memo1);
             given(tagRepository.deleteTags(memoID1))
@@ -616,8 +614,6 @@ public class MemoServiceTest {
         void deleteMemoWithLogin() {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
                     .willReturn(userID2);
-            given(memoRepository.findAllBySeriesId(any()))
-                    .willReturn(List.of(memo1, memo2, memo3));
             given(memoRepository.findById(memoID4))
                     .willReturn(memo4);
 

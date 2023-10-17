@@ -5,6 +5,7 @@ import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
 import Funssion.Inforum.domain.mypage.service.MyService;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.qna.domain.Question;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,25 @@ public class MyController {
     public List<Question> getQuestionsOfMyLikedAnswer(@PathVariable @Min(1) Long userId){
         return myService.getQuestionsOfMyLikedAnswer(userId);
     }
+
+    @GetMapping("/series")
+    public List<SeriesListDto> getMySeries(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMySeries(userId, pageNum, resultCntPerPage);
+    }
+
+    @GetMapping("/series/liked")
+    public List<SeriesListDto> getMyLikedSeries(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMyLikedSeries(userId, pageNum, resultCntPerPage);
+    }
+
     @GetMapping("/history")
     public List<MyRecordNumDto> getHistory(
             @PathVariable @Min(1) Long userId,

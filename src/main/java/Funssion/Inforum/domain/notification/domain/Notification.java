@@ -22,5 +22,6 @@ public class Notification {
     private final PostType senderPostType;
     private final Long senderPostId;
     private final NotificationType notificationType;
+    private final Boolean isChecked;
     private final LocalDateTime created;
 }

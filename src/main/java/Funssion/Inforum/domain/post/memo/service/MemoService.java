@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.NotificationType.NEW_POST_FOLLOWED;
@@ -223,7 +224,7 @@ public class MemoService {
     }
 
     private void checkDeletableInSeries(Long seriesId) {
-        if (memoRepository.findAllBySeriesId(seriesId).size() <= 2)
+        if (Objects.nonNull(seriesId) && memoRepository.findAllBySeriesId(seriesId).size() <= 2)
             throw new BadRequestException("속한 시리즈의 남은 메모가 2개 이하가 되어 삭제할 수 없습니다. 시리즈를 먼저 삭제해주세요.");
     }
 

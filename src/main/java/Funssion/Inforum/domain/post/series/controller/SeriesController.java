@@ -32,7 +32,6 @@ public class SeriesController {
 
     @GetMapping
     public List<SeriesListDto> getSeriesList(
-            @RequestParam(required = false) @Min(1) Long authorId,
             @RequestParam(required = false) String searchString,
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
             @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy,
@@ -40,7 +39,7 @@ public class SeriesController {
             @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
     ) {
         if (Objects.nonNull(searchString) && searchString.isEmpty()) return Collections.emptyList();
-        return seriesService.getSeries(authorId, searchString, period, orderBy, pageNum, resultCntPerPage);
+        return seriesService.getSeries(searchString, period, orderBy, pageNum, resultCntPerPage);
     }
 
     @PostMapping

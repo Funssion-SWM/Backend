@@ -77,10 +77,8 @@ public class SeriesService {
         return seriesId;
     }
 
-    public List<SeriesListDto> getSeries(
-            Long authorId, String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage
-    ) {
-        List<Series> resultList = getSeriesList(authorId, searchString, period, orderBy, pageNum, resultCntPerPage);
+    public List<SeriesListDto> getSeries(String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+        List<Series> resultList = getSeriesList(searchString, period, orderBy, pageNum, resultCntPerPage);
 
         return resultList.stream()
                 .map(series -> {
@@ -90,11 +88,9 @@ public class SeriesService {
                 }).toList();
     }
 
-    private List<Series> getSeriesList(Long authorId, String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+    private List<Series> getSeriesList(String searchString, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         List<Series> resultList;
-        if (Objects.nonNull(authorId)) {
-            resultList = seriesRepository.findAllBy(authorId, period, orderBy, pageNum, resultCntPerPage);
-        } else if (Objects.isNull(searchString)) {
+        if (Objects.isNull(searchString)) {
             resultList = seriesRepository.findAllBy(period, orderBy, pageNum, resultCntPerPage);
         } else {
             resultList = seriesRepository.findAllBy(getSearchStringList(searchString), period, orderBy, pageNum, resultCntPerPage);
@@ -115,14 +111,18 @@ public class SeriesService {
             Long authorId,
             Boolean isEmpty
     ) {
-        deleteSeriesInfoInOtherStorage(seriesId, authorId, isEmpty);
-
-        String uploadedImagePath = uploadThumbnailImage(thumbnailImage, authorId);
+        deleteSeriesInfoInOtherStorage(seriesId, authorId, thumbnailImage, isEmpty);
+        String uploadedImagePath = getUploadedImagePath(thumbnailImage, authorId, isEmpty);
 
         seriesRepository.update(seriesId, seriesRequestDto, uploadedImagePath);
         memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
 
         return getSeriesResponse(seriesId);
+    }
+
+    private String getUploadedImagePath(MultipartFile thumbnailImage, Long authorId, Boolean isEmpty) {
+        if (isEmpty) return null;
+        return uploadThumbnailImage(thumbnailImage, authorId);
     }
 
     private SeriesResponseDto getSeriesResponse(Long seriesId) {
@@ -137,22 +137,25 @@ public class SeriesService {
 
     @Transactional
     public void delete(Long seriesId, Long authorId) {
-        deleteSeriesInfoInOtherStorage(seriesId, authorId, Boolean.TRUE);
+        deleteSeriesInfoInOtherStorage(seriesId, authorId, null, Boolean.TRUE);
 
         seriesRepository.delete(seriesId);
     }
 
-    private void deleteSeriesInfoInOtherStorage(Long seriesId, Long authorId, Boolean isEmpty) {
+    private void deleteSeriesInfoInOtherStorage(Long seriesId, Long authorId, MultipartFile thumbnailImage, Boolean isEmpty) {
         Series willBeDeletedSeries = getValidatedSeries(seriesId);
 
         if (!willBeDeletedSeries.getAuthorId().equals(authorId)) {
             throw new UnAuthorizedException("다른 유저의 게시물을 수정 또는 삭제할 수 없습니다.");
         }
 
-        if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath()) && isEmpty) {
+        memoRepository.updateSeriesIdsToZero(willBeDeletedSeries.getId(), authorId);
+
+        if (Objects.isNull(thumbnailImage) && !isEmpty) return;
+
+        if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath())) {
             s3Repository.delete(SERIES_DIR, willBeDeletedSeries.getThumbnailImagePath());
         }
-        memoRepository.updateSeriesIdsToZero(willBeDeletedSeries.getId(), authorId);
     }
 
     private Series getValidatedSeries(Long seriesId) {

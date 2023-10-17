@@ -78,6 +78,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void sendNotificationToLinkedMemoAuthor(Long receiverId, Long receiverPostId, Question createdQuestion) {
+        if (receiverId.equals(createdQuestion.getAuthorId())) return;
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
@@ -98,7 +99,7 @@ public class QuestionServiceImpl implements QuestionService {
                 followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
 
         for (Long receiverId : followerIdList) {
-            if (receiverId.equals(receivedUserId)) continue;
+            if (receiverId.equals(receivedUserId) || receiverId.equals(createdQuestion.getAuthorId())) continue;
             notificationRepository.save(
                     Notification.builder()
                             .receiverId(receiverId)
