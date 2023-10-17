@@ -5,6 +5,7 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -38,6 +39,7 @@ import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
 import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -161,6 +163,7 @@ public class QuestionServiceImpl implements QuestionService {
             return getQuestionsSearchedByTag(searchString, userId, orderBy);
 
         return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy);
+
     }
 
     private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy) {
@@ -168,12 +171,6 @@ public class QuestionServiceImpl implements QuestionService {
             return questionRepository.findAllByTag(searchString, orderBy);
 
         return questionRepository.findAllByTag(searchString, userId, orderBy);
-    }
-
-    private static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
-                .toList();
     }
 
     @Override

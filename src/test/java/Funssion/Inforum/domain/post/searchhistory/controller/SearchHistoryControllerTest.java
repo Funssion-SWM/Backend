@@ -50,7 +50,13 @@ public class SearchHistoryControllerTest {
                         .param("searchString", "")
                         .param("isTag", "false")
                         .with(csrf()))
-                .andExpect(status().isCreated());
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/search/history")
+                        .param("searchString", " ")
+                        .param("isTag", "false")
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
 
         mvc.perform(post("/search/history")
                         .param("isTag", "true")

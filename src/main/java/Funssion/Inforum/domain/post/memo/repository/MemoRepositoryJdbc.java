@@ -119,7 +119,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("text::text ilike ? ");
+            sql.append("description ilike ? ");
             if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
