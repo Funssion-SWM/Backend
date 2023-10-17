@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -483,14 +484,9 @@ public class MemoServiceTest {
                         .willReturn(userID1);
                 given(memoRepository.findById(memoID2))
                         .willReturn(memo2);
-                given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
-                        .willReturn(memo4);
-                given(followRepository.findFollowedUserIdByUserId(any()))
-                        .willReturn(Collections.emptyList());
 
-                MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
-
-                assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+                assertThatThrownBy(() -> memoService.updateMemo(memoID2, tempMemoSaveDto))
+                        .isInstanceOf(BadRequestException.class);
             }
 
             @Test
