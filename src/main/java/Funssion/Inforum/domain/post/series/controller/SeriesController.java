@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.series.controller;
 
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.CustomListUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.series.dto.request.SeriesRequestDto;
@@ -50,8 +51,14 @@ public class SeriesController {
             @RequestPart(required = false) MultipartFile thumbnailImage
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
-        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, CustomListUtils.toLongList(memoIdList));
+        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, validateAndGetMemoIdList(memoIdList));
         return seriesService.create(seriesRequestDto, thumbnailImage, authorId);
+    }
+
+    private List<Long> validateAndGetMemoIdList(String memoIdList) {
+        List<Long> ret = CustomListUtils.toLongList(memoIdList);
+        if (ret.size() < 2) throw new BadRequestException("시리즈에는 2개 이상의 메모만 넣을 수 있습니다.");
+        return ret;
     }
 
     @GetMapping("/{seriesId}")
@@ -69,7 +76,7 @@ public class SeriesController {
             @PathVariable Long seriesId
     ) {
         Long authorId = SecurityContextUtils.getAuthorizedUserId();
-        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, CustomListUtils.toLongList(memoIdList));
+        SeriesRequestDto seriesRequestDto = new SeriesRequestDto(title, description, validateAndGetMemoIdList(memoIdList));
         return seriesService.update(seriesId, seriesRequestDto, thumbnailImage, authorId, Boolean.valueOf(isEmpty));
     }
 

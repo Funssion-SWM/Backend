@@ -1,6 +1,5 @@
 package Funssion.Inforum.config;
 
-import Funssion.Inforum.common.converter.BooleanConverter;
 import Funssion.Inforum.common.converter.DateTypeConverter;
 import Funssion.Inforum.common.converter.OrderTypeConverter;
 import Funssion.Inforum.common.converter.PostTypeConverter;
@@ -16,6 +15,5 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(new DateTypeConverter());
         registry.addConverter(new OrderTypeConverter());
         registry.addConverter(new PostTypeConverter());
-        registry.addConverter(new BooleanConverter());
     }
 }

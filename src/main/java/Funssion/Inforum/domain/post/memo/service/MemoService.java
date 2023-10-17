@@ -153,7 +153,9 @@ public class MemoService {
         Long userId = AuthUtils.getUserId(UPDATE);
         ArrayList<String> updatedTags = new ArrayList<>(form.getMemoTags());
         Memo willBeUpdatedMemo = memoRepository.findById(memoId);
+
         checkPermission(userId, willBeUpdatedMemo);
+        checkUpdatableMemo(willBeUpdatedMemo, form);
 
         updateHistory(form, userId, willBeUpdatedMemo);
         try {
@@ -163,6 +165,12 @@ public class MemoService {
         }
 
         return new MemoDto(updateMemo(memoId, form, willBeUpdatedMemo));
+    }
+
+    private void checkUpdatableMemo(Memo willBeUpdatedMemo, MemoSaveDto form) {
+        // 이미 생성되었고 임시 저장 상태가 아닌 글을 임시저장하려 하면 에러
+        if (willBeUpdatedMemo.getIsCreated() && !willBeUpdatedMemo.getIsTemporary() && form.getIsTemporary())
+            throw new BadRequestException("이미 생성된 글은 임시저장 할 수 없습니다.");
     }
 
     private void updateHistory(MemoSaveDto form, Long userId, Memo willBeUpdatedMemo) {
@@ -197,6 +205,7 @@ public class MemoService {
         Memo willBeDeletedMemo = memoRepository.findById(memoId);
 
         checkPermission(userId, willBeDeletedMemo);
+        checkDeletableInSeries(willBeDeletedMemo.getSeriesId());
 
         try {
             tagRepository.deleteTags(memoId);
@@ -211,6 +220,11 @@ public class MemoService {
             myRepository.updateHistory(userId, MEMO, MINUS, willBeDeletedMemo.getCreatedDate().toLocalDate());
             notificationRepository.delete(MEMO, willBeDeletedMemo.getId());
         }
+    }
+
+    private void checkDeletableInSeries(Long seriesId) {
+        if (memoRepository.findAllBySeriesId(seriesId).size() <= 2)
+            throw new BadRequestException("속한 시리즈의 남은 메모가 2개 이하가 되어 삭제할 수 없습니다. 시리즈를 먼저 삭제해주세요.");
     }
 
     private static void checkPermission(Long userId, Memo savedMemo) {

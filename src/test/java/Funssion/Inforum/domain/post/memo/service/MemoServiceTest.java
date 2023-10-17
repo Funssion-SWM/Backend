@@ -90,6 +90,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now().minusDays(1))
                 .likes(0L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "JPA"))
                 .build();
         memo2 = Memo.builder()
@@ -104,6 +105,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(10000L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring", "JDK"))
                 .build();
         memo3 = Memo.builder()
@@ -118,6 +120,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(9999L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring-Security", "JWT"))
                 .build();
         memo4 = Memo.builder()
@@ -132,6 +135,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("JSP"))
                 .isCreated(Boolean.FALSE)
                 .build();
@@ -147,6 +151,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("Junit"))
                 .isCreated(Boolean.TRUE)
                 .build();
@@ -599,6 +604,8 @@ public class MemoServiceTest {
         void deleteMemoWithLoginArrayEx() throws SQLException {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
                     .willReturn(userID1);
+            given(memoRepository.findAllBySeriesId(any()))
+                    .willReturn(List.of(memo1, memo2, memo3));
             given(memoRepository.findById(memoID1))
                     .willReturn(memo1);
             given(tagRepository.deleteTags(memoID1))
@@ -613,10 +620,13 @@ public class MemoServiceTest {
         void deleteMemoWithLogin() {
             given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
                     .willReturn(userID2);
+            given(memoRepository.findAllBySeriesId(any()))
+                    .willReturn(List.of(memo1, memo2, memo3));
             given(memoRepository.findById(memoID4))
                     .willReturn(memo4);
 
             memoService.deleteMemo(memoID4);
         }
+
     }
 }
