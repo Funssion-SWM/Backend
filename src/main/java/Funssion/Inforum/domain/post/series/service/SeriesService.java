@@ -152,7 +152,7 @@ public class SeriesService {
         if (Objects.nonNull(willBeDeletedSeries.getThumbnailImagePath()) && isEmpty) {
             s3Repository.delete(SERIES_DIR, willBeDeletedSeries.getThumbnailImagePath());
         }
-        memoRepository.updateSeriesIdsToZero(NULL_SERIES_ID, authorId);
+        memoRepository.updateSeriesIdsToZero(willBeDeletedSeries.getId(), authorId);
     }
 
     private Series getValidatedSeries(Long seriesId) {
