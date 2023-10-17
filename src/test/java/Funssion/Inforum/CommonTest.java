@@ -12,6 +12,6 @@ public class CommonTest {
 
     @Test
     public void test() {
-        System.out.println(CustomStringUtils.getSearchStringList(" mar"));
+        System.out.println(CustomStringUtils.getSearchStringList(" "));
     }
 }

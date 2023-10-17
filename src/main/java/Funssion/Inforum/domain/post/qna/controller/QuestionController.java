@@ -78,7 +78,7 @@ public class QuestionController {
             @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
-        if (Objects.isNull(searchString) || searchString.isEmpty()) {
+        if (Objects.isNull(searchString) || searchString.isBlank()) {
             return new ArrayList<>();
         }
 
