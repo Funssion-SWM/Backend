@@ -76,13 +76,19 @@ public class MyService {
 
     public List<SeriesListDto> getMySeries(Long userId, Long pageNum, Long resultCntPerPage) {
         return seriesRepository.findAllBy(userId, pageNum, resultCntPerPage).stream()
-                .map(SeriesListDto::valueOf)
-                .toList();
+                .map(series -> {
+                    SeriesListDto seriesListDto = SeriesListDto.valueOf(series);
+                    seriesListDto.setTopThreeColors(memoRepository.findTop3ColorsBySeriesId(series.getId()));
+                    return seriesListDto;
+                }).toList();
     }
 
     public List<SeriesListDto> getMyLikedSeries(Long userId, Long pageNum, Long resultCntPerPage) {
         return seriesRepository.findLikedBy(userId, pageNum, resultCntPerPage).stream()
-                .map(SeriesListDto::valueOf)
-                .toList();
+                .map(series -> {
+                    SeriesListDto seriesListDto = SeriesListDto.valueOf(series);
+                    seriesListDto.setTopThreeColors(memoRepository.findTop3ColorsBySeriesId(series.getId()));
+                    return seriesListDto;
+                }).toList();
     }
 }

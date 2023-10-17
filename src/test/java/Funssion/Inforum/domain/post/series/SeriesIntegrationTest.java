@@ -237,7 +237,15 @@ public class SeriesIntegrationTest {
                     .param("searchString", "")
                     .param("orderBy", "new"))
                     .andExpect(status().isOk())
-                    .andExpect(content().string("[]"));
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())))
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
+
+            mvc.perform(get("/series")
+                            .param("searchString", " ")
+                            .param("orderBy", "new"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())))
+                    .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
         }
     }
 

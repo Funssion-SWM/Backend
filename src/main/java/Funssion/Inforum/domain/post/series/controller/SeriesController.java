@@ -38,7 +38,6 @@ public class SeriesController {
             @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
             @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
     ) {
-        if (Objects.nonNull(searchString) && searchString.isEmpty()) return Collections.emptyList();
         return seriesService.getSeries(searchString, period, orderBy, pageNum, resultCntPerPage);
     }
 

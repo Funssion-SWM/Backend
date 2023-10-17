@@ -6,7 +6,7 @@ import java.util.List;
 public abstract class CustomStringUtils {
     private CustomStringUtils() {}
     public static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
+        return Arrays.stream(searchString.trim().split(" "))
                 .map(str -> "%" + str + "%")
                 .toList();
     }
