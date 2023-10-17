@@ -7,6 +7,7 @@ public class PostTypeConverter implements Converter<String, PostType> {
 
     @Override
     public PostType convert(String source) {
+        if (source.equals("series")) return PostType.SERIES;
         return PostType.of(source.substring(0, source.length() - 1));
     }
 }

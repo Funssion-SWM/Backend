@@ -33,7 +33,7 @@ public class MemoController {
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
             @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy,
             @RequestParam(required = false, defaultValue = "0") Long pageNum,
-            @RequestParam(required = false, defaultValue = "20") Long memoCnt
+            @RequestParam(required = false, defaultValue = "12") Long memoCnt
     ) {
         return memoService.getMemosForMainPage(period, orderBy, pageNum, memoCnt);
     }

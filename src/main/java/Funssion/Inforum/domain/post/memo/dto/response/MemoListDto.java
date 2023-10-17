@@ -29,6 +29,7 @@ public class MemoListDto {
     private Boolean isLike;
     private List<String> memoTags;
     private Boolean isTemporary;
+    private Long seriesId;
 
 
     public MemoListDto(Memo memo) {
@@ -46,6 +47,7 @@ public class MemoListDto {
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
         this.questionCount = memo.getQuestionCount();
+        this.seriesId = memo.getSeriesId();
 
         setMemoTagsLimit(2);
     }

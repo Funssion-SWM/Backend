@@ -8,9 +8,12 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
@@ -33,13 +36,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_POST_FOLLOWED;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
+import static Funssion.Inforum.common.utils.CustomStringUtils.getSearchStringList;
 
 @Service
 @Slf4j
@@ -56,15 +60,15 @@ public class MemoService {
     private final MyRepository myRepository;
     private final ScoreRepository scoreRepository;
     private final S3Repository s3Repository;
+    private final FollowRepository followRepository;
+    private final NotificationRepository notificationRepository;
 
-    public List<MemoListDto> getMemosForMainPage(DateType date, OrderType orderBy, Long pageNum, Long memoCnt) {
+    public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long memoCnt) {
 
-        Integer days = DateType.toNumOfDays(date);
-
-        return getMemos(orderBy, days, pageNum, memoCnt);
+        return getMemos(orderBy, period, pageNum, memoCnt);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, Integer days, Long pageNum, Long memoCnt) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, DateType period, Long pageNum, Long memoCnt) {
         switch (memoOrderType) {
             case NEW -> {
                 return memoRepository.findAllOrderById(pageNum, memoCnt)
@@ -73,7 +77,7 @@ public class MemoService {
                         .toList();
             }
             case HOT -> {
-                return memoRepository.findAllByDaysOrderByLikes(days, pageNum, memoCnt)
+                return memoRepository.findAllByDaysOrderByLikes(period, pageNum, memoCnt)
                         .stream()
                         .map(MemoListDto::new)
                         .toList();
@@ -89,18 +93,17 @@ public class MemoService {
 
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
 
-        MemoDto createdMemo = new MemoDto(
-                memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), LocalDateTime.now()))
-        );
-        tagRepository.saveTags(createdMemo.getMemoId(),form.getMemoTags());
+        Memo createdMemo = memoRepository.create(new Memo(form, authorId, authorProfile, LocalDateTime.now(), LocalDateTime.now()));
+
+        tagRepository.saveTags(createdMemo.getId(),form.getMemoTags());
 
         if (!form.getIsTemporary()) {
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
-            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getMemoId());
+            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getId());
+            sendNotificationToFollower(authorId, createdMemo);
         }
 
-
-        return createdMemo;
+        return new MemoDto(createdMemo);
     }
 
     private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
@@ -108,6 +111,25 @@ public class MemoService {
             myRepository.updateHistory(userId, MEMO, sign, curDate.toLocalDate());
         } catch (HistoryNotFoundException e) {
             myRepository.createHistory(userId, MEMO);
+        }
+    }
+
+    private void sendNotificationToFollower(Long senderId, Memo createdMemo) {
+        List<Long> followerIdList =
+                followRepository.findFollowedUserIdByUserId(senderId);
+
+        for (Long receiverId : followerIdList) {
+            notificationRepository.save(
+                    Notification.builder()
+                            .receiverId(receiverId)
+                            .senderId(createdMemo.getAuthorId())
+                            .senderPostType(MEMO)
+                            .senderPostId(createdMemo.getId())
+                            .senderName(createdMemo.getAuthorName())
+                            .senderImagePath(createdMemo.getAuthorImagePath())
+                            .notificationType(NEW_POST_FOLLOWED)
+                            .build()
+            );
         }
     }
 
@@ -133,35 +155,39 @@ public class MemoService {
 
         Long userId = AuthUtils.getUserId(UPDATE);
         ArrayList<String> updatedTags = new ArrayList<>(form.getMemoTags());
-        Memo savedMemo = memoRepository.findById(memoId);
-        checkPermission(userId, savedMemo);
+        Memo willBeUpdatedMemo = memoRepository.findById(memoId);
+        checkPermission(userId, willBeUpdatedMemo);
 
-        updateHistory(form, userId, savedMemo);
+        updateHistory(form, userId, willBeUpdatedMemo);
         try {
             tagRepository.updateTags(memoId,updatedTags);
         } catch (SQLException e) {
             throw new ArrayToListException("tag update 중 sql.Array를 List로 변환하는 중 오류 발생",e);
         }
 
-        return new MemoDto(updateMemo(memoId, form, savedMemo));
+        return new MemoDto(updateMemo(memoId, form, willBeUpdatedMemo));
     }
 
-    private void updateHistory(MemoSaveDto form, Long userId, Memo savedMemo) {
-        if(form.getIsTemporary() == savedMemo.getIsTemporary()) return;
+    private void updateHistory(MemoSaveDto form, Long userId, Memo willBeUpdatedMemo) {
+        if(form.getIsTemporary() == willBeUpdatedMemo.getIsTemporary()) return;
 
         // 임시글 -> 등록
-        if (savedMemo.getIsTemporary())
-            createOrUpdateHistory(userId, savedMemo.getCreatedDate(), PLUS);
+        if (willBeUpdatedMemo.getIsTemporary()) {
+            createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
+            sendNotificationToFollower(userId, willBeUpdatedMemo);
+        }
         // 등록된 글 -> 임시글
-        else
-            createOrUpdateHistory(userId, savedMemo.getCreatedDate(), MINUS);
+        else {
+            createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), MINUS);
+            notificationRepository.delete(MEMO, willBeUpdatedMemo.getId());
+        }
 
     }
 
-    private Memo updateMemo(Long memoId, MemoSaveDto form, Memo savedMemo) {
+    private Memo updateMemo(Long memoId, MemoSaveDto form, Memo willBeUpdatedMemo) {
         Memo memo;
         // 실제 메모로 등록된 적이 없는 메모를 등록하려 할 때
-        if (!form.getIsTemporary() && savedMemo.getIsTemporary() && !savedMemo.getIsCreated())
+        if (!form.getIsTemporary() && willBeUpdatedMemo.getIsTemporary() && !willBeUpdatedMemo.getIsCreated())
             memo = memoRepository.updateContentInMemo(form, memoId, Boolean.TRUE);
         else
             memo = memoRepository.updateContentInMemo(form, memoId);
@@ -171,9 +197,9 @@ public class MemoService {
     @Transactional
     public void deleteMemo(Long memoId) {
         Long userId = AuthUtils.getUserId(DELETE);
-        Memo memo = memoRepository.findById(memoId);
+        Memo willBeDeletedMemo = memoRepository.findById(memoId);
 
-        checkPermission(userId, memo);
+        checkPermission(userId, willBeDeletedMemo);
 
         try {
             tagRepository.deleteTags(memoId);
@@ -184,9 +210,10 @@ public class MemoService {
 
         s3Repository.deleteAll("memos/" + memoId);
 
-        if (!memo.getIsTemporary()) {
-            myRepository.updateHistory(userId, MEMO, MINUS, memo.getCreatedDate().toLocalDate());
-            scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,memo.getId());
+        if (!willBeDeletedMemo.getIsTemporary()) {
+            myRepository.updateHistory(userId, MEMO, MINUS, willBeDeletedMemo.getCreatedDate().toLocalDate());
+            scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,willBeDeletedMemo.getId());
+            notificationRepository.delete(MEMO, willBeDeletedMemo.getId());
         }
     }
 
@@ -233,12 +260,6 @@ public class MemoService {
 
         return result.stream()
                 .map(MemoListDto::new)
-                .toList();
-    }
-
-    private static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
                 .toList();
     }
 

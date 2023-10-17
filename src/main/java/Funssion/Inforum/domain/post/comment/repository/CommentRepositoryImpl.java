@@ -64,6 +64,12 @@ public class CommentRepositoryImpl implements CommentRepository{
                 "from post.comment where id =?";
         return template.queryForObject(sql,commentRowMapper(),commentId);
     }
+    private ReComment getRecommentById(Long recommentId) {
+        String sql = "SELECT * " +
+                "FROM post.recomment " +
+                "WHERE id = ?";
+        return template.queryForObject(sql, reCommentRowMapper(), recommentId);
+    }
     public void updateProfileImageOfComment(Long userId, String authorProfileImagePath){
         String sql = "update post.comment " +
                 "set author_image_path = ? " +
@@ -154,14 +160,15 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     @Override
-    public void createReComment(ReComment reComment) {
+    public ReComment createReComment(ReComment reComment) {
         if (findParentCommentById(reComment.getParentCommentId()).isEmpty())
             throw new NotFoundException("대댓글을 등록하기 위한 댓글이 존재하지 않습니다.");
-        insertReCommentInTable(reComment);
+        Long recommentId = insertReCommentInTable(reComment);
         updateNumberOfReCommentsOfComment(reComment.getParentCommentId(),false);
+        return getRecommentById(recommentId);
     }
 
-    private void insertReCommentInTable(ReComment reComment) {
+    private Long insertReCommentInTable(ReComment reComment) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into post.recomment (author_id, author_image_path, author_name, parent_id, comment_text, created_date)"
                 + "values(?,?,?,?,?,?)";
@@ -178,6 +185,8 @@ public class CommentRepositoryImpl implements CommentRepository{
         if (updatedRow != 1){
             throw new CreateFailException("대댓글 저장에 실패하였습니다.");
         }
+
+        return keyHolder.getKey().longValue();
     }
 
     private void updateNumberOfReCommentsOfComment(Long commentId, Boolean isDelete) {
@@ -382,10 +391,11 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .likes(rs.getLong("likes"))
                         .build());
     };
-    private RowMapper<ReCommentListDto> reCommentRowMapper() {
+    private RowMapper<ReComment> reCommentRowMapper() {
         return ((rs,rowNum)->
-                ReCommentListDto.builder()
+                ReComment.builder()
                         .id(rs.getLong("id"))
+                        .parentCommentId(rs.getLong("parent_id"))
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
@@ -393,7 +403,6 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
-                        .isLike(rs.getBoolean("is_liked"))
                         .build());
     };
     private RowMapper<ReCommentListDto> reCommentListRowMapper() {

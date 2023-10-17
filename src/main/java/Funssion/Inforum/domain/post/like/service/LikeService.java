@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.like.domain.DisLike;
 import Funssion.Inforum.domain.post.like.domain.Like;
@@ -18,6 +19,7 @@ import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.post.series.repository.SeriesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,8 @@ public class LikeService {
     private final AnswerRepository answerRepository;
     private final ScoreRepository scoreRepository;
     private final PostRepository postRepository;
+    private final SeriesRepository seriesRepository;
+
     @Transactional(readOnly = true)
     public LikeResponseDto getLikeInfo(PostType postType, Long postId) {
         Long userId = SecurityContextUtils.getUserId();
@@ -66,6 +70,11 @@ public class LikeService {
             case ANSWER -> {
                 return answerRepository.getAnswerById(postId).getLikes();
             }
+            case SERIES -> {
+                return seriesRepository.findById(postId)
+                        .map(series -> series.getLikes())
+                        .orElseThrow(() -> new NotFoundException("해당 게시물을 찾을 수 없습니다."));
+            }
             default ->{
                 throw new BadRequestException("유효하지 않은 게시물 타입입니다.");
             }
@@ -76,9 +85,7 @@ public class LikeService {
             case ANSWER -> {
                 return answerRepository.getAnswerById(postId).getDislikes();
             }
-            case MEMO, QUESTION -> throw new BadRequestException("해당 타입의 게시글들은 비추천할 수 없습니다.");
-            default -> throw new BadRequestException("유효하지 않은 postType 입니다.");
-
+            default -> throw new BadRequestException("해당 타입의 게시글들은 비추천할 수 없습니다.");
         }
     }
 
@@ -177,6 +184,8 @@ public class LikeService {
                 Long updatedLikes = answer.updateLikes(sign);
                 answerRepository.updateLikesInAnswer(updatedLikes,postId);
             }
+            case SERIES -> seriesRepository.updateLikes(postId, sign);
+
             default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");
         }
     }
@@ -187,8 +196,7 @@ public class LikeService {
                 Long updatedDisLikes = answer.updateDisLikes(sign);
                 answerRepository.updateDisLikesInAnswer(updatedDisLikes,postId);
             }
-            case QUESTION, MEMO -> throw new BadRequestException("해당 타입의 게시글들은 비추천할 수 없습니다.");
-            default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");
+            default -> throw new BadRequestException("해당 타입의 게시글들은 비추천할 수 없습니다.");
         }
     }
 }

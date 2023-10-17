@@ -121,7 +121,7 @@ CREATE TABLE "member".notification (
     receiver_post_id int8,
     sender_id int8 NOT NULL,
     sender_name varchar(15) NOT NULL,
-    sender_image_path varchar(300) NOT NULL,
+    sender_image_path varchar(300),
     sender_post_type varchar(10),
     sender_post_id int8,
     notification_type varchar(20) NOT NULL,
@@ -183,6 +183,8 @@ CREATE TABLE post.memo (
     replies_count int8 not null default 0,
     is_created boolean NOT NULL DEFAULT true,
     question_count int8 not null default 0,
+    series_id int8,
+    series_order int8,
     constraint non_negative_question_count check (question_count >= 0)
 );
 
@@ -223,6 +225,21 @@ create table post.answer(
     CONSTRAINT non_negative_likes CHECK (likes >= 0),
     CONSTRAINT non_negative_dislikes CHECK (dislikes >= 0)
 );
+
+CREATE TABLE post.series (
+    id bigserial NOT NULL,
+    title varchar(255) NOT NULL,
+    description varchar(255) NOT NULL,
+    thumbnail_image_path varchar NULL,
+    author_id int8 NOT NULL,
+    author_name varchar(15) NOT NULL,
+    author_image_path varchar NULL,
+    likes int4 NOT NULL DEFAULT 0,
+    created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT non_negative_series_likes CHECK ((likes >= 0)),
+    CONSTRAINT series_pkey PRIMARY KEY (id)
+);
+
 
 create table score.info (
     user_id int8 not null,

@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface CommentRepository {
     Comment createComment(Comment comment);
 
-    void createReComment(ReComment reComment);
+    ReComment createReComment(ReComment reComment);
     IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
 
     IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId);

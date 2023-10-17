@@ -2,6 +2,8 @@ package Funssion.Inforum.domain.notification.repository;
 
 import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.exception.etc.DeleteFailException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.notification.domain.Notification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -49,17 +51,24 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
-    public void delete(PostType postType, Long postId) {
-        String sql = "delete from member.notification where post_type = ? and post_id = ?";
+    public void delete(PostType senderPostType, Long senderPostId) {
+        String sql = "DELETE FROM member.notification WHERE sender_post_type = ? AND sender_post_id = ?";
 
-        template.update(sql, postType, postId);
+        template.update(sql, senderPostType.toString(), senderPostId);
     }
 
     @Override
-    public List<Notification> find30DaysNotificationsMaximum20ByUserId(Long userId) {
+    public void deleteFollowNotification(Long receiverId, Long senderId) {
+        String sql = "DELETE FROM member.notification WHERE receiver_id = ? AND sender_id = ? AND notification_type = 'NEW_FOLLOWER'";
+
+        if (template.update(sql, receiverId, senderId) != 1) throw new DeleteFailException("");
+    }
+
+    @Override
+    public List<Notification> find30DaysNotificationsMaximum20ByUserId(Long receiverId) {
         String sql = "select * from member.notification where receiver_id = ? and created > current_timestamp  - interval '30 days' order by id desc limit 20";
 
-        return template.query(sql, notificationRowMapper() ,userId);
+        return template.query(sql, notificationRowMapper() ,receiverId);
     }
 
     private RowMapper<Notification> notificationRowMapper() {

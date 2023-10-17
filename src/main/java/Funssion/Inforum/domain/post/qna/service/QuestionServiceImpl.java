@@ -7,9 +7,13 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -18,6 +22,7 @@ import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.ScoreService;
+import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -32,7 +37,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.PostType.QUESTION;
+import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.PostType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +50,9 @@ public class QuestionServiceImpl implements QuestionService {
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
+    private final NotificationRepository notificationRepository;
+    private final ProfileRepository profileRepository;
+    private final FollowRepository followRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -58,11 +67,54 @@ public class QuestionServiceImpl implements QuestionService {
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
-        Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
-        createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
+        Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
+        createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_QUESTION,createdQuestion.getId());
+        sendNotification(memoId, createdQuestion);
+        return createdQuestion;
+    }
 
-        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_QUESTION,question.getId());
-        return question;
+    private void sendNotification(Long memoId, Question createdQuestion) {
+        if (memoId.toString().equals(Constant.NONE_MEMO_QUESTION)) return;
+        Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
+        sendNotificationToLinkedMemoAuthor(receiverId, memoId, createdQuestion);
+        sendNotificationToFollower(receiverId, createdQuestion);
+    }
+
+    private void sendNotificationToLinkedMemoAuthor(Long receiverId, Long receiverPostId, Question createdQuestion) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(receiverId)
+                        .receiverPostType(MEMO)
+                        .receiverPostId(receiverPostId)
+                        .senderId(createdQuestion.getAuthorId())
+                        .senderPostType(QUESTION)
+                        .senderPostId(createdQuestion.getId())
+                        .senderName(createdQuestion.getAuthorName())
+                        .senderImagePath(createdQuestion.getAuthorImagePath())
+                        .notificationType(NEW_QUESTION)
+                        .build()
+        );
+    }
+
+    private void sendNotificationToFollower(Long receivedUserId, Question createdQuestion) {
+        List<Long> followerIdList =
+                followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
+
+        for (Long receiverId : followerIdList) {
+            if (receiverId.equals(receivedUserId)) continue;
+            notificationRepository.save(
+                    Notification.builder()
+                            .receiverId(receiverId)
+                            .senderId(createdQuestion.getAuthorId())
+                            .senderPostType(QUESTION)
+                            .senderPostId(createdQuestion.getId())
+                            .senderName(createdQuestion.getAuthorName())
+                            .senderImagePath(createdQuestion.getAuthorImagePath())
+                            .notificationType(NEW_POST_FOLLOWED)
+                            .build()
+            );
+        }
     }
 
     private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {
@@ -147,6 +199,7 @@ public class QuestionServiceImpl implements QuestionService {
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
 
         scoreService.subtractUserScore(authorId,ScoreType.MAKE_QUESTION, willBeDeletedQuestion.getId());
+        notificationRepository.delete(QUESTION, questionId);
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
     }
 

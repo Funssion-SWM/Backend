@@ -6,6 +6,7 @@ import Funssion.Inforum.domain.notification.domain.Notification;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -101,7 +102,8 @@ class NotificationRepositoryImplTest {
                     .receiverPostId(1L)
                     .senderId(userId2)
                     .senderName("jinu")
-                    .senderPostId(0L)
+                    .senderPostId(2L)
+                    .senderPostType(PostType.QUESTION)
                     .senderImagePath("https://image")
                     .notificationType(NotificationType.NEW_ACCEPTED)
                     .build();
@@ -136,8 +138,49 @@ class NotificationRepositoryImplTest {
         assertThat(notificationsMaximum20).containsOnly(newCommentNotification);
     }
 
-    @Test
-    void delete() {
-//        repository.delete();
+    @Nested
+    @DisplayName("알림 삭제하기")
+    class delete {
+
+        @Test
+        @DisplayName("팔로우, 답변 채택을 제외한 알림 삭제")
+        void deleteExcludingNewFollowerNotification() {
+            List<Notification> notifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+            repository.delete(newPostFollowedNotification.getSenderPostType(), newPostFollowedNotification.getSenderPostId());
+            repository.delete(newCommentNotification.getSenderPostType(), newCommentNotification.getSenderPostId());
+            repository.delete(newAnswerNotification.getSenderPostType(), newAnswerNotification.getSenderPostId());
+            repository.delete(newQuestionNotification.getSenderPostType(), newQuestionNotification.getSenderPostId());
+
+            List<Notification> remainNotifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+
+            assertThat(notifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newFollowerNotification, newAnswerNotification,
+                    newQuestionNotification, newCommentNotification);
+
+            assertThat(remainNotifications).containsExactly(
+                    newAcceptedNotification, newFollowerNotification
+            );
+        }
+
+        @Test
+        @DisplayName("팔로우 알림 삭제")
+        void deleteNewFollowerNotification() {
+            List<Notification> notifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+            repository.deleteFollowNotification(userId1, userId2);
+
+            List<Notification> remainNotifications = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+
+            assertThat(notifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newFollowerNotification, newAnswerNotification,
+                    newQuestionNotification, newCommentNotification);
+
+            assertThat(remainNotifications).containsExactly(
+                    newAcceptedNotification, newPostFollowedNotification,
+                    newAnswerNotification, newQuestionNotification,
+                    newCommentNotification);
+        }
+
     }
 }

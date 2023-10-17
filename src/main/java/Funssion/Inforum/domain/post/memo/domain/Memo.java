@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @SuperBuilder
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "seriesId")
 public class Memo extends Post {
     private String title;
     private String description;
@@ -26,6 +26,7 @@ public class Memo extends Post {
     private List<String> memoTags;
     private Boolean isTemporary;
     private Boolean isCreated;
+    private Long seriesId;
 
 
 

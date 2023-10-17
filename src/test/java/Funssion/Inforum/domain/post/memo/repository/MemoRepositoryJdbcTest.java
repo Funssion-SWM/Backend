@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.memo.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
@@ -22,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.OrderType.*;
+import static Funssion.Inforum.common.constant.DateType.DAY;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -39,11 +41,11 @@ class MemoRepositoryJdbcTest {
         "Backend","Java","Spring"
     };
     List<String> testTags = new ArrayList<>(Arrays.asList(testTagsStringList));
+    Long userId1 = 9999L;
+    Long userId2 = 10000L;
     MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,false);
     MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green", testTags,false);
     MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue",testTags, false);
-    Long userId1 = 9999L;
-    Long userId2 = 10000L;
     Memo memo1 = Memo.builder()
             .title(form1.getMemoTitle())
             .text(form1.getMemoText())
@@ -122,22 +124,20 @@ class MemoRepositoryJdbcTest {
     @Nested
     @DisplayName("메모 수정")
     class UpdateMemo {
-        Memo createdMemo;
-        Memo createdMemo2;
-        Memo createdMemo3;
+        Memo createdMemo; // user1
+        Memo createdMemo2; // user1
+        Memo createdMemo3; // user2
+        Memo createdMemo4;
         @BeforeEach
         void setUp() {
             createdMemo = repository.create(memo1);
             createdMemo2 = repository.create(memo2);
             createdMemo3 = repository.create(memo3);
+            createdMemo4 = repository.create(memo4);
 
             likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo2.getId()));
             likeRepository.create(new Like(userId1, PostType.MEMO, createdMemo3.getId()));
         }
-
-        @Nested
-        @DisplayName("메모 내용 수정")
-        class updateContentInMemo {}
 
         @Test
         @DisplayName("메모 내용 수정")
@@ -172,6 +172,71 @@ class MemoRepositoryJdbcTest {
 
 //         null input test
             repository.updateAuthorProfile(createdMemo.getAuthorId(), null);
+        }
+
+        @Nested
+        @DisplayName("메모 여러 개의 series_id 수정")
+        class updateSeriesIds {
+
+            Long testSeriesId = 9999L;
+            Long testSeriesId2 = 10000L;
+            @Test
+            @DisplayName("성공 케이스")
+            void success() {
+                List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId());
+                repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList);
+                List<Memo> updatedMemoList = repository.findAllBySeriesId(testSeriesId);
+
+                assertThat(updatedMemoList).containsExactly(createdMemo, createdMemo2);
+
+                List<Long> testOneMemoIdList = List.of(createdMemo3.getId());
+                repository.updateSeriesIds(testSeriesId2, userId2, testOneMemoIdList);
+                List<Memo> updatedOneMemoList = repository.findAllBySeriesId(testSeriesId2);
+
+                assertThat(updatedOneMemoList).containsExactly(createdMemo3);
+            }
+
+            @Test
+            @DisplayName("존재하지 않는 메모를 시리즈로 생성")
+            void exMemoNotFound() {
+                List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId(), Long.MAX_VALUE);
+
+                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList))
+                        .isInstanceOf(UpdateFailException.class);
+            }
+
+            @Test
+            @DisplayName("다른 사람의 메모를 내 시리즈로 생성")
+            void exUpdateAnotherMemo() {
+                List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId(), createdMemo3.getId());
+
+                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList))
+                        .isInstanceOf(UpdateFailException.class);
+            }
+
+            @Test
+            @DisplayName("임시 저장중인 메모를 시리즈로 생성")
+            void exUpdateTemporaryMemo() {
+                List<Long> testMemoIdList = List.of(createdMemo3.getId(), createdMemo4.getId());
+
+                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId2, testMemoIdList))
+                        .isInstanceOf(UpdateFailException.class);
+            }
+
+            @Test
+            @DisplayName("메모 시리즈에서 삭제")
+            void deleteMemosInSeries() {
+                // 시리즈 생성
+                List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId());
+                repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList);
+                List<Memo> updatedMemoList = repository.findAllBySeriesId(testSeriesId);
+                // 시리즈에서 삭제
+                repository.updateSeriesIdsToZero(testSeriesId, userId1);
+                List<Memo> deletedMemoList = repository.findAllBySeriesId(testSeriesId);
+
+                assertThat(updatedMemoList).containsExactly(createdMemo, createdMemo2);
+                assertThat(deletedMemoList).isEmpty();
+            }
         }
 
     }
@@ -214,7 +279,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 불러오기")
         void findAllByDaysOrderByLikesTest() {
-            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<Memo> memoListCreatedAtToday = repository.findAllByDaysOrderByLikes(DAY, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(memoListCreatedAtToday.size()).isEqualTo(3);
             assertThat(memoListCreatedAtToday.get(0)).isEqualTo(createdMemo3);
@@ -223,11 +288,11 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("좋아요 순 날짜별 메모 페이징하기")
         void findAllByDaysOrderByLikesWithPaging() {
-            List<Memo> memoListCreatedAtTodayInZeroPage = repository.findAllByDaysOrderByLikes(1, DEFAULT_PAGE_NUM, 2L);
+            List<Memo> memoListCreatedAtTodayInZeroPage = repository.findAllByDaysOrderByLikes(DAY, DEFAULT_PAGE_NUM, 2L);
 
             assertThat(memoListCreatedAtTodayInZeroPage).containsExactly(createdMemo3, createdMemo2);
 
-            List<Memo> memoListCreatedAtTodayInOnePage = repository.findAllByDaysOrderByLikes(1, 1L, 2L);
+            List<Memo> memoListCreatedAtTodayInOnePage = repository.findAllByDaysOrderByLikes(DAY, 1L, 2L);
 
             assertThat(memoListCreatedAtTodayInOnePage).containsExactly(createdMemo);
         }
