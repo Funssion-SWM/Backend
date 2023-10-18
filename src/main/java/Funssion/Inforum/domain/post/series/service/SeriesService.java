@@ -25,8 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
-import static Funssion.Inforum.common.utils.CustomStringUtils.*;
-import static Funssion.Inforum.domain.post.qna.Constant.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.getSearchStringList;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +68,7 @@ public class SeriesService {
                         .title(seriesRequestDto.getTitle())
                         .description(seriesRequestDto.getDescription())
                         .thumbnailImagePath(uploadedImagePath)
+                        .rank(authorProfile.getRank())
                         .authorId(authorProfile.getUserId())
                         .authorName(authorProfile.getNickname())
                         .authorImagePath(authorProfile.getProfileImageFilePath())
