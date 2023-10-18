@@ -8,7 +8,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.AnswerDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import Funssion.Inforum.domain.score.ScoreService;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.score;
+package Funssion.Inforum.domain.score.domain;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import lombok.Builder;

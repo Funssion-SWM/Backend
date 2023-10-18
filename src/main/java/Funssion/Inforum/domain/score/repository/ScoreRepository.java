@@ -1,8 +1,11 @@
-package Funssion.Inforum.domain.score;
+package Funssion.Inforum.domain.score.repository;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
+import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.exception.ScoreUpdateFailException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,6 +42,11 @@ public class ScoreRepository {
     public Optional<Score> saveScoreHistory(Long userId, ScoreType scoreType, Long score, Long postId){
         String sql = "insert into score.info(user_id,score_type,score,post_id) values (?,?,?,?)";
         if(template.update(sql,userId,scoreType.toString(),score,postId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
+        return findScoreHistoryInfoById(userId,scoreType,postId);
+    }
+    public Optional<Score> saveScoreHistory(Long userId, ScoreType scoreType, Long score, Long postId, Long likedAuthorId){
+        String sql = "insert into score.info(user_id,score_type,score,post_id,liked_author_id) values (?,?,?,?,?)";
+        if(template.update(sql,userId,scoreType.toString(),score,postId,likedAuthorId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
         return findScoreHistoryInfoById(userId,scoreType,postId);
     }
 

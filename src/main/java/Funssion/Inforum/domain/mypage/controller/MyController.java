@@ -1,7 +1,9 @@
 package Funssion.Inforum.domain.mypage.controller;
 
+import Funssion.Inforum.domain.mypage.dto.MyRankScoreDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.mypage.dto.addPercentageOfScoreDto;
 import Funssion.Inforum.domain.mypage.service.MyService;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -87,4 +89,13 @@ public class MyController {
         return myService.getHistory(userId, year, month);
     }
 
+    @GetMapping("/rank")
+    public MyRankScoreDto getRankAndScore(@PathVariable @Min(1) Long userId){
+        return myService.getRankAndScoreOf(userId);
+    }
+
+    @GetMapping("/stats")
+    public addPercentageOfScoreDto getActivityStatus(@PathVariable @Min(1) Long userId){
+        return myService.getActivityStatsOf(userId);
+    }
 }

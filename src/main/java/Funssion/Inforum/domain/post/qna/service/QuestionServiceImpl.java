@@ -6,7 +6,6 @@ import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
-import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -22,7 +21,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import Funssion.Inforum.domain.score.ScoreService;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -35,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
