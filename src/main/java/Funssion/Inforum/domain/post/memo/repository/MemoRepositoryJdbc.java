@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @Slf4j
@@ -199,7 +200,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
-                        .seriesId(Long.getLong(rs.getString("series_id")))
+                        .seriesId(Objects.isNull(rs.getObject("series_id")) ? null : rs.getLong("series_id"))
                         .seriesTitle(rs.getString("series_title"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))
