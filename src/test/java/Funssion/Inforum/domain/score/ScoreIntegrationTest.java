@@ -389,6 +389,4 @@ class ScoreIntegrationTest {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberIdForEachTest.toString(),"12345678"));
         return memoService.createMemo(form1);
     }
-
-
 }

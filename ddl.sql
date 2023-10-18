@@ -2,6 +2,7 @@ CREATE SCHEMA member;
 create schema post;
 create schema tag;
 create schema score;
+create sequence post.memo_series_order_seq start 1;
 
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
