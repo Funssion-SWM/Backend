@@ -492,8 +492,6 @@ public class MemoServiceTest {
                         .willReturn(userID1);
                 given(memoRepository.findById(memoID2))
                         .willReturn(memo2);
-                given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
-                        .willReturn(memo4);
 
                 assertThatThrownBy(() -> memoService.updateMemo(memoID2, tempMemoSaveDto))
                         .isInstanceOf(BadRequestException.class);
