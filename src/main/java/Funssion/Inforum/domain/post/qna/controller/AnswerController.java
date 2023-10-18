@@ -39,12 +39,12 @@ public class AnswerController {
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
         List<Answer> answers = answerService.getAnswersOfQuestion(loginId,questionId);
         return answers.stream().map(answer->{
-            return addIsLikeAndScoreInfoByUserId(loginId, answer);
+            return addIsMineInfoByUserId(loginId, answer);
         }).toList();
     }
 
-    private AnswerDto addIsLikeAndScoreInfoByUserId(Long loginId, Answer answer) {
-        return new AnswerDto(answer.setScoreInfo(scoreService.getScore(answer.getAuthorId())), loginId);
+    private AnswerDto addIsMineInfoByUserId(Long loginId, Answer answer) {
+        return new AnswerDto(answer, loginId);
     }
 
     @PatchMapping("/select/{questionId}")
@@ -58,7 +58,7 @@ public class AnswerController {
     public AnswerDto getAnswerBy(@PathVariable Long answerId){
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
         Answer answer = answerService.getAnswerBy(answerId);
-        return addIsLikeAndScoreInfoByUserId(loginId,answer);
+        return addIsMineInfoByUserId(loginId,answer);
     }
 
     @PatchMapping("/{answerId}")

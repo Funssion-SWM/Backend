@@ -14,6 +14,7 @@ public class MemoDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private String authorRank;
     private String memoTitle;
     private String memoDescription;
     private String memoText;
@@ -30,6 +31,7 @@ public class MemoDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.authorRank = memo.getRank();
         this.memoTitle = memo.getTitle();
         this.memoDescription = memo.getDescription();
         this.memoText = memo.getText();

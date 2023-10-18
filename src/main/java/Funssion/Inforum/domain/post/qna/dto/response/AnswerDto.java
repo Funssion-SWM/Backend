@@ -1,7 +1,6 @@
 package Funssion.Inforum.domain.post.qna.dto.response;
 
 import Funssion.Inforum.domain.post.qna.domain.Answer;
-import Funssion.Inforum.domain.score.Rank;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -41,6 +40,6 @@ public class AnswerDto {
         this.isLike = answer.isLike();
         this.isDisLike = answer.isDisLike();
         this.isMine = loginId.equals(this.authorId);
-        this.rank = Rank.getRankByScore(answer.getAuthorScore()).toString();
+        this.rank = answer.getRank();
     }
 }

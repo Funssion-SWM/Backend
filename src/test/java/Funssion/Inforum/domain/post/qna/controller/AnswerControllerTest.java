@@ -117,6 +117,7 @@ class AnswerControllerTest {
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
+                        .rank(Rank.BRONZE_2.toString())
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
                         .isSelected(false)
@@ -150,6 +151,7 @@ class AnswerControllerTest {
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
+                        .rank(Rank.BRONZE_2.toString())
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
                         .isSelected(false)
@@ -158,7 +160,6 @@ class AnswerControllerTest {
                         .text("답변 내용")
                         .build();
                 when(answerService.getAnswerBy(longTypeQuestionId)).thenReturn(answerDomain);
-                when(scoreService.getScore(answerDomain.getAuthorId())).thenReturn(Bronze_2_Score);
 
 
                 MvcResult result = mvc.perform(get("/answers/" + questionId))
