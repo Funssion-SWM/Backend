@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class Notification {
     private final Long id;
     private final Long receiverId;
-    private final PostType receiverPostType;
-    private final Long receiverPostId;
+    private final PostType postTypeToShow;
+    private final Long postIdToShow;
     private final Long senderId;
     private final String senderName;
     private final String senderImagePath;
-    private final PostType senderPostType;
     private final String senderRank;
+    private final PostType senderPostType;
     private final Long senderPostId;
     private final NotificationType notificationType;
     private final Boolean isChecked;

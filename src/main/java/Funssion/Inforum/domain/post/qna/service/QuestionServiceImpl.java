@@ -88,8 +88,8 @@ public class QuestionServiceImpl implements QuestionService {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
-                        .receiverPostType(MEMO)
-                        .receiverPostId(receiverPostId)
+                        .postTypeToShow(MEMO)
+                        .postIdToShow(receiverPostId)
                         .senderId(createdQuestion.getAuthorId())
                         .senderPostType(QUESTION)
                         .senderRank(createdQuestion.getRank())
@@ -110,6 +110,8 @@ public class QuestionServiceImpl implements QuestionService {
             notificationRepository.save(
                     Notification.builder()
                             .receiverId(receiverId)
+                            .postTypeToShow(QUESTION)
+                            .postIdToShow(createdQuestion.getId())
                             .senderId(createdQuestion.getAuthorId())
                             .senderPostType(QUESTION)
                             .senderPostId(createdQuestion.getId())

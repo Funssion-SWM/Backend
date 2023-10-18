@@ -19,6 +19,8 @@ public enum NotificationType {
             return NotificationType.valueOf(string.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid notification type", e);
+        } catch (NullPointerException e) {
+            return null;
         }
     }
 

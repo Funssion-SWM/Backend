@@ -11,25 +11,18 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter
+@Builder
+@RequiredArgsConstructor
 public class NotificationListDto {
     private final Long id;
     private final Long senderId;
     private final String senderName;
     private final String senderImagePath;
     private final String message;
+    private final Boolean isChecked;
     private final LocalDateTime created;
-    private PostType postTypeToShow;
-    private Long postIdToShow;
-
-    @Builder
-    public NotificationListDto(Long id, Long senderId, String senderName, String senderImagePath, String message, LocalDateTime created) {
-        this.id = id;
-        this.senderId = senderId;
-        this.senderName = senderName;
-        this.senderImagePath = senderImagePath;
-        this.message = message;
-        this.created = created;
-    }
+    private final PostType postTypeToShow;
+    private final Long postIdToShow;
 
     public static NotificationListDto valueOf(Notification notification) {
         return NotificationListDto.builder()
@@ -38,12 +31,10 @@ public class NotificationListDto {
                 .senderName(notification.getSenderName())
                 .senderImagePath(notification.getSenderImagePath())
                 .message(notification.getNotificationType().getMessage())
+                .isChecked(notification.getIsChecked())
                 .created(notification.getCreated())
+                .postTypeToShow(notification.getPostTypeToShow())
+                .postIdToShow(notification.getPostIdToShow())
                 .build();
-    }
-
-    public void setPostInfoToShow(PostIdAndTypeInfo postInfoToShow) {
-        this.postTypeToShow = postInfoToShow.getPostType();
-        this.postIdToShow = postInfoToShow.getPostId();
     }
 }

@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.comment.service;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.notification.domain.Notification;
@@ -18,6 +19,8 @@ import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
+import Funssion.Inforum.domain.post.qna.domain.Answer;
+import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.domain.score.ScoreRepository;
 import Funssion.Inforum.domain.score.ScoreService;
@@ -27,11 +30,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.NEW_COMMENT;
-import static Funssion.Inforum.common.constant.PostType.COMMENT;
-import static Funssion.Inforum.common.constant.PostType.RECOMMENT;
+import static Funssion.Inforum.common.constant.PostType.*;
 
 @Service
 @Slf4j
@@ -44,6 +47,7 @@ public class CommentService {
     private final ScoreRepository scoreRepository;
     private final ProfileRepository profileRepository;
     private final NotificationRepository notificationRepository;
+    private final AnswerRepository answerRepository;
 
     /*
      * 최초 댓글/대댓글 생성의 경우 Profile정보가 필요하므로 Service AuthUtils.getUserId 로
@@ -68,15 +72,17 @@ public class CommentService {
         return createdComment;
     }
 
-    private void sendNotificationToPostAuthor(PostType receiverPostType, Long receiverPostId, Comment createdComment) {
-        Long receiverId = profileRepository.findAuthorId(receiverPostType, receiverPostId);
+    private void sendNotificationToPostAuthor(PostType postTypeWithComment, Long postIdWithComment, Comment createdComment) {
+        Long receiverId = profileRepository.findAuthorId(postTypeWithComment, postIdWithComment);
         if (createdComment.getAuthorId().equals(receiverId)) return;
+
+        PostIdAndTypeInfo postInfoToShow = getPostInfoToShowInComment(postTypeWithComment, postIdWithComment);
 
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
-                        .receiverPostType(receiverPostType)
-                        .receiverPostId(receiverPostId)
+                        .postTypeToShow(postInfoToShow.getPostType())
+                        .postIdToShow(postInfoToShow.getPostId())
                         .senderId(createdComment.getAuthorId())
                         .senderName(createdComment.getAuthorName())
                         .senderImagePath(createdComment.getAuthorImagePath())
@@ -86,6 +92,19 @@ public class CommentService {
                         .notificationType(NEW_COMMENT)
                         .build()
         );
+    }
+
+    private PostIdAndTypeInfo getPostInfoToShowInComment(PostType postTypeWithComment, Long postIdWithComment) {
+        switch (postTypeWithComment) {
+            case MEMO, QUESTION -> {
+                return new PostIdAndTypeInfo(postIdWithComment, postTypeWithComment);
+            }
+            case ANSWER -> {
+                Answer commentedAnswer = answerRepository.getAnswerById(postIdWithComment);
+                return new PostIdAndTypeInfo(commentedAnswer.getQuestionId(), QUESTION);
+            }
+            default -> throw new BadRequestException("댓글을 달 수 없는 게시물입니다.");
+        }
     }
 
     @Transactional
@@ -111,7 +130,6 @@ public class CommentService {
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         Long parentCommentId = reCommentSaveDto.getParentCommentId();
-
         ReComment createdRecomment = commentRepository.createReComment(new ReComment(
                 authorId, authorProfile, LocalDateTime.now(), null, parentCommentId, reCommentSaveDto.getCommentText())
         );
@@ -124,31 +142,36 @@ public class CommentService {
     private void sendNotification(Long authorId, Long parentCommentId, ReComment createdRecomment) {
         Long commentAuthorId = profileRepository.findAuthorId(COMMENT, parentCommentId);
         List<ReCommentListDto> recommentsList = commentRepository.getReCommentsAtComment(parentCommentId, authorId);
+        ArrayList<Long> noticedUserIdList = new ArrayList<>();
+        noticedUserIdList.add(authorId);
 
         sendNotificationToCommentAuthor(
                 commentAuthorId,
                 COMMENT,
                 parentCommentId,
-                createdRecomment);
+                createdRecomment,
+                noticedUserIdList);
 
         for (ReCommentListDto recomment : recommentsList) {
-            if (commentAuthorId.equals(recomment.getAuthorId())) continue;
             sendNotificationToCommentAuthor(
                     recomment.getAuthorId(),
                     RECOMMENT,
                     recomment.getId(),
-                    createdRecomment
+                    createdRecomment,
+                    noticedUserIdList
             );
         }
     }
 
-    private void sendNotificationToCommentAuthor(Long receiverId, PostType receiverPostType, Long receiverPostId, ReComment createdReComment) {
-        if (!receiverId.equals(createdReComment.getAuthorId())) return;
+    private void sendNotificationToCommentAuthor(Long receiverId, PostType postTypeWithRecomment, Long postIdWithRecomment, ReComment createdReComment, ArrayList<Long> noticedUserIdList) {
+        if (noticedUserIdList.contains(receiverId)) return;
+        PostIdAndTypeInfo postInfoToShowInRecomment = getPostInfoToShowInRecomment(postTypeWithRecomment, postIdWithRecomment);
+
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
-                        .receiverPostType(receiverPostType)
-                        .receiverPostId(receiverPostId)
+                        .postTypeToShow(postInfoToShowInRecomment.getPostType())
+                        .postIdToShow(postInfoToShowInRecomment.getPostId())
                         .senderId(createdReComment.getAuthorId())
                         .senderName(createdReComment.getAuthorName())
                         .senderImagePath(createdReComment.getAuthorImagePath())
@@ -158,6 +181,23 @@ public class CommentService {
                         .notificationType(NEW_COMMENT)
                         .build()
         );
+
+        noticedUserIdList.add(receiverId);
+    }
+
+    private PostIdAndTypeInfo getPostInfoToShowInRecomment(PostType postTypeWithRecomment, Long postIdWithRecomment) {
+        switch (postTypeWithRecomment) {
+            case COMMENT -> {
+                PostIdAndTypeInfo postIdAndTypeInfoToShowInComment = commentRepository.getPostIdByCommentId(postIdWithRecomment);
+                return getPostInfoToShowInComment(
+                        postIdAndTypeInfoToShowInComment.getPostType(),
+                        postIdAndTypeInfoToShowInComment.getPostId());
+            }
+            case RECOMMENT -> {
+                return getPostInfoToShowInRecomment(COMMENT, postIdWithRecomment);
+            }
+            default -> throw new BadRequestException("대댓글을 달 수 없는 게시물입니다.");
+        }
     }
 
     public IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId) {
