@@ -14,9 +14,11 @@ public interface SeriesRepository {
     Long create(Series series);
     Optional<Series> findById(Long id);
     List<Series> findAllBy(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
-    List<Series> findAllBy(Long authorId, DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
+    List<Series> findAllBy(Long authorId, Long pageNum, Long resultCntPerPage);
     List<Series> findAllBy(List<String> searhStringList ,DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage);
+    List<Series> findLikedBy(Long userId, Long pageNum, Long resultCntPerPage);
     void update(Long id, SeriesRequestDto seriesRequestDto, String newThumbnailImagePath);
+    void update(Long seriesId, SeriesRequestDto seriesRequestDto);
     void updateLikes(Long seriesId, Sign sign);
     void delete(Long seriesId);
 }

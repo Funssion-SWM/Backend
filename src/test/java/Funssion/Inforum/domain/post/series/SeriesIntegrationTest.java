@@ -186,10 +186,6 @@ public class SeriesIntegrationTest {
                             .param("resultCntPerPage", "0"))
                     .andExpect(status().isBadRequest());
 
-            mvc.perform(get("/series")
-                            .param("authorId", "0"))
-                    .andExpect(status().isBadRequest());
-
         }
 
         @Test
@@ -238,27 +234,16 @@ public class SeriesIntegrationTest {
                     .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
 
             mvc.perform(get("/series")
-                    .param("searchString", "")
-                    .param("orderBy", "new"))
+                            .param("searchString", "")
+                            .param("orderBy", "new"))
                     .andExpect(status().isOk())
                     .andExpect(content().string("[]"));
-        }
 
-        @Test
-        @DisplayName("시리즈 유저 id 로 조회하기")
-        void getSeriesByUserId() throws Exception {
             mvc.perform(get("/series")
-                    .param("authorId", USER_ID_1.toString()))
+                            .param("searchString", " ")
+                            .param("orderBy", "new"))
                     .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"id\":" + createdSeries1.getId())));
-
-            // authorId 가 우선순위 이므로 searchString 무시
-            mvc.perform(get("/series")
-                            .param("authorId", USER_ID_2.toString())
-                            .param("searchString", "java"))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"id\":" + createdSeries2.getId())));
-
+                    .andExpect(content().string("[]"));
         }
     }
 

@@ -119,7 +119,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("text::text ilike ? ");
+            sql.append("description ilike ? ");
             if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
@@ -278,7 +278,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public void updateSeriesIdsToZero(Long seriesId, Long authorId) {
         String sql = "UPDATE post.memo " +
-                    "SET series_id = 0 " +
+                    "SET series_id = NULL " +
                     "WHERE is_temporary = false AND author_Id = ? AND series_id = ?";
 
         template.update(sql, authorId, seriesId);

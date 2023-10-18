@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -98,6 +99,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now().minusDays(1))
                 .likes(0L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "JPA"))
                 .build();
         memo2 = Memo.builder()
@@ -112,6 +114,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(10000L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring", "JDK"))
                 .build();
         memo3 = Memo.builder()
@@ -126,6 +129,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(9999L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring-Security", "JWT"))
                 .build();
         memo4 = Memo.builder()
@@ -140,6 +144,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("JSP"))
                 .isCreated(Boolean.FALSE)
                 .build();
@@ -155,6 +160,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("Junit"))
                 .isCreated(Boolean.TRUE)
                 .build();
@@ -489,9 +495,8 @@ public class MemoServiceTest {
                 given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
                         .willReturn(memo4);
 
-                MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
-
-                assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+                assertThatThrownBy(() -> memoService.updateMemo(memoID2, tempMemoSaveDto))
+                        .isInstanceOf(BadRequestException.class);
             }
 
             @Test
@@ -624,5 +629,6 @@ public class MemoServiceTest {
 
             memoService.deleteMemo(memoID4);
         }
+
     }
 }

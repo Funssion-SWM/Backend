@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.DateType.DAY;
@@ -104,14 +105,14 @@ class SeriesRepositoryImplTest {
         @Test
         @DisplayName("유저 아이디로 조회")
         void findAllByUserId() {
-            List<Series> seriesList = seriesRepository.findAllBy(USER_ID_1, DAY, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_COUNT);
+            List<Series> seriesList = seriesRepository.findAllBy(USER_ID_1, DEFAULT_PAGE_NUM, DEFAULT_RESULT_COUNT);
             assertThat(seriesList).containsExactly(seriesWithoutImage, series1);
 
             for (int i = 0; i < 12; i++) {
                 seriesRepository.create(series1);
             }
 
-            List<Series> seriesListWithOneElement = seriesRepository.findAllBy(USER_ID_1, DAY, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_COUNT);
+            List<Series> seriesListWithOneElement = seriesRepository.findAllBy(USER_ID_1, DEFAULT_PAGE_NUM, DEFAULT_RESULT_COUNT);
             assertThat(seriesListWithOneElement).containsOnly(series1);
         }
 

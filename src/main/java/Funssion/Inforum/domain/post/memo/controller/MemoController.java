@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static Funssion.Inforum.common.utils.SecurityContextUtils.*;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -71,11 +73,11 @@ public class MemoController {
     @GetMapping("/search")
     public List<MemoListDto> getSearchedMemos(
             @RequestParam(required = false) String searchString,
-            @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
+            @RequestParam(required = false, defaultValue =  ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
             @RequestParam Boolean isTag
     ) {
-        if (Objects.isNull(searchString) || searchString.isEmpty()) {
+        if (userId.equals(ANONYMOUS_USER_ID) && (Objects.isNull(searchString) || searchString.isBlank())) {
             return new ArrayList<>();
         }
 
