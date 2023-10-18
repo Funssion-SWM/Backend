@@ -25,8 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
-import static Funssion.Inforum.common.utils.CustomStringUtils.*;
-import static Funssion.Inforum.domain.post.qna.Constant.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.getSearchStringList;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +48,7 @@ public class SeriesService {
 
         Long seriesId = createSeriesAndGetSeriesId(seriesRequestDto, authorId, uploadedImagePath);
 
-        memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesRequestDto.getTitle(), authorId, seriesRequestDto.getMemoIdList());
 
         return new SeriesCreateResponseDto(seriesId);
     }
@@ -69,6 +68,7 @@ public class SeriesService {
                         .title(seriesRequestDto.getTitle())
                         .description(seriesRequestDto.getDescription())
                         .thumbnailImagePath(uploadedImagePath)
+                        .rank(authorProfile.getRank())
                         .authorId(authorProfile.getUserId())
                         .authorName(authorProfile.getNickname())
                         .authorImagePath(authorProfile.getProfileImageFilePath())
@@ -113,7 +113,7 @@ public class SeriesService {
     ) {
         deleteSeriesInfoInOtherStorage(seriesId, authorId, thumbnailImage, isEmpty);
         updateSeries(seriesId, seriesRequestDto, thumbnailImage, authorId, isEmpty);
-        memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesRequestDto.getTitle(), authorId, seriesRequestDto.getMemoIdList());
 
         return getSeriesResponse(seriesId);
     }

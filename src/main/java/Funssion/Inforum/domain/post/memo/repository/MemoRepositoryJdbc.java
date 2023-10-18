@@ -199,7 +199,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
-                        .seriesId(rs.getLong("series_id"))
+                        .seriesId(Long.getLong(rs.getString("series_id")))
+                        .seriesTitle(rs.getString("series_title"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))
                         .rank(rs.getString("author_rank"))
@@ -260,15 +261,15 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public void updateSeriesIds(Long seriesId, Long authorId, List<Long> memoIdList) {
+    public void updateSeriesIdAndTitle(Long seriesId, String seriesTitle, Long authorId, List<Long> memoIdList) {
 
         int updatedRows = 0;
         for (Long memoId : memoIdList) {
             String sql = "UPDATE post.memo " +
-                    "SET series_id = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
+                    "SET series_id = ?, series_title = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
                     "WHERE id = ? and author_id = ? and is_temporary = false";
 
-            updatedRows += template.update(sql, seriesId, memoId, authorId);
+            updatedRows += template.update(sql, seriesId, seriesTitle, memoId, authorId);
         }
 
         if (memoIdList.size() != updatedRows)
@@ -278,7 +279,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public void updateSeriesIdsToZero(Long seriesId, Long authorId) {
         String sql = "UPDATE post.memo " +
-                    "SET series_id = NULL " +
+                    "SET series_id = NULL, series_title = NULL " +
                     "WHERE is_temporary = false AND author_Id = ? AND series_id = ?";
 
         template.update(sql, authorId, seriesId);

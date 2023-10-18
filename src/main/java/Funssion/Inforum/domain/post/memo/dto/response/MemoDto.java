@@ -24,6 +24,7 @@ public class MemoDto {
     private Long likes;
     private List<String> memoTags;
     private Long seriesId;
+    private String seriesTitle;
     private Boolean isTemporary;
     private Boolean isCreated;
     private Boolean isMine;
@@ -43,6 +44,7 @@ public class MemoDto {
         this.memoTags = memo.getMemoTags();
         this.likes = memo.getLikes();
         this.seriesId = memo.getSeriesId();
+        this.seriesTitle = memo.getSeriesTitle();
         this.isTemporary = memo.getIsTemporary();
         this.isCreated = memo.getIsCreated();
     }

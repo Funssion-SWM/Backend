@@ -2,6 +2,7 @@ CREATE SCHEMA member;
 create schema post;
 create schema tag;
 create schema score;
+create sequence post.memo_series_order_seq start 1;
 
 CREATE TABLE tag.memo_to_tag (
     memo_id bigserial,
@@ -187,8 +188,9 @@ CREATE TABLE post.memo (
     replies_count int8 not null default 0,
     is_created boolean NOT NULL DEFAULT true,
     question_count int8 not null default 0,
-    series_id int8,
-    series_order int8,
+    series_id int8 null,
+    series_title varchar(255) null,
+    series_order int8 null,
     constraint non_negative_question_count check (question_count >= 0)
 );
 

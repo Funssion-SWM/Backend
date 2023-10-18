@@ -32,7 +32,6 @@ public class MemoListDto {
     private Boolean isTemporary;
     private Long seriesId;
 
-
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
         this.memoTitle = memo.getTitle();
