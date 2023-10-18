@@ -25,6 +25,9 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
+import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -350,20 +353,36 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_5.toString());
         }
     }
+
+    @Test
+    @DisplayName("자기 자신의 글에 좋아요를 할 경우 점수에 변동이 존재하지 않는다.")
+    void likeMyPostDoesNotAffectScore(){
+        MemoDto memoDto = createMemo();
+        Long memoAuthorId = mockingLoginUserOfId(memoDto.getAuthorId());
+        likeService.likePost(PostType.MEMO, memoDto.getMemoId());
+        assertThat(scoreRepository.getScore(memoAuthorId)).isEqualTo(50L);
+        assertThat(scoreRepository.findScoreHistoryInfoById(memoAuthorId,ScoreType.LIKE,memoDto.getMemoId()).isEmpty()).isEqualTo(true);
+    }
+
     private void manyUsersLikeMemo(Long howManyUser , MemoDto memoDto){
         for(Long i = 11L; i < howManyUser + 11L; i++) {
-            setSecurityContextHolderForTestLikeMethodByDifferentUser(i);
+            mockingLoginUserOfId(i);
             likeService.likePost(PostType.MEMO,memoDto.getMemoId());
         }
     }
-    private void setSecurityContextHolderForTestLikeMethodByDifferentUser(Long username) {
+    private Long mockingLoginUserOfId(Long username) {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username.toString(),"12345678"));
+        return username;
     }
     private Long setSecurityContextHolderForTestLikeMethod() {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberId.toString(),"12345678"));
         return saveMemberId;
     }
 
+    private Long setUserForTestLikeMyPostMethod() {
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(saveMemberIdForEachTest.toString(),"12345678"));
+        return saveMemberId;
+    }
 
     private Question makePureQuestion() {
         QuestionSaveDto questionSaveDto = QuestionSaveDto.builder().title("테스트 제목 생성")

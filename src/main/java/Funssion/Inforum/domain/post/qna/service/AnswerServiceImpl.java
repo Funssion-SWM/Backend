@@ -16,7 +16,7 @@ import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
-import Funssion.Inforum.domain.score.ScoreService;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;

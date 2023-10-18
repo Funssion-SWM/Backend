@@ -2,15 +2,20 @@ package Funssion.Inforum.domain.mypage.service;
 
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.mypage.dto.MyRankScoreDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.mypage.dto.addPercentageOfScoreDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
 import Funssion.Inforum.domain.post.series.repository.SeriesRepository;
+import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +30,8 @@ public class MyService {
     private final MemberRepository memberRepository;
     private final QuestionRepository questionRepository;
     private final SeriesRepository seriesRepository;
+    private final ScoreRepository scoreRepository;
+    private final PostRepository postRepository;
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()
                 .userName(memberRepository.findNameById(userId))
@@ -91,4 +98,21 @@ public class MyService {
                     return seriesListDto;
                 }).toList();
     }
+
+    public MyRankScoreDto getRankAndScoreOf(Long userId) {
+        Long userScore = scoreRepository.getScore(userId);
+        Rank rankByScore = Rank.getRankByScore(userScore);
+        return MyRankScoreDto.builder()
+                .myRank(rankByScore.toString())
+                .myScore(userScore)
+                .rankMaxScore(rankByScore.getMax())
+                .rankInterval(rankByScore.getInterval())
+                .build();
+    }
+    public addPercentageOfScoreDto getActivityStatsOf(Long userId){
+        return new addPercentageOfScoreDto(postRepository.getAllPostScoreAndCount(userId));
+
+    }
+
+
 }

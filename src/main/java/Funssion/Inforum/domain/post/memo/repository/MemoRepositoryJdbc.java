@@ -301,6 +301,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         if(template.update(sql,memoId)==0) throw new MemoNotFoundException("update question count fail");
     }
 
+
     public Long getCommentsCount(Long id){
         String sql = "select replies_count from post.memo where id = ?";
         return template.queryForObject(sql,Long.class,id);
