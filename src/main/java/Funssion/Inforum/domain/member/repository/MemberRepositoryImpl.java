@@ -54,7 +54,6 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     public SaveMemberResponseDto save(SocialMember member) {
         SaveMemberResponseDto savedMember = saveSocialMemberInUserTable(member);
-
         return savedMember;
     }
 

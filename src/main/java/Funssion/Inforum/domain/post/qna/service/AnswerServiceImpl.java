@@ -68,8 +68,8 @@ public class AnswerServiceImpl implements AnswerService {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(profileRepository.findAuthorId(QUESTION, questionId))
-                        .receiverPostType(QUESTION)
-                        .receiverPostId(questionId)
+                        .postTypeToShow(QUESTION)
+                        .postIdToShow(questionId)
                         .senderId(createdAnswer.getAuthorId())
                         .senderPostType(ANSWER)
                         .senderRank(createdAnswer.getRank())
@@ -154,8 +154,8 @@ public class AnswerServiceImpl implements AnswerService {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(profileRepository.findAuthorId(ANSWER, receiverPostId))
-                        .receiverPostType(ANSWER)
-                        .receiverPostId(receiverPostId)
+                        .postTypeToShow(QUESTION)
+                        .postIdToShow(senderPostId)
                         .senderId(senderId)
                         .senderPostType(QUESTION)
                         .senderRank(senderProfile.getRank())

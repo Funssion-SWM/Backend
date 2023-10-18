@@ -6,6 +6,7 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
@@ -24,6 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Repository
 @Slf4j
@@ -199,7 +202,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
-                        .seriesId(rs.getLong("series_id"))
+                        .seriesId(parseNullableStringtoLong(rs.getString("series_id")))
                         .seriesTitle(rs.getString("series_title"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))

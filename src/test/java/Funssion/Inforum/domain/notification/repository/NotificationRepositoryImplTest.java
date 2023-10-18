@@ -28,10 +28,9 @@ class NotificationRepositoryImplTest {
 
     Notification newCommentNotification =
             Notification.builder()
-                    .id(1L)
                     .receiverId(userId1)
-                    .receiverPostType(PostType.MEMO)
-                    .receiverPostId(1L)
+                    .postTypeToShow(PostType.MEMO)
+                    .postIdToShow(1L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderImagePath("https://image")
@@ -39,14 +38,14 @@ class NotificationRepositoryImplTest {
                     .senderPostType(PostType.COMMENT)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_COMMENT)
+                    .isChecked(false)
                     .build();
 
     Notification newAnswerNotification =
             Notification.builder()
-                    .id(2L)
                     .receiverId(userId1)
-                    .receiverPostType(PostType.QUESTION)
-                    .receiverPostId(1L)
+                    .postTypeToShow(PostType.QUESTION)
+                    .postIdToShow(1L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderImagePath("https://image")
@@ -54,14 +53,14 @@ class NotificationRepositoryImplTest {
                     .senderPostType(PostType.ANSWER)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_ANSWER)
+                    .isChecked(false)
                     .build();
 
     Notification newQuestionNotification =
             Notification.builder()
-                    .id(3L)
                     .receiverId(userId1)
-                    .receiverPostType(PostType.MEMO)
-                    .receiverPostId(1L)
+                    .postTypeToShow(PostType.MEMO)
+                    .postIdToShow(1L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderRank(Rank.BRONZE_5.toString())
@@ -69,26 +68,25 @@ class NotificationRepositoryImplTest {
                     .senderPostType(PostType.QUESTION)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_QUESTION)
+                    .isChecked(false)
                     .build();
 
     Notification newFollowerNotification =
             Notification.builder()
-                    .id(4L)
                     .receiverId(userId1)
-                    .receiverPostId(0L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderRank(Rank.BRONZE_5.toString())
                     .senderImagePath("https://image")
-                    .senderPostId(0L)
                     .notificationType(NotificationType.NEW_FOLLOWER)
+                    .isChecked(false)
                     .build();
 
     Notification newPostFollowedNotification =
             Notification.builder()
-                    .id(5L)
                     .receiverId(userId1)
-                    .receiverPostId(0L)
+                    .postTypeToShow(PostType.MEMO)
+                    .postIdToShow(1L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderRank(Rank.BRONZE_5.toString())
@@ -96,14 +94,14 @@ class NotificationRepositoryImplTest {
                     .senderPostType(PostType.MEMO)
                     .senderPostId(1L)
                     .notificationType(NotificationType.NEW_POST_FOLLOWED)
+                    .isChecked(false)
                     .build();
 
     Notification newAcceptedNotification =
             Notification.builder()
-                    .id(6L)
                     .receiverId(userId1)
-                    .receiverPostType(PostType.ANSWER)
-                    .receiverPostId(1L)
+                    .postTypeToShow(PostType.QUESTION)
+                    .postIdToShow(2L)
                     .senderId(userId2)
                     .senderName("jinu")
                     .senderPostId(2L)
@@ -111,6 +109,7 @@ class NotificationRepositoryImplTest {
                     .senderPostType(PostType.QUESTION)
                     .senderImagePath("https://image")
                     .notificationType(NotificationType.NEW_ACCEPTED)
+                    .isChecked(false)
                     .build();
 
     @BeforeEach
@@ -187,5 +186,18 @@ class NotificationRepositoryImplTest {
                     newCommentNotification);
         }
 
+    }
+
+    @Test
+    @DisplayName("알림 체크하기")
+    void updateIsCheckedToTrue() {
+        List<Notification> unCheckedNotificationList = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+        repository.updateIsCheckedToTrue(userId1);
+        List<Notification> checkedNotificationList = repository.find30DaysNotificationsMaximum20ByUserId(userId1);
+
+        assertThat(unCheckedNotificationList).isNotSameAs(checkedNotificationList);
+        for (Notification checkedNotification : checkedNotificationList) {
+            assertThat(checkedNotification.getIsChecked()).isTrue();
+        }
     }
 }
