@@ -74,7 +74,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
     @Override
     public AuthorProfile findAuthorProfile(PostType postType, Long postId) {
-        String sql = "SELECT author_id, author_name, author_image_path " +
+        String sql = "SELECT author_id, author_name, author_image_path, author_rank " +
                 "FROM post." + postType.getValue() + " " +
                 "WHERE id = ?";
 
@@ -86,6 +86,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
                 .id(rs.getLong("author_id"))
                 .name(rs.getString("author_name"))
                 .profileImagePath("author_image_path")
+                .rank(rs.getString("author_rank"))
                 .build();
     }
 

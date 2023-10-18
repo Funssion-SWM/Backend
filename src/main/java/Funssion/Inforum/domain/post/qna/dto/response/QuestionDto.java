@@ -48,11 +48,13 @@ public class QuestionDto {
     private List<String> tags;
     private boolean isMine;
     private boolean isLike;
+    private String authorRank;
     public QuestionDto(Question question, Long authorId) {
         this.id = question.getId();
         this.authorId = question.getAuthorId();
         this.authorName = question.getAuthorName();
         this.authorImagePath = question.getAuthorImagePath();
+        this.authorRank = question.getRank();
         this.description = question.getDescription();
         this.createdDate = question.getCreatedDate();
         this.updatedDate = question.getUpdatedDate();

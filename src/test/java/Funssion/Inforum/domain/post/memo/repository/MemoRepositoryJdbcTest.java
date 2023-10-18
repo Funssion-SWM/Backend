@@ -1,9 +1,7 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
-import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
-import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.like.domain.Like;
@@ -11,6 +9,7 @@ import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
+import Funssion.Inforum.domain.score.Rank;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.DateType.*;
-import static Funssion.Inforum.common.constant.OrderType.*;
+import static Funssion.Inforum.common.constant.DateType.DAY;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -56,6 +55,7 @@ class MemoRepositoryJdbcTest {
             .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
+            .rank(Rank.BRONZE_5.toString())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -70,6 +70,7 @@ class MemoRepositoryJdbcTest {
             .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
+            .rank(Rank.BRONZE_5.toString())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -84,6 +85,7 @@ class MemoRepositoryJdbcTest {
             .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
+            .rank(Rank.BRONZE_5.toString())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(false)
@@ -98,6 +100,7 @@ class MemoRepositoryJdbcTest {
             .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
+            .rank(Rank.BRONZE_5.toString())
             .createdDate(LocalDateTime.now())
             .updatedDate(LocalDateTime.now())
             .isTemporary(true)

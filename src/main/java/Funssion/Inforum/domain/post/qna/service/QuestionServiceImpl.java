@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
@@ -11,10 +12,9 @@ import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+
 import Funssion.Inforum.domain.notification.domain.Notification;
 import Funssion.Inforum.domain.notification.repository.NotificationRepository;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -22,6 +22,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -45,6 +46,8 @@ import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 @RequiredArgsConstructor
 @Slf4j
 public class QuestionServiceImpl implements QuestionService {
+    private final ScoreService scoreService;
+
     private final QuestionRepository questionRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
@@ -68,6 +71,7 @@ public class QuestionServiceImpl implements QuestionService {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
         Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
         createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_QUESTION,createdQuestion.getId());
         sendNotification(memoId, createdQuestion);
         return createdQuestion;
     }
@@ -88,6 +92,7 @@ public class QuestionServiceImpl implements QuestionService {
                         .receiverPostId(receiverPostId)
                         .senderId(createdQuestion.getAuthorId())
                         .senderPostType(QUESTION)
+                        .senderRank(createdQuestion.getRank())
                         .senderPostId(createdQuestion.getId())
                         .senderName(createdQuestion.getAuthorName())
                         .senderImagePath(createdQuestion.getAuthorImagePath())
@@ -191,6 +196,8 @@ public class QuestionServiceImpl implements QuestionService {
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
+
+        scoreService.subtractUserScore(authorId,ScoreType.MAKE_QUESTION, willBeDeletedQuestion.getId());
         notificationRepository.delete(QUESTION, questionId);
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
     }

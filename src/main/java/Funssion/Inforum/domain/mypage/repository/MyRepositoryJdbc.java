@@ -37,7 +37,7 @@ public class MyRepositoryJdbc implements MyRepository {
 
     @Override
     public MemberProfileEntity findProfileByUserId(Long userId) {
-        String sql = "select id,name,introduce,tags,image_path,follow_cnt,follower_cnt from member.info where id = ?";
+        String sql = "select id,name,introduce,tags,image_path,follow_cnt,follower_cnt,rank from member.info where id = ?";
         return template.queryForObject(sql, MemberProfileEntity.MemberInfoRowMapper(), userId);
     }
     private RowMapper<History> historyRowMapper() {

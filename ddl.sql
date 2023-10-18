@@ -93,7 +93,11 @@ CREATE TABLE member.info (
     created_date timestamp,
     follow_cnt int8 not null default 0,
     follower_cnt int8 not null default 0,
-    is_deleted bool not null default false
+    is_deleted bool not null default false,
+    rank varchar(15) not null default 'BRONZE_5',
+    score int8 not null default 0,
+    daily_get_score int not null default 0,
+    constraint limit_daily_get_score check (daily_get_score <= 200)
 );
 
 CREATE TABLE "member".follow (
@@ -121,6 +125,7 @@ CREATE TABLE "member".notification (
     sender_image_path varchar(300),
     sender_post_type varchar(10),
     sender_post_id int8,
+    sender_rank varchar(15) not null,
     notification_type varchar(20) NOT NULL,
     is_checked boolean not null default false,
     created timestamp NOT NULL DEFAULT current_timestamp
@@ -131,6 +136,7 @@ create table post.comment(
     author_id int8 not null,
     author_image_path varchar(300),
     author_name VARCHAR(15) not null,
+    author_rank varchar(15) not null,
     post_type varchar not null,
     post_id int8 not null,
     likes int8 not null default 0,
@@ -146,6 +152,7 @@ CREATE TABLE post.recomment (
     author_id int8 NOT NULL,
     author_image_path varchar(300) NULL,
     author_name varchar(15) NOT NULL,
+    author_rank varchar(15) not null,
     likes int8 NOT NULL DEFAULT 0,
     parent_id int8 NOT NULL,
     comment_text text NOT NULL,
@@ -167,6 +174,7 @@ CREATE TABLE post.memo (
     author_id int8 NOT NULL,
     author_name varchar,
     author_image_path varchar,
+    author_rank varchar(15) not null,
     title varchar(255) NOT NULL,
     description varchar(255),
     text jsonb,
@@ -179,6 +187,8 @@ CREATE TABLE post.memo (
     replies_count int8 not null default 0,
     is_created boolean NOT NULL DEFAULT true,
     question_count int8 not null default 0,
+    series_id int8,
+    series_order int8,
     constraint non_negative_question_count check (question_count >= 0)
 );
 
@@ -187,6 +197,7 @@ create table post.question(
     author_id int8 NOT NULL,
     author_name varchar,
     author_image_path varchar,
+    author_rank varchar(15) not null,
     title varchar(255) NOT NULL,
     description text null,
     text jsonb,
@@ -208,6 +219,7 @@ create table post.answer(
     author_id int8 not null,
     author_name varchar,
     author_image_path varchar,
+    author_rank varchar(15) not null,
     text jsonb,
     likes int8 NOT NULL DEFAULT 0,
     dislikes int8 NOT NULL DEFAULT 0,
@@ -228,6 +240,7 @@ CREATE TABLE post.series (
     author_id int8 NOT NULL,
     author_name varchar(15) NOT NULL,
     author_image_path varchar NULL,
+    author_rank varchar(15) not null,
     likes int4 NOT NULL DEFAULT 0,
     created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT non_negative_series_likes CHECK ((likes >= 0)),
@@ -236,9 +249,11 @@ CREATE TABLE post.series (
 
 
 create table score.info (
-    id bigserial primary key,
     user_id int8 not null,
     score_type varchar(15) not null,
+    -- score은 해당 작업으로 벌어들인 점수를 의미하며, 하루 최대 제한을 넘겼을 경우에 고정된 타입의 점수와 다를 경우를 추적하기 위함입니다.
+    score int8 not null,
     post_id int8 not null,
-    created_date timestamp default current_timestamp
+    created_date timestamp default current_timestamp,
+    primary key (user_id,score_type,post_id)
 );

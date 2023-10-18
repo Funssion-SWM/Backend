@@ -9,7 +9,6 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
 import Funssion.Inforum.s3.dto.response.ImageDto;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,7 +30,6 @@ import static Funssion.Inforum.common.utils.SecurityContextUtils.*;
 public class MemoController {
 
     private final MemoService memoService;
-
     @GetMapping
     public List<MemoListDto> getMemos(
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
@@ -45,7 +43,8 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
-        return memoService.createMemo(memoSaveDto);
+        MemoDto memoDto = memoService.createMemo(memoSaveDto);
+        return memoDto;
     }
 
     @GetMapping("/{id}")

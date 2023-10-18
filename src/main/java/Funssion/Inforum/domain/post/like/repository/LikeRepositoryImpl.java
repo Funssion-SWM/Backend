@@ -119,6 +119,12 @@ public class LikeRepositoryImpl implements LikeRepository {
             throw new DisLikeNotFoundException();
     }
 
+    @Override
+    public Integer howManyLikesInPost(PostType postType, Long postId) {
+        String sql = "select count(id) from member.like where post_type = ? and post_id = ?";
+        return template.queryForObject(sql,Integer.class,postType.toString(),postId);
+    }
+
     private RowMapper<Like> likeRowMapper() {
         return ((rs, rowNum) -> Like.builder()
                 .id(rs.getLong("id"))

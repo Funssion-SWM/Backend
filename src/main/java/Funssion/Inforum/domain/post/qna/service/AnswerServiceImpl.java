@@ -1,6 +1,6 @@
 package Funssion.Inforum.domain.post.qna.service;
 
-import Funssion.Inforum.common.constant.NotificationType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
@@ -16,6 +16,7 @@ import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -29,13 +30,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.CRUDType.UPDATE;
-import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_ACCEPTED;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_ANSWER;
 import static Funssion.Inforum.common.constant.PostType.ANSWER;
 import static Funssion.Inforum.common.constant.PostType.QUESTION;
 
 @Service
 @RequiredArgsConstructor
 public class AnswerServiceImpl implements AnswerService {
+    private final ScoreService scoreService;
+
     private final AnswerRepository answerRepository;
     private final MyRepository myRepository;
     private final S3Repository s3Repository;
@@ -55,6 +59,7 @@ public class AnswerServiceImpl implements AnswerService {
         Answer createdAnswer = answerRepository.createAnswer(addAuthorInfo(answerSaveDto, authorId, questionId));
         answerRepository.updateAnswersCountOfQuestion(questionId,Sign.PLUS);
         createOrUpdateHistory(authorId,createdAnswer.getCreatedDate(), Sign.PLUS);
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_ANSWER,createdAnswer.getId());
         sendNotificationToQuestionAuthor(questionId, createdAnswer);
         return createdAnswer;
     }
@@ -67,6 +72,7 @@ public class AnswerServiceImpl implements AnswerService {
                         .receiverPostId(questionId)
                         .senderId(createdAnswer.getAuthorId())
                         .senderPostType(ANSWER)
+                        .senderRank(createdAnswer.getRank())
                         .senderPostId(createdAnswer.getId())
                         .senderName(createdAnswer.getAuthorName())
                         .senderImagePath(createdAnswer.getAuthorImagePath())
@@ -106,6 +112,7 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.updateAnswersCountOfQuestion(willBeDeletedAnswer.getQuestionId(),Sign.MINUS);
         s3Repository.deleteFromText(ANSWER_DIR, willBeDeletedAnswer.getText());
         createOrUpdateHistory(authorId,willBeDeletedAnswer.getCreatedDate(), Sign.MINUS);
+        scoreService.subtractUserScore(authorId,ScoreType.MAKE_ANSWER,answerId);
         notificationRepository.delete(ANSWER, answerId);
         answerRepository.deleteAnswer(answerId);
     }
@@ -127,8 +134,19 @@ public class AnswerServiceImpl implements AnswerService {
     public Answer selectAnswer(Long loginId, Long questionId, Long answerId) {
         if(isNotUserAuthorOfQuestion(loginId, questionId)) throw new UnAuthorizedException("답변을 채택할 권한이 없습니다.");
         questionRepository.solveQuestion(questionId);
+        updateScoreOfQuestionUser(loginId,questionId);
+        updateScoreOfAnswerUser(answerId);
         sendNotificationToSelectedAnswerAuthor(answerId, loginId, questionId);
         return answerRepository.select(answerId);
+    }
+
+    private void updateScoreOfAnswerUser(Long answerId) {
+        Long authorIdOfAnswer = answerRepository.getAuthorIdOf(answerId);
+        scoreService.checkUserDailyScoreAndAdd(authorIdOfAnswer,ScoreType.BEST_ANSWER,answerId);
+    }
+
+    private void updateScoreOfQuestionUser(Long questionAuthorId, Long questionId) {
+        scoreService.checkUserDailyScoreAndAdd(questionAuthorId, ScoreType.SELECT_ANSWER, questionId);
     }
 
     private void sendNotificationToSelectedAnswerAuthor(Long receiverPostId, Long senderId, Long senderPostId) {
@@ -140,6 +158,7 @@ public class AnswerServiceImpl implements AnswerService {
                         .receiverPostId(receiverPostId)
                         .senderId(senderId)
                         .senderPostType(QUESTION)
+                        .senderRank(senderProfile.getRank())
                         .senderPostId(senderPostId)
                         .senderName(senderProfile.getName())
                         .senderImagePath(senderProfile.getProfileImagePath())

@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.follow.service;
 
-import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -18,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_FOLLOWER;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +55,7 @@ public class FollowService {
                         .receiverId(receiverId)
                         .senderId(senderProfile.getUserId())
                         .senderImagePath(senderProfile.getProfileImageFilePath())
+                        .senderRank(senderProfile.getRank())
                         .senderName(senderProfile.getNickname())
                         .notificationType(NEW_FOLLOWER)
                         .build()
@@ -65,7 +65,6 @@ public class FollowService {
     @Transactional
     public void unfollow(Long userIdToUnfollow) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
-
         followRepository.findByUserIdAndFollowedUserId(userId, userIdToUnfollow)
                 .orElseThrow(() -> new BadRequestException("아직 팔로우 하지 않은 유저입니다."));
 

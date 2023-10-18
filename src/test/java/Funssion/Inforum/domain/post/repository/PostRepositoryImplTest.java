@@ -7,7 +7,7 @@ import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
-import org.assertj.core.api.Assertions;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Transactional
 @SpringBootTest
@@ -46,6 +45,7 @@ class PostRepositoryImplTest {
                         .authorId(testAuthorId)
                         .authorName("jinu")
                         .authorImagePath("https://image")
+                        .rank(Rank.BRONZE_5.toString())
                         .title("test")
                         .description("test is ..")
                         .text("{\"content\": \"test is good\"}")
@@ -60,6 +60,7 @@ class PostRepositoryImplTest {
                         .authorId(testAuthorId)
                         .authorName("jinu")
                         .authorImagePath("https://image")
+                        .rank(Rank.BRONZE_5.toString())
                         .title("test")
                         .description("test is ..")
                         .text("{\"content\": \"test is good?\"}")
@@ -73,6 +74,7 @@ class PostRepositoryImplTest {
                         .questionId(testQuestion.getId())
                         .authorId(testAuthorId)
                         .authorName("jinu")
+                        .rank(Rank.BRONZE_5.toString())
                         .authorImagePath("https://image")
                         .text("{\"content\": \"test is good.\"}")
                         .build()
