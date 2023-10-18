@@ -23,5 +23,6 @@ public class Notification {
     private final String senderRank;
     private final Long senderPostId;
     private final NotificationType notificationType;
+    private final Boolean isChecked;
     private final LocalDateTime created;
 }

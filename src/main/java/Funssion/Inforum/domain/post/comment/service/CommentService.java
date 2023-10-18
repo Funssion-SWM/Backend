@@ -69,9 +69,12 @@ public class CommentService {
     }
 
     private void sendNotificationToPostAuthor(PostType receiverPostType, Long receiverPostId, Comment createdComment) {
+        Long receiverId = profileRepository.findAuthorId(receiverPostType, receiverPostId);
+        if (createdComment.getAuthorId().equals(receiverId)) return;
+
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(profileRepository.findAuthorId(receiverPostType, receiverPostId))
+                        .receiverId(receiverId)
                         .receiverPostType(receiverPostType)
                         .receiverPostId(receiverPostId)
                         .senderId(createdComment.getAuthorId())
@@ -107,19 +110,44 @@ public class CommentService {
     @Transactional
     public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
+        Long parentCommentId = reCommentSaveDto.getParentCommentId();
 
         ReComment createdRecomment = commentRepository.createReComment(new ReComment(
-                authorId, authorProfile, LocalDateTime.now(), null, reCommentSaveDto.getParentCommentId(), reCommentSaveDto.getCommentText())
+                authorId, authorProfile, LocalDateTime.now(), null, parentCommentId, reCommentSaveDto.getCommentText())
         );
-        sendNotificationToCommentAuthor(reCommentSaveDto.getParentCommentId(), createdRecomment);
+
+        sendNotification(authorId, parentCommentId, createdRecomment);
+
         return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
     }
 
-    private void sendNotificationToCommentAuthor(Long receiverPostId, ReComment createdReComment) {
+    private void sendNotification(Long authorId, Long parentCommentId, ReComment createdRecomment) {
+        Long commentAuthorId = profileRepository.findAuthorId(COMMENT, parentCommentId);
+        List<ReCommentListDto> recommentsList = commentRepository.getReCommentsAtComment(parentCommentId, authorId);
+
+        sendNotificationToCommentAuthor(
+                commentAuthorId,
+                COMMENT,
+                parentCommentId,
+                createdRecomment);
+
+        for (ReCommentListDto recomment : recommentsList) {
+            if (commentAuthorId.equals(recomment.getAuthorId())) continue;
+            sendNotificationToCommentAuthor(
+                    recomment.getAuthorId(),
+                    RECOMMENT,
+                    recomment.getId(),
+                    createdRecomment
+            );
+        }
+    }
+
+    private void sendNotificationToCommentAuthor(Long receiverId, PostType receiverPostType, Long receiverPostId, ReComment createdReComment) {
+        if (!receiverId.equals(createdReComment.getAuthorId())) return;
         notificationRepository.save(
                 Notification.builder()
-                        .receiverId(profileRepository.findAuthorId(COMMENT, receiverPostId))
-                        .receiverPostType(COMMENT)
+                        .receiverId(receiverId)
+                        .receiverPostType(receiverPostType)
                         .receiverPostId(receiverPostId)
                         .senderId(createdReComment.getAuthorId())
                         .senderName(createdReComment.getAuthorName())

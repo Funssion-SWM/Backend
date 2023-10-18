@@ -9,6 +9,8 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
+import Funssion.Inforum.domain.post.series.repository.SeriesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class MyService {
     private final MemoRepository memoRepository;
     private final MemberRepository memberRepository;
     private final QuestionRepository questionRepository;
+    private final SeriesRepository seriesRepository;
     public MyUserInfoDto getUserInfo(Long userId) {
         return MyUserInfoDto.builder()
                 .userName(memberRepository.findNameById(userId))
@@ -69,5 +72,23 @@ public class MyService {
 
     public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
         return questionRepository.getQuestionsOfMyLikedAnswer(userId);
+    }
+
+    public List<SeriesListDto> getMySeries(Long userId, Long pageNum, Long resultCntPerPage) {
+        return seriesRepository.findAllBy(userId, pageNum, resultCntPerPage).stream()
+                .map(series -> {
+                    SeriesListDto seriesListDto = SeriesListDto.valueOf(series);
+                    seriesListDto.setTopThreeColors(memoRepository.findTop3ColorsBySeriesId(series.getId()));
+                    return seriesListDto;
+                }).toList();
+    }
+
+    public List<SeriesListDto> getMyLikedSeries(Long userId, Long pageNum, Long resultCntPerPage) {
+        return seriesRepository.findLikedBy(userId, pageNum, resultCntPerPage).stream()
+                .map(series -> {
+                    SeriesListDto seriesListDto = SeriesListDto.valueOf(series);
+                    seriesListDto.setTopThreeColors(memoRepository.findTop3ColorsBySeriesId(series.getId()));
+                    return seriesListDto;
+                }).toList();
     }
 }

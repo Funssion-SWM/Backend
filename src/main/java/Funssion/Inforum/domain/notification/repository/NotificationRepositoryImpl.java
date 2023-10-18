@@ -24,9 +24,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void save(Notification notification) {
+
         String sql = "insert into member.notification(receiver_id, receiver_post_type, receiver_post_id, sender_id, sender_name, sender_image_path, sender_rank,sender_post_type, sender_post_id, notification_type) " +
                 "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
         template.update(sql, getAllParams(notification));
     }
 
@@ -52,21 +52,24 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void delete(PostType senderPostType, Long senderPostId) {
-        String sql = "DELETE FROM member.notification WHERE sender_post_type = ? AND sender_post_id = ?";
+        String sql = "DELETE FROM member.notification " +
+                "WHERE sender_post_type = ? AND sender_post_id = ?";
 
         template.update(sql, senderPostType.toString(), senderPostId);
     }
 
     @Override
     public void deleteFollowNotification(Long receiverId, Long senderId) {
-        String sql = "DELETE FROM member.notification WHERE receiver_id = ? AND sender_id = ? AND notification_type = 'NEW_FOLLOWER'";
+        String sql = "DELETE FROM member.notification " +
+                "WHERE receiver_id = ? AND sender_id = ? AND notification_type = 'NEW_FOLLOWER'";
 
         if (template.update(sql, receiverId, senderId) != 1) throw new DeleteFailException("");
     }
 
     @Override
     public List<Notification> find30DaysNotificationsMaximum20ByUserId(Long receiverId) {
-        String sql = "select * from member.notification where receiver_id = ? and created > current_timestamp  - interval '30 days' order by id desc limit 20";
+        String sql = "SELECT * FROM member.notification " +
+                "WHERE receiver_id = ? and created > current_timestamp  - interval '30 days' order by id desc limit 20";
 
         return template.query(sql, notificationRowMapper() ,receiverId);
     }

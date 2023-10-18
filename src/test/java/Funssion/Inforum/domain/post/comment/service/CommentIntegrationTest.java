@@ -266,7 +266,7 @@ class CommentIntegrationTest {
 
             commentService.deleteComment(comment.getId());
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
-            assertThat(commentsAtPostAfterDelete).hasSize(0);
+            assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
         }
 
         @Test
@@ -280,7 +280,7 @@ class CommentIntegrationTest {
 
             commentService.deleteComment(comment.getId());
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
-            assertThat(commentsAtPostAfterDelete).hasSize(0);
+            assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
         }
 
         @Test
@@ -294,7 +294,7 @@ class CommentIntegrationTest {
 
             commentService.deleteComment(comment.getId());
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
-            assertThat(commentsAtPostAfterDelete).hasSize(0);
+            assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
         }
     }
 

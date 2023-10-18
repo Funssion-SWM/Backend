@@ -6,6 +6,7 @@ import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -39,6 +40,7 @@ import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
 import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +84,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void sendNotificationToLinkedMemoAuthor(Long receiverId, Long receiverPostId, Question createdQuestion) {
+        if (receiverId.equals(createdQuestion.getAuthorId())) return;
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
@@ -103,7 +106,7 @@ public class QuestionServiceImpl implements QuestionService {
                 followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
 
         for (Long receiverId : followerIdList) {
-            if (receiverId.equals(receivedUserId)) continue;
+            if (receiverId.equals(receivedUserId) || receiverId.equals(createdQuestion.getAuthorId())) continue;
             notificationRepository.save(
                     Notification.builder()
                             .receiverId(receiverId)
@@ -165,6 +168,7 @@ public class QuestionServiceImpl implements QuestionService {
             return getQuestionsSearchedByTag(searchString, userId, orderBy);
 
         return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy);
+
     }
 
     private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy) {
@@ -172,12 +176,6 @@ public class QuestionServiceImpl implements QuestionService {
             return questionRepository.findAllByTag(searchString, orderBy);
 
         return questionRepository.findAllByTag(searchString, userId, orderBy);
-    }
-
-    private static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
-                .toList();
     }
 
     @Override

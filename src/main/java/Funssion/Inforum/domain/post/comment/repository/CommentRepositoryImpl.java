@@ -132,7 +132,9 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     @Override
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        String sql = "delete from post.comment where id = ?";
+        String sql = "UPDATE post.comment " +
+                "SET comment_text = '삭제된 댓글입니다.', updated_date = current_timestamp " +
+                "WHERE id = ?";
         if(template.update(sql, commentId) == 0){
             throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
         }
@@ -149,7 +151,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     }
 
     private void deleteReCommentsInTable(Long reCommentId) {
-        String sql = "delete from post.recomment where id =?";
+        String sql = "UPDATE post.recomment " +
+                "SET comment_text = '삭제된 댓글입니다.', updated_date = current_timestamp " +
+                "WHERE id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
         }
