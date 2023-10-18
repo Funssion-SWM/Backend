@@ -23,6 +23,7 @@ public class MemoListDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private String authorRank;
     private Long repliesCount;
     private Long questionCount;
     private Long likes;
@@ -42,6 +43,7 @@ public class MemoListDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.authorRank = memo.getRank();
         this.repliesCount = memo.getRepliesCount();
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();

@@ -4,6 +4,8 @@ import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
+import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.ScoreService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -34,6 +36,8 @@ class AnswerControllerTest {
     MockMvc mvc;
     @MockBean
     AnswerService answerService;
+    @MockBean
+    ScoreService scoreService;
 
     static final String AUTHORIZED_USER = "1";
     static final String UN_AUTHORIZED_USER = "999";
@@ -104,6 +108,7 @@ class AnswerControllerTest {
             @DisplayName("답변 고유 id로 한가지 답변만 가져왔는데, 자신의 게시글일 때")
             void getMyAnswerByQuestionId() throws Exception {
                 String questionId = "1";
+                Long Bronze_2_Score = 300L;
                 Long longTypeQuestionId = Long.valueOf(questionId);
 
                 Answer answerDomain = Answer.builder()
@@ -112,6 +117,7 @@ class AnswerControllerTest {
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
+                        .rank(Rank.BRONZE_2.toString())
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
                         .isSelected(false)
@@ -120,19 +126,23 @@ class AnswerControllerTest {
                         .text("답변 내용")
                         .build();
                 when(answerService.getAnswerBy(longTypeQuestionId)).thenReturn(answerDomain);
+                when(scoreService.getScore(answerDomain.getAuthorId())).thenReturn(Bronze_2_Score);
 
                 MvcResult result = mvc.perform(get("/answers/" + questionId))
                         .andExpect(status().isOk())
                         .andReturn();
                 String responseBody = result.getResponse().getContentAsString();
                 Boolean isAnswerIsMine = JsonPath.read(responseBody, "$.mine");
+                String rankOfUser = JsonPath.read(responseBody, "$.rank");
                 assertThat(isAnswerIsMine).isEqualTo(true);
+                assertThat(rankOfUser).isEqualTo(Rank.BRONZE_2.toString());
             }
             @Test
             @WithMockUser(username=UN_AUTHORIZED_USER)
             @DisplayName("권한없는 유저가 답변 고유 id로 한가지 답변만 가져온 경우")
             void getAnswerByQuestionId() throws Exception {
                 String questionId = "1";
+                Long Bronze_2_Score = 300L;
                 Long longTypeQuestionId = Long.valueOf(questionId);
 
                 Answer answerDomain = Answer.builder()
@@ -141,6 +151,7 @@ class AnswerControllerTest {
                         .authorName("1번답변작성자이룸")
                         .authorImagePath("1번답변작성자이미지경로")
                         .authorId(Long.valueOf(AUTHORIZED_USER))
+                        .rank(Rank.BRONZE_2.toString())
                         .createdDate(LocalDateTime.now())
                         .updatedDate(LocalDateTime.now())
                         .isSelected(false)
@@ -150,12 +161,15 @@ class AnswerControllerTest {
                         .build();
                 when(answerService.getAnswerBy(longTypeQuestionId)).thenReturn(answerDomain);
 
+
                 MvcResult result = mvc.perform(get("/answers/" + questionId))
                         .andExpect(status().isOk())
                         .andReturn();
                 String responseBody = result.getResponse().getContentAsString();
                 Boolean isAnswerIsMine = JsonPath.read(responseBody, "$.mine");
+                String rankOfUser = JsonPath.read(responseBody, "$.rank");
                 assertThat(isAnswerIsMine).isEqualTo(false);
+                assertThat(rankOfUser).isEqualTo(Rank.BRONZE_2.toString());
             }
         }
 

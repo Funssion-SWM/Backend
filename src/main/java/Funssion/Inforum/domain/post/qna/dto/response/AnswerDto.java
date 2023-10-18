@@ -22,6 +22,7 @@ public class AnswerDto {
     private boolean isLike;
     private boolean isDisLike;
     private boolean isMine;
+    private String rank;
 
     public AnswerDto(Answer answer,Long loginId){
         this.id = answer.getId();
@@ -39,5 +40,6 @@ public class AnswerDto {
         this.isLike = answer.isLike();
         this.isDisLike = answer.isDisLike();
         this.isMine = loginId.equals(this.authorId);
+        this.rank = answer.getRank();
     }
 }

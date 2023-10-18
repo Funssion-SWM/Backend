@@ -11,4 +11,5 @@ public class AuthorProfile {
     private final Long id;
     private final String name;
     private final String profileImagePath;
+    private final String rank;
 }

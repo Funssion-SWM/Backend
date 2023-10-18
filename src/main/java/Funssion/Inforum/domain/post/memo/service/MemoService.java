@@ -1,12 +1,12 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.constant.ScoreType;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
-import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -20,6 +20,8 @@ import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -34,18 +36,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.NotificationType.NEW_POST_FOLLOWED;
-import static Funssion.Inforum.common.constant.NotificationType.NEW_QUESTION;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
-import static Funssion.Inforum.common.constant.PostType.QUESTION;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
-import static Funssion.Inforum.common.utils.CustomStringUtils.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.getSearchStringList;
 
 @Service
 @Slf4j
@@ -55,9 +54,12 @@ public class MemoService {
     @Value("${aws.s3.memo-dir}")
     private String MEMO_DIR;
 
+    private final ScoreService scoreService;
+
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
     private final MyRepository myRepository;
+    private final ScoreRepository scoreRepository;
     private final S3Repository s3Repository;
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
@@ -98,6 +100,7 @@ public class MemoService {
 
         if (!form.getIsTemporary()) {
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
+            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getId());
             sendNotificationToFollower(authorId, createdMemo);
         }
 
@@ -219,6 +222,7 @@ public class MemoService {
 
         if (!willBeDeletedMemo.getIsTemporary()) {
             myRepository.updateHistory(userId, MEMO, MINUS, willBeDeletedMemo.getCreatedDate().toLocalDate());
+            scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,willBeDeletedMemo.getId());
             notificationRepository.delete(MEMO, willBeDeletedMemo.getId());
         }
     }

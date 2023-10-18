@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.comment.service;
 
-import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
@@ -18,9 +18,9 @@ import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
-import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.profile.ProfileRepository;
-import Funssion.Inforum.domain.profile.domain.AuthorProfile;
+import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.ScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,15 +29,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.NotificationType.*;
-import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_COMMENT;
+import static Funssion.Inforum.common.constant.PostType.COMMENT;
+import static Funssion.Inforum.common.constant.PostType.RECOMMENT;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentService {
+    private final ScoreService scoreService;
+
     private final CommentRepository commentRepository;
     private final MyRepository myRepository;
+    private final ScoreRepository scoreRepository;
     private final ProfileRepository profileRepository;
     private final NotificationRepository notificationRepository;
 
@@ -53,6 +57,8 @@ public class CommentService {
         Comment createdComment = commentRepository.createComment(new Comment(
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
+        if(scoreRepository.findCommentScoreHistoryInfoById(authorId).isEmpty())
+            scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_COMMENT,createdComment.getId());
         commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), createdComment.getPostId());
         sendNotificationToPostAuthor(
                 commentSaveDto.getPostTypeWithComment(),
@@ -74,6 +80,7 @@ public class CommentService {
                         .senderId(createdComment.getAuthorId())
                         .senderName(createdComment.getAuthorName())
                         .senderImagePath(createdComment.getAuthorImagePath())
+                        .senderRank(createdComment.getRank())
                         .senderPostType(COMMENT)
                         .senderPostId(createdComment.getId())
                         .notificationType(NEW_COMMENT)
@@ -90,6 +97,7 @@ public class CommentService {
     public IsSuccessResponseDto deleteComment(Long commentId) {
         PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
+        scoreService.subtractUserScore(commentRepository.findAuthorIdByCommentId(commentId,false),ScoreType.MAKE_COMMENT,commentId);
         notificationRepository.delete(COMMENT, commentId);
         return commentRepository.deleteComment(commentId);
     }
@@ -144,6 +152,7 @@ public class CommentService {
                         .senderId(createdReComment.getAuthorId())
                         .senderName(createdReComment.getAuthorName())
                         .senderImagePath(createdReComment.getAuthorImagePath())
+                        .senderRank(createdReComment.getRank())
                         .senderPostType(RECOMMENT)
                         .senderPostId(createdReComment.getId())
                         .notificationType(NEW_COMMENT)

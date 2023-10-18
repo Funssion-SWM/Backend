@@ -3,7 +3,6 @@ package Funssion.Inforum.domain.notification.repository;
 import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.etc.DeleteFailException;
-import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.notification.domain.Notification;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -25,9 +24,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
     @Override
     public void save(Notification notification) {
-        String sql = "INSERT INTO member.notification(receiver_id, receiver_post_type, receiver_post_id, sender_id, sender_name, sender_image_path, sender_post_type, sender_post_id, notification_type) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+        String sql = "insert into member.notification(receiver_id, receiver_post_type, receiver_post_id, sender_id, sender_name, sender_image_path, sender_rank,sender_post_type, sender_post_id, notification_type) " +
+                "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         template.update(sql, getAllParams(notification));
     }
 
@@ -39,6 +38,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         params.add(notification.getSenderId());
         params.add(notification.getSenderName());
         params.add(notification.getSenderImagePath());
+        params.add(notification.getSenderRank());
         params.add(nullableEnumToString(notification.getSenderPostType()));
         params.add(notification.getSenderPostId());
         params.add(nullableEnumToString(notification.getNotificationType()));
@@ -87,6 +87,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .senderPostId(rs.getLong("sender_post_id"))
                 .notificationType(NotificationType.of(rs.getString("notification_type")))
                 .created(rs.getTimestamp("created").toLocalDateTime())
+                .senderRank(rs.getString("sender_rank"))
                 .build();
     }
 }

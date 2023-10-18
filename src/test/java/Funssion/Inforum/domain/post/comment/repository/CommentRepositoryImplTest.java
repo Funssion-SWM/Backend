@@ -12,6 +12,7 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
 import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class CommentRepositoryImplTest {
     @Autowired
     CommentRepository commentRepository;
 
-    private MemberProfileEntity testUserProfileEntity = new MemberProfileEntity("회원 프로필 이미지 저장 경로", "회원 닉네임", "회원 자기소개", List.of("tag1,tag2"));
+    private MemberProfileEntity testUserProfileEntity = new MemberProfileEntity("회원 프로필 이미지 저장 경로", Rank.BRONZE_5.toString(), "회원 닉네임", "회원 자기소개", List.of("tag1,tag2"));
 
     @BeforeEach
     void beforeEach() {
@@ -45,7 +46,7 @@ class CommentRepositoryImplTest {
                 LocalDateTime.now(),
                 null,
                 new CommentSaveDto(PostType.MEMO, 1L, "댓글 내용 저장"));
-        commentRepository.createComment(comment);
+         commentRepository.createComment(comment);
     }
 
 

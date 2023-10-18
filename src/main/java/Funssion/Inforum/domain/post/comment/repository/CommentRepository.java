@@ -12,6 +12,7 @@ import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CommentRepository {
     Comment createComment(Comment comment);
@@ -46,4 +47,6 @@ public interface CommentRepository {
 
     void plusCommentsCountOfPost(PostType postType, Long postId);
     void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo);
+
+    Optional<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long postId);
 }
