@@ -49,7 +49,7 @@ public class SeriesService {
 
         Long seriesId = createSeriesAndGetSeriesId(seriesRequestDto, authorId, uploadedImagePath);
 
-        memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesRequestDto.getTitle(), authorId, seriesRequestDto.getMemoIdList());
 
         return new SeriesCreateResponseDto(seriesId);
     }
@@ -113,7 +113,7 @@ public class SeriesService {
     ) {
         deleteSeriesInfoInOtherStorage(seriesId, authorId, thumbnailImage, isEmpty);
         updateSeries(seriesId, seriesRequestDto, thumbnailImage, authorId, isEmpty);
-        memoRepository.updateSeriesIds(seriesId, authorId, seriesRequestDto.getMemoIdList());
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesRequestDto.getTitle(), authorId, seriesRequestDto.getMemoIdList());
 
         return getSeriesResponse(seriesId);
     }

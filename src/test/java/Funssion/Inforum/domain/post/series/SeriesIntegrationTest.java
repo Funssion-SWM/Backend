@@ -141,8 +141,8 @@ public class SeriesIntegrationTest {
         Long seriesId1 = seriesRepository.create(series1);
         Long seriesId2 = seriesRepository.create(series2);
 
-        memoRepository.updateSeriesIds(seriesId1, USER_ID_1, List.of(createdMemo1.getId()));
-        memoRepository.updateSeriesIds(seriesId2, USER_ID_2, List.of(createdMemo4.getId()));
+        memoRepository.updateSeriesIdAndTitle(seriesId1, series1.getTitle(), USER_ID_1, List.of(createdMemo1.getId()));
+        memoRepository.updateSeriesIdAndTitle(seriesId2, series2.getTitle(), USER_ID_2, List.of(createdMemo4.getId()));
 
         createdSeries1 = seriesRepository.findById(seriesId1).get();
         createdSeries2 = seriesRepository.findById(seriesId2).get();

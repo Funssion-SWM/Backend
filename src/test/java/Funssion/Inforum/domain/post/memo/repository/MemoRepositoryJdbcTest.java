@@ -45,6 +45,10 @@ class MemoRepositoryJdbcTest {
     List<String> testTags = new ArrayList<>(Arrays.asList(testTagsStringList));
     Long userId1 = 9999L;
     Long userId2 = 10000L;
+    Long testSeriesId = 9999L;
+    Long testSeriesId2 = 10000L;
+    String testSeriesTitle1 = "java";
+    String testSeriesTitle2 = "java2";
     MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,false);
     MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green", testTags,false);
     MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue",testTags, false);
@@ -177,22 +181,19 @@ class MemoRepositoryJdbcTest {
         }
 
         @Nested
-        @DisplayName("메모 여러 개의 series_id 수정")
-        class updateSeriesIds {
-
-            Long testSeriesId = 9999L;
-            Long testSeriesId2 = 10000L;
+        @DisplayName("메모 여러 개의 series_id, series_title 수정")
+        class updateSeriesIdAndTitle {
             @Test
             @DisplayName("성공 케이스")
             void success() {
                 List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId());
-                repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList);
+                repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId1, testMemoIdList);
                 List<Memo> updatedMemoList = repository.findAllBySeriesId(testSeriesId);
 
                 assertThat(updatedMemoList).containsExactly(createdMemo, createdMemo2);
 
                 List<Long> testOneMemoIdList = List.of(createdMemo3.getId());
-                repository.updateSeriesIds(testSeriesId2, userId2, testOneMemoIdList);
+                repository.updateSeriesIdAndTitle(testSeriesId2, testSeriesTitle2, userId2, testOneMemoIdList);
                 List<Memo> updatedOneMemoList = repository.findAllBySeriesId(testSeriesId2);
 
                 assertThat(updatedOneMemoList).containsExactly(createdMemo3);
@@ -203,7 +204,7 @@ class MemoRepositoryJdbcTest {
             void exMemoNotFound() {
                 List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId(), Long.MAX_VALUE);
 
-                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList))
+                assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId1, testMemoIdList))
                         .isInstanceOf(UpdateFailException.class);
             }
 
@@ -212,7 +213,7 @@ class MemoRepositoryJdbcTest {
             void exUpdateAnotherMemo() {
                 List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId(), createdMemo3.getId());
 
-                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList))
+                assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId1, testMemoIdList))
                         .isInstanceOf(UpdateFailException.class);
             }
 
@@ -221,7 +222,7 @@ class MemoRepositoryJdbcTest {
             void exUpdateTemporaryMemo() {
                 List<Long> testMemoIdList = List.of(createdMemo3.getId(), createdMemo4.getId());
 
-                assertThatThrownBy(() -> repository.updateSeriesIds(testSeriesId, userId2, testMemoIdList))
+                assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId2, testMemoIdList))
                         .isInstanceOf(UpdateFailException.class);
             }
 
@@ -230,7 +231,7 @@ class MemoRepositoryJdbcTest {
             void deleteMemosInSeries() {
                 // 시리즈 생성
                 List<Long> testMemoIdList = List.of(createdMemo.getId(), createdMemo2.getId());
-                repository.updateSeriesIds(testSeriesId, userId1, testMemoIdList);
+                repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId1, testMemoIdList);
                 List<Memo> updatedMemoList = repository.findAllBySeriesId(testSeriesId);
                 // 시리즈에서 삭제
                 repository.updateSeriesIdsToZero(testSeriesId, userId1);

@@ -30,7 +30,7 @@ public class MemoListDto {
     private List<String> memoTags;
     private Boolean isTemporary;
     private Long seriesId;
-
+    private String seriesTitle;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -48,6 +48,7 @@ public class MemoListDto {
         this.isTemporary = memo.getIsTemporary();
         this.questionCount = memo.getQuestionCount();
         this.seriesId = memo.getSeriesId();
+        this.seriesTitle = memo.getSeriesTitle();
 
         setMemoTagsLimit(2);
     }

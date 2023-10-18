@@ -179,6 +179,8 @@ CREATE TABLE post.memo (
     replies_count int8 not null default 0,
     is_created boolean NOT NULL DEFAULT true,
     question_count int8 not null default 0,
+    series_id int8 null,
+    series_title varchar(255) null,
     constraint non_negative_question_count check (question_count >= 0)
 );
 
