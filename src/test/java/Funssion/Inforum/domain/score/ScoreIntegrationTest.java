@@ -344,7 +344,7 @@ class ScoreIntegrationTest {
         }
 
         @Test
-        @DisplayName("당일 삭제시 점수 차감여부 확인 - 답변 확인")
+        @DisplayName("당일 삭제시 점수 차감여부 확인 - 댓글 확인")
         void deleteCommentThenScoreUpdated(){
             MemoDto memoDto = createMemo();//saveMemberIdForEachTest 유저가 메모작성
             Comment comment = commentService.createComment(CommentSaveDto.builder()
@@ -355,6 +355,9 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getScore(comment.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(comment.getAuthorId(), ScoreType.MAKE_COMMENT, comment.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(comment.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            commentService.deleteComment(comment.getId());
+            assertThat(scoreRepository.getScore(comment.getAuthorId())).isEqualTo(0L);
+
         }
         @Test
         @DisplayName("좋아요를 취소하면 랭크와 점수가 일치하지 않을 때 등급이 하락하는지 확인")
