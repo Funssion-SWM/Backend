@@ -92,16 +92,13 @@ public class CommentRepositoryImpl implements CommentRepository{
         String sql = "select post_id, post_type from post.comment where id = ?";
         return template.queryForObject(sql,postIdAndPostTypeRowMapper(),commentId);
     }
-    public Optional<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long commentId){
+    public List<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long commentId){
         PostInfo postInfoOfComment = getPostInfoOfComment(userId, commentId);
 
         String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
                 " from post.comment where author_id = ? and post_type = ? and post_id = ? and id != ?";
-        try {
-            return Optional.ofNullable(template.queryForObject(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId));
-        }catch(EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
+
+        return template.query(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId);
     }
     private PostInfo getPostInfoOfComment(Long userId, Long postId){
         String sql = "select post_id, post_type" +

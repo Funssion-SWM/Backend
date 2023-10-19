@@ -254,8 +254,9 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.findScoreHistoryInfoById(sameUserPostCommentOfSameMemo2.getAuthorId(), ScoreType.MAKE_COMMENT, sameUserPostCommentOfSameMemo2.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(sameUserPostCommentOfSameMemo1.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore() * 2);
         }
+
         @Test
-        @DisplayName("같은 글에 댓글을 2개이상 등록하고, 최초 등록 댓글을 삭제할 경우, 나머지 댓글로 점수를 다시 반영한다.")
+        @DisplayName("같은 글에 댓글을 3개이상 등록하고, 최초 등록 댓글을 삭제할 경우, 나머지 댓글로 점수를 다시 반영한다.")
         void onlyOneCommentOfPostApplyScoreWhenDeleteFirstComment(){
             MemoDto memoDto = createMemo();//saveMemberIdForEachTest 유저가 메모작성
             Comment sameUserPostCommentOfSameMemo1 = commentService.createComment(CommentSaveDto.builder()
@@ -264,6 +265,11 @@ class ScoreIntegrationTest {
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
                     .build(), saveMemberId);
             Comment sameUserPostCommentOfSameMemo2 = commentService.createComment(CommentSaveDto.builder()
+                    .postId(memoDto.getMemoId())
+                    .postTypeWithComment(PostType.MEMO)
+                    .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
+                    .build(), saveMemberId);
+            Comment sameUserPostCommentOfSameMemo3 = commentService.createComment(CommentSaveDto.builder()
                     .postId(memoDto.getMemoId())
                     .postTypeWithComment(PostType.MEMO)
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
