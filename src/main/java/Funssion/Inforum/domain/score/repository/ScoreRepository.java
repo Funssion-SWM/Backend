@@ -77,19 +77,6 @@ public class ScoreRepository {
         }
     }
 
-    /**
-     * Comment의 경우 최초 등록한 댓글에만 점수를 반영합니다.
-     * 또한 두개의 댓글이 존재하고 한개가 삭제되면, 남은 댓글이 있으므로 이를 통해 점수를 재 반영합니다.
-     */
-    public Optional<Score> findCommentScoreHistoryInfoById(Long userId){
-        String sql = "select user_id,score_type,score,post_id,created_date from score.info where user_id = ? and score_type = 'MAKE_COMMENT'";
-        try {
-            return Optional.ofNullable(template.queryForObject(sql, scoreHistoryRowMapper(), userId));
-        }catch(EmptyResultDataAccessException e){
-            return Optional.empty();
-        }
-    }
-
 
     private RowMapper<Score> scoreHistoryRowMapper(){
         return new RowMapper<Score>() {
