@@ -32,7 +32,7 @@ public class CommentController {
     public IsSuccessResponseDto createComment(@RequestBody CommentSaveDto commentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
         commentService.createComment(commentSaveDto,authorId);
-        return new IsSuccessResponseDto(true,"댓글 저장에 성공하였습니다.");
+        return new IsSuccessResponseDto(true,"댓글이 둥록되었습니다.");
     }
 
     @PatchMapping("/{commentId}")

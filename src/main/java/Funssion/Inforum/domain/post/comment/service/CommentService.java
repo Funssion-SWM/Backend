@@ -141,7 +141,7 @@ public class CommentService {
 
         sendNotification(authorId, parentCommentId, createdRecomment);
 
-        return new IsSuccessResponseDto(true,"대댓글 저장에 성공하였습니다.");
+        return new IsSuccessResponseDto(true,"대댓글이 등록되었습니다.");
     }
 
     private void sendNotification(Long authorId, Long parentCommentId, ReComment createdRecomment) {
