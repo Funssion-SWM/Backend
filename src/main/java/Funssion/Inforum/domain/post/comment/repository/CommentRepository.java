@@ -49,4 +49,5 @@ public interface CommentRepository {
     void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo);
 
     Optional<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long postId);
+
 }

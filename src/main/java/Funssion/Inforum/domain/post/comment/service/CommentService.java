@@ -54,6 +54,11 @@ public class CommentService {
      * 로그인된 유저의 정보를 가져와
      * 이를 활용하여 profile을 가져옵니다.
      */
+
+    /**
+     * Comment의 경우 최초 등록한 댓글에만 점수를 반영합니다.
+     * 또한 두개의 댓글이 존재하고 한개가 삭제되면, 남은 댓글이 있으므로 이를 통해 점수를 재 반영합니다.
+     */
     @Transactional
     public Comment createComment(CommentSaveDto commentSaveDto, Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
@@ -61,7 +66,7 @@ public class CommentService {
         Comment createdComment = commentRepository.createComment(new Comment(
                 authorId, authorProfile, LocalDateTime.now(), null, commentSaveDto)
         );
-        if(scoreRepository.findCommentScoreHistoryInfoById(authorId).isEmpty())
+        if(commentRepository.findIfUserRegisterAnotherCommentOfPost(authorId, createdComment.getId()).isEmpty())
             scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_COMMENT,createdComment.getId());
         commentRepository.plusCommentsCountOfPost(commentSaveDto.getPostTypeWithComment(), createdComment.getPostId());
         sendNotificationToPostAuthor(

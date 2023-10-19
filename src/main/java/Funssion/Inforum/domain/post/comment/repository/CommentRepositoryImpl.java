@@ -93,21 +93,20 @@ public class CommentRepositoryImpl implements CommentRepository{
         return template.queryForObject(sql,postIdAndPostTypeRowMapper(),commentId);
     }
     public Optional<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long commentId){
-        Comment commentUserWantsToDelete = findCommentUserWantsToDelete(userId, commentId);
+        PostInfo postInfoOfComment = getPostInfoOfComment(userId, commentId);
 
         String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
                 " from post.comment where author_id = ? and post_type = ? and post_id = ? and id != ?";
         try {
-            return Optional.ofNullable(template.queryForObject(sql, commentRowMapper(), userId,commentUserWantsToDelete.getPostTypeWithComment().toString(),commentUserWantsToDelete.getPostId(),commentId));
+            return Optional.ofNullable(template.queryForObject(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId));
         }catch(EmptyResultDataAccessException e){
             return Optional.empty();
         }
     }
-    private Comment findCommentUserWantsToDelete(Long userId, Long postId){
-        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
+    private PostInfo getPostInfoOfComment(Long userId, Long postId){
+        String sql = "select post_id, post_type" +
                 " from post.comment where author_id = ? and id = ?";
-        return template.queryForObject(sql, commentRowMapper(), userId,postId);
-
+        return template.queryForObject(sql, postInfoRowMapper(), userId,postId);
     }
     @Override
     public IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId) {
@@ -383,6 +382,26 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .build());
     };
 
+    private class PostInfo {
+        private final Long postId;
+        private final PostType postType;
+
+        public PostInfo(Long postId, PostType postType) {
+            this.postId = postId;
+            this.postType = postType;
+        }
+
+        private Long getPostId() {
+            return postId;
+        }
+
+        private PostType getPostType() {
+            return postType;
+        }
+    }
+    private RowMapper<PostInfo> postInfoRowMapper() {
+        return ((rs,rowNum) -> new PostInfo(rs.getLong("post_id"), PostType.valueOf(rs.getString("post_type"))));
+    };
     private RowMapper<Comment> commentRowMapper() {
         return ((rs,rowNum)->
                 Comment.builder()
