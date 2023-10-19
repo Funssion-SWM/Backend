@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.score.service;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.score.Rank;
@@ -89,10 +90,15 @@ public class ScoreService {
 
     private void handleSpecialCaseOfComment(Long userId, ScoreType scoreType, Optional<Score> scoreHistoryInfoById) {
         if(scoreType == ScoreType.MAKE_COMMENT){
-            commentRepository.findIfUserRegisterAnotherCommentOfPost(userId, scoreHistoryInfoById.get().getPostId()).ifPresent(anotherComment ->
-                    checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_COMMENT,anotherComment.getId())
-            );
+            List<Comment> registeredCommentsList = commentRepository.findIfUserRegisterAnotherCommentOfPost(userId, scoreHistoryInfoById.get().getPostId());
+            if(isAotherCommentIn(registeredCommentsList)) {
+                checkUserDailyScoreAndAdd(userId, ScoreType.MAKE_COMMENT, registeredCommentsList.get(0).getId());
+            };
         }
+    }
+
+    private static boolean isAotherCommentIn(List<Comment> registeredCommentsList) {
+        return registeredCommentsList.size() != 0;
     }
 
 
