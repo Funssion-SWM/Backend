@@ -256,6 +256,7 @@ create table score.info (
     -- score은 해당 작업으로 벌어들인 점수를 의미하며, 하루 최대 제한을 넘겼을 경우에 고정된 타입의 점수와 다를 경우를 추적하기 위함입니다.
     score int8 not null,
     post_id int8 not null,
+    liked_author_id int8 null;
     created_date timestamp default current_timestamp,
     primary key (user_id,score_type,post_id)
 );

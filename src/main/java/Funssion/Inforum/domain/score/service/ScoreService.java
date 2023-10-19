@@ -1,9 +1,12 @@
-package Funssion.Inforum.domain.score;
+package Funssion.Inforum.domain.score.service;
 
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
+import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,7 @@ public class ScoreService {
 
 
     @Transactional
-    public Rank checkUserDailyScoreAndAdd(Long userId, ScoreType scoreType,Long postId){
+    public Rank checkUserDailyScoreAndAdd(Long userId, ScoreType scoreType, Long postId){
         UpdatedUserScoreInfo updatedUserScoreInfo = getUpdatedUserScoreInfo(userId, scoreType);
         Rank beforeRank = Rank.valueOf(scoreRepository.getRank(userId));
         if(doesUserScoreModify(updatedUserScoreInfo.addScore())){

@@ -9,7 +9,7 @@ import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.score.Rank;
-import Funssion.Inforum.domain.score.ScoreRepository;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

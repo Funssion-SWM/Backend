@@ -5,7 +5,7 @@ import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.score.Rank;
-import Funssion.Inforum.domain.score.ScoreService;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;

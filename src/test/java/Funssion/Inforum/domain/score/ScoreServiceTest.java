@@ -3,6 +3,9 @@ package Funssion.Inforum.domain.score;
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
+import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,8 +21,8 @@ import java.util.Optional;
 
 import static Funssion.Inforum.domain.score.Rank.BRONZE_1;
 import static Funssion.Inforum.domain.score.Rank.SILVER_5;
-import static Funssion.Inforum.domain.score.Score.LIMIT_DAILY_SCORE;
-import static Funssion.Inforum.domain.score.ScoreService.*;
+import static Funssion.Inforum.domain.score.domain.Score.LIMIT_DAILY_SCORE;
+import static Funssion.Inforum.domain.score.service.ScoreService.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 

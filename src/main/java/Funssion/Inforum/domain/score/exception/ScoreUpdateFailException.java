@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.score;
+package Funssion.Inforum.domain.score.exception;
 
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 
