@@ -156,7 +156,7 @@ public class CommentService {
             sendNotificationToCommentAuthor(
                     recomment.getAuthorId(),
                     RECOMMENT,
-                    recomment.getId(),
+                    parentCommentId,
                     createdRecomment,
                     noticedUserIdList
             );
@@ -187,14 +187,11 @@ public class CommentService {
 
     private PostIdAndTypeInfo getPostInfoToShowInRecomment(PostType postTypeWithRecomment, Long postIdWithRecomment) {
         switch (postTypeWithRecomment) {
-            case COMMENT -> {
+            case COMMENT, RECOMMENT -> {
                 PostIdAndTypeInfo postIdAndTypeInfoToShowInComment = commentRepository.getPostIdByCommentId(postIdWithRecomment);
                 return getPostInfoToShowInComment(
                         postIdAndTypeInfoToShowInComment.getPostType(),
                         postIdAndTypeInfoToShowInComment.getPostId());
-            }
-            case RECOMMENT -> {
-                return getPostInfoToShowInRecomment(COMMENT, postIdWithRecomment);
             }
             default -> throw new BadRequestException("대댓글을 달 수 없는 게시물입니다.");
         }

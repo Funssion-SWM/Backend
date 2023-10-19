@@ -119,8 +119,8 @@ CREATE TABLE member.like_comment (
 CREATE TABLE "member".notification (
     id bigserial PRIMARY KEY,
     receiver_id int8 NOT NULL,
-    receiver_post_type varchar(10),
-    receiver_post_id int8,
+    post_type_to_show varchar(10),
+    post_id_to_show int8,
     sender_id int8 NOT NULL,
     sender_name varchar(15) NOT NULL,
     sender_image_path varchar(300),

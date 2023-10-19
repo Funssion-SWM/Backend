@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
@@ -75,19 +77,22 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void sendNotification(Long memoId, Question createdQuestion) {
-        if (memoId.toString().equals(Constant.NONE_MEMO_QUESTION)) return;
-        Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
-        sendNotificationToLinkedMemoAuthor(receiverId, memoId, createdQuestion);
-        sendNotificationToFollower(receiverId, createdQuestion);
+        ArrayList<Long> noticedUserList = new ArrayList<>();
+        noticedUserList.add(createdQuestion.getAuthorId());
+        sendNotificationToLinkedMemoAuthor(memoId, createdQuestion, noticedUserList);
+        sendNotificationToFollower(createdQuestion, noticedUserList);
     }
 
-    private void sendNotificationToLinkedMemoAuthor(Long receiverId, Long receiverPostId, Question createdQuestion) {
-        if (receiverId.equals(createdQuestion.getAuthorId())) return;
+    private void sendNotificationToLinkedMemoAuthor(Long memoId, Question createdQuestion, ArrayList<Long> noticedUserList) {
+        if (memoId.toString().equals(Constant.NONE_MEMO_QUESTION)) return;
+
+        Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
+
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
-                        .postTypeToShow(MEMO)
-                        .postIdToShow(receiverPostId)
+                        .postTypeToShow(QUESTION)
+                        .postIdToShow(createdQuestion.getId())
                         .senderId(createdQuestion.getAuthorId())
                         .senderPostType(QUESTION)
                         .senderRank(createdQuestion.getRank())
@@ -97,14 +102,14 @@ public class QuestionServiceImpl implements QuestionService {
                         .notificationType(NEW_QUESTION)
                         .build()
         );
+        noticedUserList.add(receiverId);
     }
 
-    private void sendNotificationToFollower(Long receivedUserId, Question createdQuestion) {
+    private void sendNotificationToFollower(Question createdQuestion, ArrayList<Long> noticedUserList) {
         List<Long> followerIdList =
                 followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
-
         for (Long receiverId : followerIdList) {
-            if (receiverId.equals(receivedUserId) || receiverId.equals(createdQuestion.getAuthorId())) continue;
+            if (noticedUserList.contains(receiverId)) continue;
             notificationRepository.save(
                     Notification.builder()
                             .receiverId(receiverId)
@@ -115,9 +120,11 @@ public class QuestionServiceImpl implements QuestionService {
                             .senderPostId(createdQuestion.getId())
                             .senderName(createdQuestion.getAuthorName())
                             .senderImagePath(createdQuestion.getAuthorImagePath())
+                            .senderRank(createdQuestion.getRank())
                             .notificationType(NEW_POST_FOLLOWED)
                             .build()
             );
+            noticedUserList.add(receiverId);
         }
     }
 

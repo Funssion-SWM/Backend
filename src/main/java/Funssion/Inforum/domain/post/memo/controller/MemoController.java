@@ -43,8 +43,7 @@ public class MemoController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping()
     public MemoDto addMemo(@Validated @RequestBody MemoSaveDto memoSaveDto) {
-        MemoDto memoDto = memoService.createMemo(memoSaveDto);
-        return memoDto;
+        return memoService.createMemo(memoSaveDto);
     }
 
     @GetMapping("/{id}")

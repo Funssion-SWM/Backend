@@ -130,6 +130,7 @@ public class MemoService {
                             .senderPostId(createdMemo.getId())
                             .senderName(createdMemo.getAuthorName())
                             .senderImagePath(createdMemo.getAuthorImagePath())
+                            .senderRank(createdMemo.getRank())
                             .notificationType(NEW_POST_FOLLOWED)
                             .build()
             );
@@ -230,7 +231,6 @@ public class MemoService {
     }
 
     private void checkDeletableInSeries(Long seriesId) {
-        System.out.println("seriesId = " + seriesId);
         if (Objects.nonNull(seriesId) && memoRepository.findAllBySeriesId(seriesId).size() <= 2)
             throw new BadRequestException("속한 시리즈의 남은 메모가 2개 이하가 되어 삭제할 수 없습니다. 시리즈를 먼저 삭제해주세요.");
     }

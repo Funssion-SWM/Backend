@@ -26,7 +26,6 @@ public class AnswerRepositoryImpl implements AnswerRepository {
 
     @Override
     public Answer createAnswer(Answer answer) {
-
         String sql = "insert into post.answer(question_id,author_id, author_name, author_image_path, text,author_rank) " +
                 "values(?,?,?,?,?::jsonb,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
