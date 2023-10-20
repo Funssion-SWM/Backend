@@ -44,8 +44,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into post.memo (author_id, author_name, author_image_path, title, description, text, color, tags, is_temporary, is_created, author_rank) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?,?);";
+        String sql = "INSERT into post.memo (author_id, author_name, author_image_path, title, description, text, color, tags, is_temporary, is_created, author_rank, series_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?);";
         List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
             PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
@@ -60,6 +60,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setBoolean(9, memo.getIsTemporary());
             psmt.setBoolean(10, !memo.getIsTemporary());
             psmt.setString(11,memo.getRank());
+            psmt.setObject(12,memo.getSeriesId());
             return psmt;
         }, keyHolder);
         long createdMemoId = keyHolder.getKey().longValue();
@@ -224,11 +225,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
         String sql = "update post.memo " +
-                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, updated_date = current_timestamp, is_temporary = ? " +
+                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, updated_date = current_timestamp, is_temporary = ?, series_id = ? " +
                 "where id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), form.getSeriesId(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {
@@ -241,12 +242,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated) {
 
         String sql = "update post.memo " +
-                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, created_date = current_timestamp, updated_date = current_timestamp, is_temporary = ? , is_created = ? " +
+                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, created_date = current_timestamp, updated_date = current_timestamp, is_temporary = ? , is_created = ?, series_id = ? " +
                 "where id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), isCreated
-                    , memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), isCreated, form.getSeriesId(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {

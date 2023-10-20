@@ -392,7 +392,7 @@ class QnAIntegrationTest {
                 "Backend","Java","Spring"
         };
         List<String> testTags = new ArrayList<>(Arrays.asList(testTagsStringList));
-        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,false);
+        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,null, false);
         Memo memo1 = Memo.builder()
                 .title(form1.getMemoTitle())
                 .text(form1.getMemoText())
