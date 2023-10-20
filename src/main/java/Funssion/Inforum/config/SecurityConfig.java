@@ -73,6 +73,7 @@ public class SecurityConfig {
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
                                 .requestMatchers(HttpMethod.GET,"/tags/**").permitAll()
                                 .requestMatchers("/oauth2/authorization/**").permitAll()

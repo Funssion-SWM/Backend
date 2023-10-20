@@ -137,20 +137,20 @@ class ScoreIntegrationTest {
             Long scoreOfComment = ScoreType.MAKE_COMMENT.getScore();
 
             Question question = makePureQuestion();
-            assertThat(scoreRepository.getScore(saveMemberId)).isEqualTo(scoreOfQuestion);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberId).getScore()).isEqualTo(scoreOfQuestion);
             Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberIdForEachTest);
-            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(scoreOfAnswer);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(scoreOfAnswer);
             assertThat(scoreRepository.getUserDailyScore(saveMemberIdForEachTest)).isEqualTo(scoreOfAnswer); //답변 채택은 daily score 에 포함되지 않음.
 
             answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion.getId());
-            assertThat(scoreRepository.getScore(saveMemberId)).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer);
-            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberId).getScore()).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
             assertThat(scoreRepository.getUserDailyScore(saveMemberIdForEachTest)).isEqualTo(scoreOfAnswer);//답변 채택은 daily score 에 포함되지 않음.
 
 
             setSecurityContextHolderForTestLikeMethod();
             likeService.likePost(PostType.ANSWER,answerOfQuestion.getId());
-            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(scoreOfBestAnswer + scoreOfAnswer + scoreOfLike);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(scoreOfBestAnswer + scoreOfAnswer + scoreOfLike);
             assertThat(scoreRepository.getUserDailyScore(saveMemberIdForEachTest)).isEqualTo(scoreOfAnswer); //좋아요 받음도 daily score 에 포함되지 않음
 
             commentService.createComment(CommentSaveDto.builder()
@@ -160,7 +160,7 @@ class ScoreIntegrationTest {
                     .build()
             , saveMemberId);
 
-            assertThat(scoreRepository.getScore(saveMemberId)).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer + scoreOfComment);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberId).getScore()).isEqualTo(scoreOfQuestion + scoreOfSelectingAnswer + scoreOfComment);
         }
 
         @Test
@@ -174,7 +174,7 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_5.toString());
 
             answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion.getId());
-            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
             assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_4.toString());
 
         }
@@ -184,9 +184,9 @@ class ScoreIntegrationTest {
         void addScoreWhenLikeAndUpdateRank(){
             Long howManyUserLikes = 50L;
             MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(50L);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(50L);
             manyUsersLikeMemo(howManyUserLikes,memoDto);
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore() + ScoreType.LIKE.getScore() * howManyUserLikes);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_MEMO.getScore() + ScoreType.LIKE.getScore() * howManyUserLikes);
             assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.SILVER_5.toString());
         }
 
@@ -198,7 +198,7 @@ class ScoreIntegrationTest {
             Long dailyScore = 180L;
             setUserScoreForTest(beforeTotalScore, dailyScore);
             createMemo();
-            assertThat(scoreRepository.getScore(saveMemberIdForEachTest)).isEqualTo(beforeTotalScore + Score.LIMIT_DAILY_SCORE - dailyScore);
+            assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(beforeTotalScore + Score.LIMIT_DAILY_SCORE - dailyScore);
         }
 
         @Test
@@ -208,11 +208,11 @@ class ScoreIntegrationTest {
 
             manyUsersLikeMemo(50L,memoDto); //매번 새로운 user설정해서 상황 가정함.
             assertThat(likeRepository.howManyLikesInPost(PostType.MEMO,memoDto.getMemoId())).isEqualTo(50);
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
             setSecurityContextHolderForTestLikeMethod();
             likeService.likePost(PostType.MEMO,memoDto.getMemoId());
             assertThat(likeRepository.howManyLikesInPost(PostType.MEMO,memoDto.getMemoId())).isEqualTo(51);
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.LIKE.getScore() * 50 + ScoreType.MAKE_MEMO.getScore());
         }
 
         @Test
@@ -229,7 +229,7 @@ class ScoreIntegrationTest {
                     .postTypeWithComment(PostType.MEMO)
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
                     .build(), saveMemberId);
-            assertThat(scoreRepository.getScore(sameUserPostCommentOfSameMemo1.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            assertThat(scoreRepository.getScoreAndRank(sameUserPostCommentOfSameMemo1.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(sameUserPostCommentOfSameMemo1.getAuthorId(), ScoreType.MAKE_COMMENT, sameUserPostCommentOfSameMemo1.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(sameUserPostCommentOfSameMemo1.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
         }
@@ -249,7 +249,7 @@ class ScoreIntegrationTest {
                     .postTypeWithComment(PostType.MEMO)
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
                     .build(), saveMemberId);
-            assertThat(scoreRepository.getScore(sameUserPostCommentOfSameMemo1.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore() * 2);
+            assertThat(scoreRepository.getScoreAndRank(sameUserPostCommentOfSameMemo1.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_COMMENT.getScore() * 2);
             assertThat(scoreRepository.findScoreHistoryInfoById(sameUserPostCommentOfSameMemo1.getAuthorId(), ScoreType.MAKE_COMMENT, sameUserPostCommentOfSameMemo1.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.findScoreHistoryInfoById(sameUserPostCommentOfSameMemo2.getAuthorId(), ScoreType.MAKE_COMMENT, sameUserPostCommentOfSameMemo2.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(sameUserPostCommentOfSameMemo1.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore() * 2);
@@ -274,10 +274,10 @@ class ScoreIntegrationTest {
                     .postTypeWithComment(PostType.MEMO)
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
                     .build(), saveMemberId);
-            assertThat(scoreService.getScore(saveMemberId)).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            assertThat(scoreService.getScoreAndRank(saveMemberId).getScore()).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
 
             commentService.deleteComment(sameUserPostCommentOfSameMemo1.getId());
-            assertThat(scoreService.getScore(saveMemberId)).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            assertThat(scoreService.getScoreAndRank(saveMemberId).getScore()).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
 
         }
         private void setUserScoreForTest(Long beforeTotalScore, Long dailyScore) {
@@ -292,25 +292,25 @@ class ScoreIntegrationTest {
         @DisplayName("당일 삭제시 점수 차감여부 확인 - 메모 확인")
         void deleteMemoThenScoreUpdated(){
             MemoDto memoDto = createMemo();//saveMemberIdForEachTest 유저가 메모작성
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore());
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_MEMO.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(memoDto.getAuthorId(), ScoreType.MAKE_MEMO, memoDto.getMemoId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore());
             memoService.deleteMemo(memoDto.getMemoId());
             assertThat(scoreRepository.findScoreHistoryInfoById(memoDto.getAuthorId(), ScoreType.MAKE_MEMO, memoDto.getMemoId()).isPresent()).isEqualTo(false);
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(0L);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(0L);
             assertThat(scoreRepository.getUserDailyScore(memoDto.getAuthorId())).isEqualTo(0L);
         }
         @Test
         @DisplayName("당일 삭제시 점수 차감여부 확인 - 질문 확인")
         void deleteQuestionThenScoreUpdated(){
             Question question = makePureQuestion();
-            assertThat(scoreRepository.getScore(question.getAuthorId())).isEqualTo(ScoreType.MAKE_QUESTION.getScore());
+            assertThat(scoreRepository.getScoreAndRank(question.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_QUESTION.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(question.getAuthorId(), ScoreType.MAKE_QUESTION, question.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(question.getAuthorId())).isEqualTo(ScoreType.MAKE_QUESTION.getScore());
 
             questionService.deleteQuestion(question.getId(),question.getAuthorId());
             assertThat(scoreRepository.findScoreHistoryInfoById(question.getAuthorId(), ScoreType.MAKE_QUESTION, question.getId()).isPresent()).isEqualTo(false);
-            assertThat(scoreRepository.getScore(question.getAuthorId())).isEqualTo(0L);
+            assertThat(scoreRepository.getScoreAndRank(question.getAuthorId()).getScore()).isEqualTo(0L);
             assertThat(scoreRepository.getUserDailyScore(question.getAuthorId())).isEqualTo(0L);
         }
         @Test
@@ -318,13 +318,13 @@ class ScoreIntegrationTest {
         void deleteAnswerThenScoreUpdated(){
             Question question = makePureQuestion();
             Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberIdForEachTest);
-            assertThat(scoreRepository.getScore(answerOfQuestion.getAuthorId())).isEqualTo(ScoreType.MAKE_ANSWER.getScore());
+            assertThat(scoreRepository.getScoreAndRank(answerOfQuestion.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_ANSWER.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(answerOfQuestion.getAuthorId(), ScoreType.MAKE_ANSWER, answerOfQuestion.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(answerOfQuestion.getAuthorId())).isEqualTo(ScoreType.MAKE_ANSWER.getScore());
 
             answerService.deleteAnswer(answerOfQuestion.getId(), answerOfQuestion.getAuthorId());
             assertThat(scoreRepository.findScoreHistoryInfoById(answerOfQuestion.getAuthorId(), ScoreType.MAKE_ANSWER, answerOfQuestion.getId()).isPresent()).isEqualTo(false);
-            assertThat(scoreRepository.getScore(answerOfQuestion.getAuthorId())).isEqualTo(0L);
+            assertThat(scoreRepository.getScoreAndRank(answerOfQuestion.getAuthorId()).getScore()).isEqualTo(0L);
             assertThat(scoreRepository.getUserDailyScore(answerOfQuestion.getAuthorId())).isEqualTo(0L);
         }
 
@@ -334,17 +334,17 @@ class ScoreIntegrationTest {
             MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
             Long likeUserId = setSecurityContextHolderForTestLikeMethod();
             likeService.likePost(PostType.MEMO,memoDto.getMemoId());
-            assertThat(scoreRepository.getScore(likeUserId)).isEqualTo(0L); //좋아요한 유저에 점수가 반영이되면 안됨.
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.LIKE.getScore() + ScoreType.MAKE_MEMO.getScore());
+            assertThat(scoreRepository.getScoreAndRank(likeUserId).getScore()).isEqualTo(0L); //좋아요한 유저에 점수가 반영이되면 안됨.
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.LIKE.getScore() + ScoreType.MAKE_MEMO.getScore());
             likeService.unlikePost(PostType.MEMO, memoDto.getMemoId());
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore());
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_MEMO.getScore());
             assertThat(scoreRepository.getUserDailyScore(memoDto.getAuthorId())).isEqualTo(ScoreType.MAKE_MEMO.getScore());
 
 
         }
 
         @Test
-        @DisplayName("당일 삭제시 점수 차감여부 확인 - 답변 확인")
+        @DisplayName("당일 삭제시 점수 차감여부 확인 - 댓글 확인")
         void deleteCommentThenScoreUpdated(){
             MemoDto memoDto = createMemo();//saveMemberIdForEachTest 유저가 메모작성
             Comment comment = commentService.createComment(CommentSaveDto.builder()
@@ -352,20 +352,23 @@ class ScoreIntegrationTest {
                     .postTypeWithComment(PostType.MEMO)
                     .commentText("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"메모 댓글 내용\", \"type\": \"text\"}]}]}")
                     .build(), saveMemberId);
-            assertThat(scoreRepository.getScore(comment.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            assertThat(scoreRepository.getScoreAndRank(comment.getAuthorId()).getScore()).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
             assertThat(scoreRepository.findScoreHistoryInfoById(comment.getAuthorId(), ScoreType.MAKE_COMMENT, comment.getId()).isPresent()).isEqualTo(true);
             assertThat(scoreRepository.getUserDailyScore(comment.getAuthorId())).isEqualTo(ScoreType.MAKE_COMMENT.getScore());
+            commentService.deleteComment(comment.getId());
+            assertThat(scoreRepository.getScoreAndRank(comment.getAuthorId()).getScore()).isEqualTo(0L);
+
         }
         @Test
         @DisplayName("좋아요를 취소하면 랭크와 점수가 일치하지 않을 때 등급이 하락하는지 확인")
         void addScoreWhenLikeAndUpdateRank(){
             MemoDto memoDto = createMemo();//saveMemberIdForTest 유저가 메모작성
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(50L);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(50L);
             manyUsersLikeMemo(5L,memoDto);
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(100L);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(100L);
             assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.BRONZE_4.toString());
             likeService.unlikePost(PostType.MEMO, memoDto.getMemoId());
-            assertThat(scoreRepository.getScore(memoDto.getAuthorId())).isEqualTo(90L);
+            assertThat(scoreRepository.getScoreAndRank(memoDto.getAuthorId()).getScore()).isEqualTo(90L);
             assertThat(scoreRepository.getRank(memoDto.getAuthorId())).isEqualTo(Rank.BRONZE_5.toString());
 
         }
@@ -386,7 +389,7 @@ class ScoreIntegrationTest {
         MemoDto memoDto = createMemo();
         Long memoAuthorId = mockingLoginUserOfId(memoDto.getAuthorId());
         likeService.likePost(PostType.MEMO, memoDto.getMemoId());
-        assertThat(scoreRepository.getScore(memoAuthorId)).isEqualTo(50L);
+        assertThat(scoreRepository.getScoreAndRank(memoAuthorId).getScore()).isEqualTo(50L);
         assertThat(scoreRepository.findScoreHistoryInfoById(memoAuthorId,ScoreType.LIKE,memoDto.getMemoId()).isEmpty()).isEqualTo(true);
     }
 

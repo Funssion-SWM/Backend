@@ -100,7 +100,7 @@ public class MyService {
     }
 
     public MyRankScoreDto getRankAndScoreOf(Long userId) {
-        Long userScore = scoreRepository.getScore(userId);
+        Long userScore = scoreRepository.getScoreAndRank(userId).getScore();
         Rank rankByScore = Rank.getRankByScore(userScore);
         return MyRankScoreDto.builder()
                 .myRank(rankByScore.toString())

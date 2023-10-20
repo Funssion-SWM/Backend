@@ -7,6 +7,8 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.score.Rank;
 import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.dto.ScoreRank;
+import Funssion.Inforum.domain.score.dto.UserInfoWithScoreRank;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -63,6 +65,10 @@ public class ScoreService {
         return new UpdatedUserScoreInfo(updateDailyScore, addScore);
     }
 
+    public List<UserInfoWithScoreRank> getTopTenUsers() {
+        return scoreRepository.getTopTenUsers();
+    }
+
     public record UpdatedUserScoreInfo (Long updateDailyScore, Long addScore) {
     }
 
@@ -109,8 +115,8 @@ public class ScoreService {
         }
         return scoreRepository.updateUserScoreAtOtherDay(userId, -scoreOfHistory.getScore());
     }
-    public Long getScore(Long userId){
-        return scoreRepository.getScore(userId);
+    public ScoreRank getScoreAndRank(Long userId){
+        return scoreRepository.getScoreAndRank(userId);
     }
 
     @Scheduled(cron = "0 00 00 * * ?")
