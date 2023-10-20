@@ -83,16 +83,17 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByUserIdOrderById(Long userId) {
-        String sql = "select * from post.memo where author_id = ? and is_temporary = false order by id desc";
-        return template.query(sql, memoRowMapper(), userId);
+    public List<Memo> findAllByUserIdOrderById(Long userId, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where author_id = ? and is_temporary = false order by id desc limit ? offset ?";
+        return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Memo> findAllLikedMemosByUserId(Long userId) {
+    public List<Memo> findAllLikedMemosByUserId(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql = "select * from post.memo i join member.like l on i.id = l.post_id and l.post_type = 'MEMO' " +
-                "where l.user_id = ? and is_temporary = false order by i.id desc";
-        return template.query(sql, memoRowMapper(), userId);
+                "where l.user_id = ? and is_temporary = false order by i.id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
@@ -104,10 +105,10 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
 
     @Override
-    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId) {
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId, Long pageNum, Long resultCntPerPage) {
         String sql = getSql(searchStringList, orderType, userId);
 
-        return template.query(sql, memoRowMapper(), getParams(userId, searchStringList));
+        return template.query(sql, memoRowMapper(), getParams(userId, searchStringList, pageNum, resultCntPerPage));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType, Long userId) {
         StringBuilder sql;
@@ -129,40 +130,48 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
         sql.append(getOrderBySql(orderType));
 
+        sql.append("LIMIT ? OFFSET ?");
+
         return sql.toString();
     }
 
-    private static Object[] getParams(Long userId, List<String> searchStringList) {
+    private static Object[] getParams(Long userId, List<String> searchStringList, Long pageNum, Long resultCntPerPage) {
         ArrayList<Object> params = new ArrayList<>();
         if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
             params.add(userId);
         }
         params.addAll(searchStringList);
         params.addAll(searchStringList);
+        params.add(resultCntPerPage);
+        params.add(resultCntPerPage * pageNum);
         return params.toArray();
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, OrderType orderType) {
-        String sql = "select * from post.memo where is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Memo> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where is_temporary = false and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, memoRowMapper(), tagText);
+        return template.query(sql, memoRowMapper(), tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType) {
-        String sql = "select * from post.memo where author_id = ? and is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where author_id = ? and is_temporary = false and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, memoRowMapper(), userId, tagText);
+        return template.query(sql, memoRowMapper(), userId, tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
-                return  " order by likes desc, id desc";
+                return  " order by likes desc, id desc ";
             }
             case NEW -> {
-                return  " order by id desc";
+                return  " order by id desc ";
             }
         }
         throw new BadRequestException("Invalid orderType value");

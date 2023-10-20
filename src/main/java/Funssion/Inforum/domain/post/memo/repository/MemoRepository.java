@@ -12,14 +12,14 @@ import java.util.List;
 public interface MemoRepository {
 
     Memo create(Memo memo);
-    List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt);
-    List<Memo> findAllOrderById(Long pageNum, Long memoCnt);
-    List<Memo> findAllByUserIdOrderById(Long userId);
-    List<Memo> findAllLikedMemosByUserId(Long userId);
+    List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long resultCntPerPage);
+    List<Memo> findAllOrderById(Long pageNum, Long resultCntPerPage);
+    List<Memo> findAllByUserIdOrderById(Long userId, Long pageNum, Long resultCntPerPage);
+    List<Memo> findAllLikedMemosByUserId(Long userId, Long pageNum, Long resultCntPerPage);
     List<Memo> findAllDraftMemosByUserId(Long userId);
-    List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId);
-    List<Memo> findAllByTag(String tagText, OrderType orderType);
-    List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType);
+    List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId, Long pageNum, Long resultCntPerPage);
+    List<Memo> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage);
+    List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage);
     List<Memo> findAllBySeriesId(Long seriesId);
     List<String> findTop3ColorsBySeriesId(Long seriesId);
     Memo findById(Long id);

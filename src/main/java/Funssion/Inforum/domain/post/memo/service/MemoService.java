@@ -64,21 +64,21 @@ public class MemoService {
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
 
-    public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long memoCnt) {
+    public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
 
-        return getMemos(orderBy, period, pageNum, memoCnt);
+        return getMemos(orderBy, period, pageNum, resultCntPerPage);
     }
 
-    private List<MemoListDto> getMemos(OrderType memoOrderType, DateType period, Long pageNum, Long memoCnt) {
+    private List<MemoListDto> getMemos(OrderType memoOrderType, DateType period, Long pageNum, Long resultCntPerPage) {
         switch (memoOrderType) {
             case NEW -> {
-                return memoRepository.findAllOrderById(pageNum, memoCnt)
+                return memoRepository.findAllOrderById(pageNum, resultCntPerPage)
                         .stream()
                         .map((MemoListDto::new))
                         .toList();
             }
             case HOT -> {
-                return memoRepository.findAllByDaysOrderByLikes(period, pageNum, memoCnt)
+                return memoRepository.findAllByDaysOrderByLikes(period, pageNum, resultCntPerPage)
                         .stream()
                         .map(MemoListDto::new)
                         .toList();
@@ -259,22 +259,24 @@ public class MemoService {
             String searchString,
             Long userId,
             OrderType orderBy,
-            Boolean isTag) {
+            Boolean isTag,
+            Long pageNum,
+            Long resultCntPerPage) {
 
         if (isTag)
-            return getMemoListDtosSearchedByTag(searchString, userId, orderBy);
+            return getMemoListDtosSearchedByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
 
-        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy, userId)
+        return memoRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy, userId, pageNum, resultCntPerPage)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();
     }
 
-    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, OrderType orderBy) {
+    private List<MemoListDto> getMemoListDtosSearchedByTag(String searchString, Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         List<Memo> result;
         if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
-            result = memoRepository.findAllByTag(searchString, orderBy);
-        else result = memoRepository.findAllByTag(searchString, userId, orderBy);
+            result = memoRepository.findAllByTag(searchString, orderBy, pageNum, resultCntPerPage);
+        else result = memoRepository.findAllByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
 
         return result.stream()
                 .map(MemoListDto::new)

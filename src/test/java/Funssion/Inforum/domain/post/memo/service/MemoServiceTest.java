@@ -305,10 +305,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("유저 ID, 태그로 메모 검색")
             void searchMemosByTagAndUserID() {
-                given(memoRepository.findAllByTag(any(), AdditionalMatchers.not(eq(SecurityContextUtils.ANONYMOUS_USER_ID)), any()))
+                given(memoRepository.findAllByTag(any(), AdditionalMatchers.not(eq(SecurityContextUtils.ANONYMOUS_USER_ID)), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo2, memo1));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", userID1, HOT, true);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", userID1, HOT, true, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto2, memoListDto1);
             }
@@ -316,10 +316,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("태그로 메모 검색")
             void searchMemosByTag() {
-                given(memoRepository.findAllByTag(any(), any()))
+                given(memoRepository.findAllByTag(any(), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo3, memo2));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, NEW, true);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, NEW, true, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto3, memoListDto2);
             }
@@ -327,10 +327,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("텍스트로 메모 검색")
             void searchMemosBySearchString() {
-                given(memoRepository.findAllBySearchQuery(any(), any(), any()))
+                given(memoRepository.findAllBySearchQuery(any(), any(), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo3, memo2, memo1));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, HOT, false);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, HOT, false, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto3, memoListDto2, memoListDto1);
             }

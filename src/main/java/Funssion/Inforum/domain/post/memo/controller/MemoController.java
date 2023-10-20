@@ -34,10 +34,10 @@ public class MemoController {
     public List<MemoListDto> getMemos(
             @RequestParam(required = false, defaultValue = "MONTH") DateType period,
             @RequestParam(required = false, defaultValue = "HOT") OrderType orderBy,
-            @RequestParam(required = false, defaultValue = "0") Long pageNum,
-            @RequestParam(required = false, defaultValue = "12") Long memoCnt
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
     ) {
-        return memoService.getMemosForMainPage(period, orderBy, pageNum, memoCnt);
+        return memoService.getMemosForMainPage(period, orderBy, pageNum, resultCntPerPage);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -74,13 +74,15 @@ public class MemoController {
             @RequestParam(required = false) String searchString,
             @RequestParam(required = false, defaultValue =  ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
-            @RequestParam Boolean isTag
+            @RequestParam Boolean isTag,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
     ) {
         if (userId.equals(ANONYMOUS_USER_ID) && (Objects.isNull(searchString) || searchString.isBlank())) {
             return new ArrayList<>();
         }
 
-        return memoService.searchMemosBy(searchString, userId, orderBy, isTag);
+        return memoService.searchMemosBy(searchString, userId, orderBy, isTag, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/drafts")

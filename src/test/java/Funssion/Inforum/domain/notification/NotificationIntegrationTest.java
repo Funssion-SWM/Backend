@@ -823,7 +823,7 @@ public class NotificationIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isCreated());
 
-            Memo savedMemo = memoRepository.findAllByUserIdOrderById(testUser2Id).get(0);
+            Memo savedMemo = memoRepository.findAllByUserIdOrderById(testUser2Id, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
             assertThat(savedMemo.getTitle()).isEqualTo("java");
             assertThat(savedMemo.getAuthorId()).isEqualTo(testUser2Id);
 
@@ -894,7 +894,7 @@ public class NotificationIntegrationTest {
                     .andExpect(status().isCreated())
                     .andExpect(content().string(containsString("\"isSuccess\":true")));
 
-            Question savedQuestion = questionRepository.getMyQuestions(testUser1Id, NEW).get(0);
+            Question savedQuestion = questionRepository.getMyQuestions(testUser1Id, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
             assertThat(savedQuestion.getMemoId()).isEqualTo(Long.valueOf(NONE_MEMO_QUESTION));
             assertThat(savedQuestion.getAuthorId()).isEqualTo(testUser1Id);
 
@@ -1002,7 +1002,7 @@ public class NotificationIntegrationTest {
                     .andExpect(status().isCreated())
                     .andExpect(content().string(containsString("\"isSuccess\":true")));
 
-            Question savedQuestion = questionRepository.getMyQuestions(testUser2Id, NEW).get(0);
+            Question savedQuestion = questionRepository.getMyQuestions(testUser2Id, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
             assertThat(savedQuestion.getMemoId()).isEqualTo(createdMemo.getId());
             assertThat(savedQuestion.getAuthorId()).isEqualTo(testUser2Id);
 

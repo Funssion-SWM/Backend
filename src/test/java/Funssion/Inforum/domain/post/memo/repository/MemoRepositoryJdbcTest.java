@@ -9,6 +9,7 @@ import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
+import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.score.Rank;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import static Funssion.Inforum.common.constant.DateType.DAY;
 import static Funssion.Inforum.common.constant.OrderType.NEW;
+import static Funssion.Inforum.domain.post.qna.Constant.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -324,7 +326,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("최신 순 특정 유저 메모 불러오기")
         void findAllByUserIdOrderByIdTest() {
-            List<Memo> memoList = repository.findAllByUserIdOrderById(userId1);
+            List<Memo> memoList = repository.findAllByUserIdOrderById(userId1, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(memoList.size()).isEqualTo(2);
             assertThat(memoList.get(0)).isEqualTo(createdMemo2);
@@ -333,7 +335,7 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("최신 순 좋아요한 메모 불러오기")
         void findAllLikedMemosByUserIdTest() {
-            List<Memo> likedMemoList = repository.findAllLikedMemosByUserId(userId1);
+            List<Memo> likedMemoList = repository.findAllLikedMemosByUserId(userId1, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(likedMemoList.size()).isEqualTo(2);
             assertThat(likedMemoList.get(0)).isEqualTo(createdMemo3);
@@ -356,7 +358,7 @@ class MemoRepositoryJdbcTest {
             searchStringList.add("%JDK란?%"); // memo2
             searchStringList.add("%jwt란?%"); // memo3
 
-            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, SecurityContextUtils.ANONYMOUS_USER_ID);
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, SecurityContextUtils.ANONYMOUS_USER_ID, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
 
             assertThat(foundMemoList).containsExactly(createdMemo3, createdMemo2, createdMemo);
         }
@@ -369,7 +371,7 @@ class MemoRepositoryJdbcTest {
             searchStringList.add("%JDK란?%"); // memo2
             searchStringList.add("%jwt란?%"); // memo3
 
-            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, userId1);
+            List<Memo> foundMemoList = repository.findAllBySearchQuery(searchStringList, NEW, userId1, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
 
             assertThat(foundMemoList).containsExactly(createdMemo2, createdMemo);
 
@@ -378,17 +380,17 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("메모 태그로 검색")
         void findAllByTag() {
-            List<Memo> foundByJavaTag = repository.findAllByTag("Java", NEW);
+            List<Memo> foundByJavaTag = repository.findAllByTag("Java", NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJavaTag).contains(createdMemo, createdMemo2, createdMemo3);
 
-            List<Memo> foundByLowerCaseJavaTag = repository.findAllByTag("java", NEW);
-            List<Memo> foundByUpperCaseJavaTag = repository.findAllByTag("JAVA", NEW);
+            List<Memo> foundByLowerCaseJavaTag = repository.findAllByTag("java", NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<Memo> foundByUpperCaseJavaTag = repository.findAllByTag("JAVA", NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJavaTag).isEqualTo(foundByLowerCaseJavaTag);
             assertThat(foundByJavaTag).isEqualTo(foundByUpperCaseJavaTag);
 
-            List<Memo> foundByJWTTag = repository.findAllByTag("JWT", NEW);
+            List<Memo> foundByJWTTag = repository.findAllByTag("JWT", NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJWTTag).contains(createdMemo3);
         }
@@ -396,17 +398,17 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("메모 태그와 유저 ID로 검색")
         void findAllByTagAndUserID() {
-            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", userId1, NEW);
+            List<Memo> foundByJavaTagAndUser = repository.findAllByTag("Java", userId1, NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJavaTagAndUser).contains(createdMemo, createdMemo2);
 
-            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", userId1,NEW);
-            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", userId1,NEW);
+            List<Memo> foundByLowerCaseJavaTagAndUser = repository.findAllByTag("java", userId1,NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
+            List<Memo> foundByUpperCaseJavaTagAndUser = repository.findAllByTag("JAVA", userId1,NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJavaTagAndUser).isEqualTo(foundByLowerCaseJavaTagAndUser);
             assertThat(foundByJavaTagAndUser).isEqualTo(foundByUpperCaseJavaTagAndUser);
 
-            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", userId2,NEW);
+            List<Memo> foundByJWTTagAndUser = repository.findAllByTag("JWT", userId2,NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
             assertThat(foundByJWTTagAndUser).contains(createdMemo3);
         }
