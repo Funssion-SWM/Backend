@@ -26,6 +26,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.dto.UserInfoWithScoreRank;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import Funssion.Inforum.domain.score.service.ScoreService;
 import org.junit.jupiter.api.BeforeEach;
@@ -391,6 +392,64 @@ class ScoreIntegrationTest {
         likeService.likePost(PostType.MEMO, memoDto.getMemoId());
         assertThat(scoreRepository.getScoreAndRank(memoAuthorId).getScore()).isEqualTo(50L);
         assertThat(scoreRepository.findScoreHistoryInfoById(memoAuthorId,ScoreType.LIKE,memoDto.getMemoId()).isEmpty()).isEqualTo(true);
+    }
+
+    @Nested
+    @DisplayName("랭킹 정보")
+    class ranking{
+        @Test
+        @DisplayName("유저의 순위가 공동순위로 표시되는지 확인")
+        void rankingListMustHaveSameRankingIfScoreIsSame(){
+            List<UserInfoWithScoreRank> topTenUsers = scoreService.getTopTenUsers();
+            assertThat(topTenUsers).hasSize(2);
+            assertThat(topTenUsers.get(0).getRanking()).isEqualTo(1);
+            assertThat(topTenUsers.get(1).getRanking()).isEqualTo(1);
+
+            createMemo();
+            List<UserInfoWithScoreRank> topTenUsersAfterCreatingMemo = scoreService.getTopTenUsers();
+            assertThat(topTenUsersAfterCreatingMemo.get(0).getRanking()).isEqualTo(1);
+            assertThat(topTenUsersAfterCreatingMemo.get(0).getScoreRank().getScore()).isEqualTo(50L);
+            assertThat(topTenUsersAfterCreatingMemo.get(1).getRanking()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("자기 순위 체크")
+        void myRanking(){
+            Long testerUserId = setTesterUserForRanking();
+            Question saveMemberIdCreatedQuestion = makePureQuestion();
+            AnswerSaveDto answerSaveDto = createAnswerSaveDto();
+            answerService.createAnswerOfQuestion(answerSaveDto,saveMemberIdCreatedQuestion.getId(),testerUserId);
+            UserInfoWithScoreRank myRank = scoreService.getMyRank(testerUserId);
+            UserInfoWithScoreRank questionAuthorRank = scoreService.getMyRank(saveMemberId);
+            UserInfoWithScoreRank userNothingDo = scoreService.getMyRank(saveMemberIdForEachTest);
+
+            assertThat(questionAuthorRank.getScoreRank().getScore()).isEqualTo(ScoreType.MAKE_QUESTION.getScore());
+            assertThat(questionAuthorRank.getRanking()).isEqualTo(1);
+            assertThat(userNothingDo.getScoreRank().getScore()).isEqualTo(0);
+            assertThat(userNothingDo.getRanking()).isEqualTo(3);
+
+            assertThat(myRank.getMemberProfileEntity().getUserId()).isEqualTo(testerUserId);
+            assertThat(myRank.getScoreRank().getScore()).isEqualTo(ScoreType.MAKE_ANSWER.getScore());
+            assertThat(myRank.getRanking()).isEqualTo(2);
+        }
+
+        private Long setTesterUserForRanking() {
+            MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                    .userName("tester")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .userPw("a1234567!")
+                    .userEmail("tester@gmail.com")
+                    .build();
+            MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                    .nickname(memberSaveDto.getUserName())
+                    .profileImageFilePath("taehoon-image")
+                    .introduce("introduce of taehoon")
+                    .userTags(List.of("tag1", "tag2"))
+                    .build();
+            SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+            myRepository.createProfile(saveMemberResponseDto.getId(), memberProfileEntity);
+            return saveMemberResponseDto.getId();
+        }
     }
 
     private void manyUsersLikeMemo(Long howManyUser , MemoDto memoDto){

@@ -68,6 +68,10 @@ public class ScoreService {
     public List<UserInfoWithScoreRank> getTopTenUsers() {
         return scoreRepository.getTopTenUsers();
     }
+    @Transactional(readOnly = true)
+    public UserInfoWithScoreRank getMyRank(Long id) {
+        return scoreRepository.getMyRank(id);
+    }
 
     public record UpdatedUserScoreInfo (Long updateDailyScore, Long addScore) {
     }
@@ -107,7 +111,7 @@ public class ScoreService {
         return registeredCommentsList.size() != 0;
     }
 
-
+    @Transactional
     public Long minusUserScoreWhetherTodayOrNot(Long userId, Long dailyScore, Score scoreOfHistory) {
         scoreRepository.deleteScoreHistory(scoreOfHistory);
         if(isDeleteToday(scoreOfHistory)) {
