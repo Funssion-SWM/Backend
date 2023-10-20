@@ -25,4 +25,8 @@ public class ScoreController {
     public List<UserInfoWithScoreRank> getTopTenUsers(){
         return scoreService.getTopTenUsers();
     }
+    @GetMapping("/rank/{id}")
+    public UserInfoWithScoreRank getMyRank(@PathVariable Long id){
+        return scoreService.getMyRank(id);
+    }
 }

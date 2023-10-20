@@ -11,4 +11,5 @@ import lombok.RequiredArgsConstructor;
 public class UserInfoWithScoreRank {
     private final MemberProfileEntity memberProfileEntity;
     private final ScoreRank scoreRank;
+    private final Long ranking;
 }

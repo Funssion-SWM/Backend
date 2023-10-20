@@ -108,10 +108,10 @@ public class ScoreRepository {
     }
 
     public List<UserInfoWithScoreRank> getTopTenUsers() {
-        String sql = "SELECT id, name, image_path, score, rank " +
+        String sql = "SELECT id, name, image_path, score, rank, RANK() over " +
+                "(ORDER BY score DESC) ranking "+
                 "FROM member.info " +
                 "WHERE is_deleted = false " +
-                "ORDER BY score DESC " +
                 "LIMIT 10";
         return template.query(sql,userInfoWithScoreRankRowMapper());
     }
@@ -141,7 +141,20 @@ public class ScoreRepository {
                                 .build())
                         .scoreRank(ScoreRank.builder().score(rs.getLong("score"))
                                         .rank(Rank.valueOf(rs.getString("rank"))).build())
+                        .ranking(rs.getLong("ranking"))
                     .build();
         };
+    }
+
+
+    public UserInfoWithScoreRank getMyRank(Long userId) {
+
+        String sql = "SELECT id, name, image_path, score, rank, R.ranking FROM(" +
+                        "SELECT id, name, image_path, score, rank, RANK() over " +
+                        "(ORDER BY score DESC) ranking "+
+                        "FROM member.info " +
+                        "WHERE is_deleted = false) R " +
+                    "WHERE id = ?";
+        return template.queryForObject(sql,userInfoWithScoreRankRowMapper(),userId);
     }
 }

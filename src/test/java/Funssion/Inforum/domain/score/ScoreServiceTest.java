@@ -139,5 +139,4 @@ class ScoreServiceTest {
             verify(scoreRepository, times(1)).updateUserScoreAtDay(userId,-ScoreType.MAKE_MEMO.getScore(),LIMIT_DAILY_SCORE - score.getScore());
         }
     }
-
 }
