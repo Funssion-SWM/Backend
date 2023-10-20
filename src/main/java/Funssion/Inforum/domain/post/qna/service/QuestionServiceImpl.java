@@ -156,8 +156,8 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> getQuestions(Long userId, OrderType orderBy) {
-        return questionRepository.getQuestions(userId, orderBy);
+    public List<Question> getQuestions(Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+        return questionRepository.getQuestions(userId, orderBy, pageNum, resultCntPerPage);
     }
     @Override
     public List<Question> getQuestionsOfMemo(Long userId, Long memoId) {
@@ -169,20 +169,22 @@ public class QuestionServiceImpl implements QuestionService {
             String searchString,
             Long userId,
             OrderType orderBy,
-            Boolean isTag) {
+            Boolean isTag,
+            Long pageNum,
+            Long resultCntPerPage) {
 
         if (isTag)
-            return getQuestionsSearchedByTag(searchString, userId, orderBy);
+            return getQuestionsSearchedByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
 
-        return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy);
+        return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy, pageNum, resultCntPerPage);
 
     }
 
-    private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy) {
+    private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
-            return questionRepository.findAllByTag(searchString, orderBy);
+            return questionRepository.findAllByTag(searchString, orderBy, pageNum, resultCntPerPage);
 
-        return questionRepository.findAllByTag(searchString, userId, orderBy);
+        return questionRepository.findAllByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
     }
 
     @Override

@@ -37,6 +37,7 @@ public class Memo extends Post {
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
         this.memoTags = form.getMemoTags();
+        this.seriesId = form.getSeriesId();
         this.isTemporary = form.getIsTemporary();
     }
 
@@ -46,6 +47,7 @@ public class Memo extends Post {
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
         this.memoTags = form.getMemoTags();
+        this.seriesId = form.getSeriesId();
         this.isTemporary = form.getIsTemporary();
     }
 }

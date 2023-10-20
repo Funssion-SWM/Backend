@@ -34,6 +34,7 @@ class MemoControllerTest {
     private static String noDescriptionRequest;
     private static String noTextRequest;
     private static String noColorRequest;
+    private static String noSeriesIdRequest;
 
     @BeforeAll
     static void init() throws JsonProcessingException {
@@ -44,6 +45,7 @@ class MemoControllerTest {
                 .memoDescription("hello")
                 .memoText("my name is ...")
                 .memoColor("yellow")
+                .seriesId(346L)
                 .isTemporary(true)
                 .build());
 
@@ -51,6 +53,7 @@ class MemoControllerTest {
                 .memoDescription("hello")
                 .memoText("my name is ...")
                 .memoColor("yellow")
+                .seriesId(234L)
                 .isTemporary(true)
                 .build());
 
@@ -58,6 +61,7 @@ class MemoControllerTest {
                 .memoTitle("hi")
                 .memoText("my name is ...")
                 .memoColor("yellow")
+                .seriesId(234L)
                 .isTemporary(true)
                 .build());
 
@@ -65,6 +69,7 @@ class MemoControllerTest {
                 .memoTitle("hi")
                 .memoDescription("hello")
                 .memoColor("yellow")
+                .seriesId(56L)
                 .isTemporary(true)
                 .build());
 
@@ -72,6 +77,15 @@ class MemoControllerTest {
                 .memoTitle("Hi")
                 .memoDescription("hello")
                 .memoText("my name is ...")
+                .seriesId(1L)
+                .isTemporary(true)
+                .build());
+
+        noSeriesIdRequest = mapper.writeValueAsString(MemoSaveDto.builder()
+                .memoTitle("Hi")
+                .memoDescription("hello")
+                .memoText("my name is ...")
+                .memoColor("yellow")
                 .isTemporary(true)
                 .build());
     }
@@ -118,6 +132,12 @@ class MemoControllerTest {
             mvc.perform(post("/memos")
                             .contentType(APPLICATION_JSON)
                             .content(noDescriptionRequest)
+                            .with(csrf()))
+                    .andExpect(status().isCreated());
+
+            mvc.perform(post("/memos")
+                            .contentType(APPLICATION_JSON)
+                            .content(noSeriesIdRequest)
                             .with(csrf()))
                     .andExpect(status().isCreated());
         }

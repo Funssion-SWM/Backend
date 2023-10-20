@@ -68,24 +68,28 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public List<Question> getQuestions(Long userId,OrderType orderBy) {
+    public List<Question> getQuestions(Long userId,OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
-                "case when L.post_id = Q.id then true else false end as is_like "+
-                "from post.question AS Q "+
-                "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
-                        "on Q.id = L.post_id ";
-        sql += getSortedSql(orderBy);
-        return template.query(sql, questionLikeRowMapper(),userId);
+                "SELECT Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "CASE " +
+                        "WHEN L.post_id = Q.id THEN true " +
+                        "ELSE false END as is_like "+
+                "FROM post.question AS Q "+
+                "LEFT JOIN (SELECT post_id FROM member.like WHERE user_id = ? AND post_type = '"+ PostType.QUESTION+"') AS L "+
+                        "on Q.id = L.post_id " +
+                        getSortedSql(orderBy) +
+                        "LIMIT ? OFFSET ?";
+        return template.query(sql, questionLikeRowMapper(),userId, resultCntPerPage, pageNum * resultCntPerPage);
     }
 
     @Override
-    public List<Question> getMyQuestions(Long userId,OrderType orderBy) {
+    public List<Question> getMyQuestions(Long userId,OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_rank, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                         "from post.question AS Q "+
-                        "where Q.author_id = ? ";
-        return template.query(sql, questionRowMapper(),userId);
+                        "where Q.author_id = ? " +
+                        "limit ? offset ?";
+        return template.query(sql, questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
@@ -118,38 +122,41 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
         template.update(sql, profileImageFilePath, userId);
     }
-    public List<Question> getMyLikedQuestions(Long userId) {
+    public List<Question> getMyLikedQuestions(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank,Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join member.like AS L " +
                 "on Q.id = L.post_id and L.post_type = 'QUESTION' " +
                 "where L.user_id = ? "+
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Question> getQuestionsOfMyAnswer(Long userId) {
+    public List<Question> getQuestionsOfMyAnswer(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join (select distinct question_id from post.answer where author_id = ?) AS A " +
                 "on Q.id = A.question_id " +
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
                 "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
                 "from post.question AS Q " +
                 "join (select distinct question_id from post.answer AS QA join member.like AS ML " +
                     "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
                 "on Q.id = A.question_id " +
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
@@ -185,10 +192,10 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
+    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long pageNum, Long resultCntPerPage) {
         String sql = getSql(searchStringList, orderType);
 
-        return template.query(sql, questionRowMapper(), getParams(searchStringList));
+        return template.query(sql, questionRowMapper(), getParams(searchStringList, pageNum, resultCntPerPage));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType) {
         StringBuilder sql = new StringBuilder("select * from post.question where ");
@@ -204,37 +211,45 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
         sql.append(getOrderBySql(orderType));
 
+        sql.append("LIMIT ? OFFSET ?");
+
         return sql.toString();
     }
 
-    private static Object[] getParams(List<String> searchStringList) {
-        ArrayList<String> params = new ArrayList<>();
+    private static Object[] getParams(List<String> searchStringList, Long pageNum, Long resultCntPerPage) {
+        ArrayList<Object> params = new ArrayList<>();
         params.addAll(searchStringList);
         params.addAll(searchStringList);
+        params.add(resultCntPerPage);
+        params.add(pageNum * resultCntPerPage);
         return params.toArray();
     }
 
     @Override
-    public List<Question> findAllByTag(String tagText, OrderType orderType) {
-        String sql = "select * from post.question where ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Question> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.question where ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, questionRowMapper(), tagText);
+        return template.query(sql, questionRowMapper(), tagText, resultCntPerPage, pageNum*resultCntPerPage);
     }
 
     @Override
-    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType) {
-        String sql = "select * from post.question where author_id = ? and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.question where author_id = ? and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, questionRowMapper(), userId, tagText);
+        return template.query(sql, questionRowMapper(), userId, tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
-                return  " order by likes desc, id desc";
+                return  " order by likes desc, id desc ";
             }
             case NEW -> {
-                return  " order by id desc";
+                return  " order by id desc ";
             }
         }
         throw new BadRequestException("Invalid orderType value");
@@ -254,13 +269,13 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     private String getSortedSql(OrderType orderBy){
         switch (orderBy){
             case HOT:
-                return "order by likes desc, created_date desc";
+                return "order by likes desc, created_date desc ";
             case NEW:
-                return "order by created_date desc";
+                return "order by created_date desc ";
             case ANSWERS:
-                return "order by answers desc";
+                return "order by answers desc ";
             case SOLVED:
-                return "where is_solved is true order by likes desc";
+                return "where is_solved is true order by likes desc ";
         }
         throw new BadRequestException("유효하지 않은 정렬 방식입니다.");
     }

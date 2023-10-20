@@ -67,6 +67,8 @@ public class LikeIntegrationTest {
     @Autowired
     ProfileRepository profileRepository;
     static final String AUTHORIZED_USER = "999";
+    static final Long DEFAULT_RESULT_SIZE_PER_PAGE = 12L;
+    static final Long DEFAULT_PAGE_NUM = 0L;
 
     static Long saveMemberId;
 
@@ -215,14 +217,14 @@ public class LikeIntegrationTest {
 
         userLike(question);
 
-        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).getLikes()).isEqualTo(1);
-        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW).get(0).getLikes()).isEqualTo(1);
-        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).isLike()).isEqualTo(true);
-        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW).get(0).isLike()).isEqualTo(false);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).getLikes()).isEqualTo(1);
+        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).getLikes()).isEqualTo(1);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).isLike()).isEqualTo(true);
+        assertThat(questionRepository.getQuestions(1234L, OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).isLike()).isEqualTo(false);
 
         likeService.unlikePost(PostType.QUESTION,question.getId());
-        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).getLikes()).isEqualTo(0);
-        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW).get(0).isLike()).isEqualTo(false);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).getLikes()).isEqualTo(0);
+        assertThat(questionRepository.getQuestions(SecurityContextUtils.getUserId(), OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE).get(0).isLike()).isEqualTo(false);
 
     }
 

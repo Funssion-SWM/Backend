@@ -16,7 +16,7 @@ public interface QuestionService {
     Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId);
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId, Long authorId);
 
-    List<Question> getQuestions(Long userId, OrderType orderBy);
+    List<Question> getQuestions(Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage);
 
     QuestionDto getOneQuestion(Long loginId, Long questionId);
 
@@ -24,7 +24,7 @@ public interface QuestionService {
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
-    List<Question> searchQuestionsBy(String searchString, Long userId, OrderType orderBy, Boolean isTag);
+    List<Question> searchQuestionsBy(String searchString, Long userId, OrderType orderBy, Boolean isTag, Long pageNum, Long resultCntPerPage);
 
     ImageDto saveImageAndGetImageURL(MultipartFile image);
 }

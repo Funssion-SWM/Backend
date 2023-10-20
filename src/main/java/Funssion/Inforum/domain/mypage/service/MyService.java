@@ -45,14 +45,14 @@ public class MyService {
                 .toList();
     }
 
-    public List<MemoListDto> getMyMemos(Long userId) {
-        return memoRepository.findAllByUserIdOrderById(userId).stream()
+    public List<MemoListDto> getMyMemos(Long userId, Long pageNum, Long resultCntPerPage) {
+        return memoRepository.findAllByUserIdOrderById(userId, pageNum, resultCntPerPage).stream()
                 .map(MemoListDto::new)
                 .toList();
     }
 
-    public List<MemoListDto> getMyLikedMemos(Long userId) {
-        return memoRepository.findAllLikedMemosByUserId(userId)
+    public List<MemoListDto> getMyLikedMemos(Long userId, Long pageNum, Long resultCntPerPage) {
+        return memoRepository.findAllLikedMemosByUserId(userId, pageNum, resultCntPerPage)
                 .stream()
                 .map(MemoListDto::new)
                 .toList();
@@ -65,20 +65,20 @@ public class MyService {
                 .toList();
     }
 
-    public List<Question> getMyQuestions(Long userId) {
-        return questionRepository.getMyQuestions(userId, OrderType.NEW);
+    public List<Question> getMyQuestions(Long userId, Long pageNum, Long resultCntPerPage) {
+        return questionRepository.getMyQuestions(userId, OrderType.NEW, pageNum, resultCntPerPage);
     }
 
-    public List<Question> getMyLikedQuestions(Long userId) {
-        return questionRepository.getMyLikedQuestions(userId);
+    public List<Question> getMyLikedQuestions(Long userId, Long pageNum, Long resultCntPerPage) {
+        return questionRepository.getMyLikedQuestions(userId, pageNum, resultCntPerPage);
     }
 
-    public List<Question> getQuestionsOfMyAnswer(Long userId){
-        return questionRepository.getQuestionsOfMyAnswer(userId);
+    public List<Question> getQuestionsOfMyAnswer(Long userId, Long pageNum, Long resultCntPerPage){
+        return questionRepository.getQuestionsOfMyAnswer(userId, pageNum, resultCntPerPage);
     }
 
-    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
-        return questionRepository.getQuestionsOfMyLikedAnswer(userId);
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId, Long pageNum, Long resultCntPerPage) {
+        return questionRepository.getQuestionsOfMyLikedAnswer(userId, pageNum, resultCntPerPage);
     }
 
     public List<SeriesListDto> getMySeries(Long userId, Long pageNum, Long resultCntPerPage) {
