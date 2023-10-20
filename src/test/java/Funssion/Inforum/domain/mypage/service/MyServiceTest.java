@@ -4,6 +4,7 @@ import Funssion.Inforum.domain.mypage.dto.MyRankScoreDto;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.dto.ScoreRank;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,7 +47,7 @@ class MyServiceTest {
     void getRankAndScoreDto(){
         Long userId = 10L;
         Long gold_5_score = 1500L;
-        when(scoreRepository.getScore(userId)).thenReturn(gold_5_score);
+        when(scoreRepository.getScoreAndRank(userId)).thenReturn(new ScoreRank(gold_5_score,Rank.GOLD_5,0L));
         assertThat(myService.getRankAndScoreOf(userId)).isEqualTo(
                 MyRankScoreDto.builder()
                         .rankMaxScore(Rank.GOLD_5.getMax())

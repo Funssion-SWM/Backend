@@ -1,10 +1,14 @@
 package Funssion.Inforum.domain.score.repository;
 
 import Funssion.Inforum.common.constant.ScoreType;
+import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.score.Rank;
 import Funssion.Inforum.domain.score.domain.Score;
+import Funssion.Inforum.domain.score.dto.ScoreRank;
+import Funssion.Inforum.domain.score.dto.UserInfoWithScoreRank;
 import Funssion.Inforum.domain.score.exception.ScoreUpdateFailException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -26,12 +31,12 @@ public class ScoreRepository {
     public Long updateUserScoreAtDay(Long userId, Long addScore, Long updateDailyScore){
         String sql = "update member.info set score = score + ?, daily_get_score = ? where id = ?";
         if(template.update(sql,addScore, updateDailyScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
-        return getScore(userId);
+        return getScoreAndRank(userId).getScore();
     }
     public Long updateUserScoreAtOtherDay(Long userId, Long minusScore){
         String sql = "update member.info set score = score + ? where id = ?";
         if(template.update(sql,minusScore, userId) == 0) throw new ScoreUpdateFailException("점수를 Update할 유저가 존재하지 않습니다.");
-        return getScore(userId);
+        return getScoreAndRank(userId).getScore();
     }
 
     public Long getUserDailyScore(Long userId){
@@ -50,11 +55,18 @@ public class ScoreRepository {
         return findScoreHistoryInfoById(userId,scoreType,postId);
     }
 
-    public Long getScore(Long userId){
-        String sql = "select score from member.info where id = ?";
-        return template.queryForObject(sql,Long.class,userId);
+    public ScoreRank getScoreAndRank(Long userId) throws EmptyResultDataAccessException {
+        String sql = "select score,rank,daily_get_score from member.info where id = ?";
+        try {
+            return template.queryForObject(sql, scoreRankRowMapper(), userId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new UnAuthorizedException("해당 유저가 존재하지 않습니다.");
+        }
     }
 
+    private RowMapper<ScoreRank> scoreRankRowMapper(){
+        return (rs, rowNum) -> new ScoreRank(rs.getLong("score"),Rank.valueOf(rs.getString("rank")),rs.getLong("daily_get_score"));
+    }
     /**
      * score history는 점수를 '획득' 했을 때에만 저장합니다. 이에 유의하여 삭제 api를 작성합니다.
      */
@@ -78,6 +90,32 @@ public class ScoreRepository {
     }
 
 
+
+    public void initializeAllUsersDailyScore() {
+        String sql = "update member.info set daily_get_score = 0";
+        template.update(sql);
+    }
+
+    public String getRank(Long userId) {
+        String sql = "select rank from member.info where id = ?";
+        return template.queryForObject(sql,String.class,userId);
+    }
+
+    public Rank updateRank(Rank beUpdateRank, Long userId) {
+        String sql = "update member.info set rank = ? where id = ?";
+        if(template.update(sql,beUpdateRank.toString(),userId)==0) throw new UpdateFailException("rank가 변경되어야 하지만 변경되지 않았습니다.");
+        return beUpdateRank;
+    }
+
+    public List<UserInfoWithScoreRank> getTopTenUsers() {
+        String sql = "SELECT id, name, image_path, score, rank " +
+                "FROM member.info " +
+                "WHERE is_deleted = false " +
+                "ORDER BY score DESC " +
+                "LIMIT 10";
+        return template.query(sql,userInfoWithScoreRankRowMapper());
+    }
+
     private RowMapper<Score> scoreHistoryRowMapper(){
         return new RowMapper<Score>() {
             @Override
@@ -93,19 +131,17 @@ public class ScoreRepository {
             }
         };
     }
-    public void initializeAllUsersDailyScore() {
-        String sql = "update member.info set daily_get_score = 0";
-        template.update(sql);
-    }
-
-    public String getRank(Long userId) {
-        String sql = "select rank from member.info where id = ?";
-        return template.queryForObject(sql,String.class,userId);
-    }
-
-    public Rank updateRank(Rank beUpdateRank, Long userId) {
-        String sql = "update member.info set rank = ? where id = ?";
-        if(template.update(sql,beUpdateRank.toString(),userId)==0) throw new UpdateFailException("rank가 변경되어야 하지만 변경되지 않았습니다.");
-        return beUpdateRank;
+    private RowMapper<UserInfoWithScoreRank> userInfoWithScoreRankRowMapper(){
+        return (rs,rowNum) ->{
+            return UserInfoWithScoreRank.builder()
+                        .memberProfileEntity(MemberProfileEntity.builder()
+                                .profileImageFilePath(rs.getString("image_path"))
+                                .nickname(rs.getString("name"))
+                                .userId(rs.getLong("id"))
+                                .build())
+                        .scoreRank(ScoreRank.builder().score(rs.getLong("score"))
+                                        .rank(Rank.valueOf(rs.getString("rank"))).build())
+                    .build();
+        };
     }
 }
