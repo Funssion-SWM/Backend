@@ -67,7 +67,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
     public Optional<SocialMember> findSocialMemberByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE is_deleted = false and EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE is_deleted = false and EMAIL = ? and LOGIN_TYPE = 1";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,socialMemberRowMapper(),email);
             return Optional.of(socialMember);

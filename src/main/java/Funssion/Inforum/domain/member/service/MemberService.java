@@ -19,7 +19,6 @@ import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.profile.ProfileRepository;
-import Funssion.Inforum.domain.profile.ProfileRepositoryImpl;
 import Funssion.Inforum.jwt.TokenProvider;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -144,7 +143,7 @@ public class MemberService {
         }
 
         boolean isEmailRegistered = memberRepository.findNonSocialMemberByEmail(email).isPresent();
-        String message = isEmailRegistered ? "해당 이메일로 코드를 전송하겠습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
+        String message = isEmailRegistered ? "해당 이메일로 코드를 전송하였습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
         return new ValidatedDto(isEmailRegistered,message);
     }
 

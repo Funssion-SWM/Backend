@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import jakarta.mail.internet.MimeMessage;
@@ -18,6 +19,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,6 +69,33 @@ class MemberIntegrationTest {
                             .getEmail())
                     .isEqualTo(memberService.blur(saveMemberResponseDto.getEmail()));
 
+        }
+    }
+
+    @Nested
+    @DisplayName("로그인")
+    class login{
+        @Test
+        @DisplayName("일반 회원가입한 유저가 같은 이메일로 구글로그인하면 실패해야한다")
+        void failToOauthLoginWhenSameEmailWithNonSocialRegistration(){
+
+            SaveMemberResponseDto savedNonsocialMember = memberRepository.save(NonSocialMember.builder()
+                    .userPw("1234")
+                    .userEmail("test@gmail.com")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .authId(1L)
+                    .userName("test")
+                    .introduce("hi")
+                    .createdDate(LocalDateTime.now())
+                    .tags("Java")
+                    .imagePath("path")
+                    .build());
+
+            Long savedNonsocialMemberId = savedNonsocialMember.getId();
+
+            // OAuth로그인이므로, OAuthService로직만 검증
+            Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(savedNonsocialMember.getEmail());
+            assertThat(socialMember.isEmpty()).isEqualTo(true);
         }
     }
 

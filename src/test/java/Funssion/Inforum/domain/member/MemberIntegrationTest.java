@@ -4,9 +4,11 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
+import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -21,6 +23,8 @@ import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.score.Rank;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,7 +32,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -36,6 +42,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -96,11 +103,9 @@ public class MemberIntegrationTest {
 
         savedNonsocialMemberId = savedNonsocialMember.getId();
 
-        savedSocialMember = memberRepository.save(NonSocialMember.builder()
-                .userPw("1234")
+        savedSocialMember = memberRepository.save(SocialMember.builder()
                 .userEmail(savedSocialMemberEmail)
                 .loginType(LoginType.SOCIAL)
-                .authId(1L)
                 .userName(savedMemberName)
                 .introduce("hi")
                 .createdDate(LocalDateTime.now())
@@ -167,6 +172,44 @@ public class MemberIntegrationTest {
                 .build());
 
         savedReComment = commentRepository.getReCommentsAtComment(savedComment.getId(), savedNonsocialMemberId).get(0);
+    }
+
+    @Test
+    @DisplayName("이메일로 비밀번호를 찾을 때, 구글로그인으로 등록된 계정인 경우 해당 사실을 알려주어야 함")
+    void findPasswordWhenGoogleLoginMustNotify() throws Exception {
+        EmailRequestDto emailRequestDto = new EmailRequestDto(savedSocialMember.getEmail());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String emailRequest = objectMapper.writeValueAsString(emailRequestDto);
+
+        MvcResult result = mvc.perform(post("/users/authenticate-email/find")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(emailRequest))
+                .andReturn();
+        String contentAsString = result.getResponse().getContentAsString();
+        String message = JsonPath.read(contentAsString, "$.message");
+        Object success = JsonPath.read(contentAsString, "$.isSuccess");
+        assertThat(success).isEqualTo(false);
+        assertThat(message).isEqualTo("구글 로그인으로 등록된 계정입니다.");
+    }
+
+    @Test
+    @DisplayName("이메일로 비밀번호를 찾을 때, 등록된 이메일이 아니면 해당 사실을 알려주어야 함.")
+    void findPasswordWhenRequestIsNotInDB() throws Exception {
+        EmailRequestDto emailRequestDto = new EmailRequestDto("aaaaaaa@gmail.com");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String emailRequest = objectMapper.writeValueAsString(emailRequestDto);
+
+        MvcResult result = mvc.perform(post("/users/authenticate-email/find")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(emailRequest))
+                .andReturn();
+        String contentAsString = result.getResponse().getContentAsString();
+        String message = JsonPath.read(contentAsString, "$.message");
+        assertThat(message).isEqualTo("해당 이메일로 가입된 회원 정보가 없습니다.");
+        Object success = JsonPath.read(contentAsString, "$.isSuccess");
+        assertThat(success).isEqualTo(false);
     }
 
     @Nested
