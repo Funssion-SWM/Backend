@@ -1,9 +1,13 @@
 package Funssion.Inforum.domain.post.memo.repository;
 
+import Funssion.Inforum.common.constant.DateType;
 import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
+import Funssion.Inforum.common.utils.CustomStringUtils;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
@@ -21,6 +25,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Repository
 @Slf4j
@@ -37,11 +44,11 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public Memo create(Memo memo) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        String sql = "INSERT into memo.info (author_id, author_name, author_image_path, memo_title, memo_description, memo_text, memo_color, tags, is_temporary, is_created) " +
-                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
+        String sql = "INSERT into post.memo (author_id, author_name, author_image_path, title, description, text, color, tags, is_temporary, is_created, author_rank, series_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?, ?);";
         List<String> listOfTagsInMemo = memo.getMemoTags();
         template.update(con -> {
-            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"memo_id"});
+            PreparedStatement psmt = con.prepareStatement(sql, new String[]{"id"});
             psmt.setLong(1, memo.getAuthorId());
             psmt.setString(2, memo.getAuthorName());
             psmt.setString(3, memo.getAuthorImagePath());
@@ -52,6 +59,8 @@ public class MemoRepositoryJdbc implements MemoRepository{
             psmt.setArray(8,TagUtils.createSqlArray(template,listOfTagsInMemo));
             psmt.setBoolean(9, memo.getIsTemporary());
             psmt.setBoolean(10, !memo.getIsTemporary());
+            psmt.setString(11,memo.getRank());
+            psmt.setObject(12,memo.getSeriesId());
             return psmt;
         }, keyHolder);
         long createdMemoId = keyHolder.getKey().longValue();
@@ -60,112 +69,141 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
-    public List<Memo> findAllByDaysOrderByLikes(Integer days, Long pageNum, Long memoCnt) {
-        String sql = "select * from memo.info where created_date > current_date - CAST(? AS int) and is_temporary = false " +
-                "order by likes desc, memo_id desc " +
+    public List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt) {
+        String sql = "select * from post.memo where created_date > current_date - CAST(? AS INTERVAL) and is_temporary = false " +
+                "order by likes desc, id desc " +
                 "limit ? offset ?";
-        return template.query(sql, memoRowMapper(), days, memoCnt, pageNum * memoCnt);
+        return template.query(sql, memoRowMapper(), period.getInterval(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
     public List<Memo> findAllOrderById(Long pageNum, Long memoCnt) {
-        String sql = "select * from memo.info where is_temporary = false order by memo_id desc " +
+        String sql = "select * from post.memo where is_temporary = false order by id desc " +
                 "limit ? offset ?";
         return template.query(sql, memoRowMapper(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
-    public List<Memo> findAllByUserIdOrderById(Long userId) {
-        String sql = "select * from memo.info where author_id = ? and is_temporary = false order by memo_id desc";
-        return template.query(sql, memoRowMapper(), userId);
+    public List<Memo> findAllByUserIdOrderById(Long userId, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where author_id = ? and is_temporary = false order by id desc limit ? offset ?";
+        return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Memo> findAllLikedMemosByUserId(Long userId) {
-        String sql = "select * from memo.info i join member.like l on i.memo_id = l.post_id and l.post_type = 'MEMO' " +
-                "where l.user_id = ? and is_temporary = false order by memo_id desc";
-
-        return template.query(sql, memoRowMapper(), userId);
+    public List<Memo> findAllLikedMemosByUserId(Long userId, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo i join member.like l on i.id = l.post_id and l.post_type = 'MEMO' " +
+                "where l.user_id = ? and is_temporary = false order by i.id desc " +
+                "limit ? offset ?";
+        return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
     public List<Memo> findAllDraftMemosByUserId(Long userId) {
-        String sql = "select * from memo.info where author_id = ? and is_temporary = true order by memo_id desc";
+        String sql = "select * from post.memo where author_id = ? and is_temporary = true order by id desc";
 
         return template.query(sql, memoRowMapper(), userId);
     }
 
 
     @Override
-    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
-        String sql = getSql(searchStringList, orderType);
+    public List<Memo> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long userId, Long pageNum, Long resultCntPerPage) {
+        String sql = getSql(searchStringList, orderType, userId);
 
-        return template.query(sql, memoRowMapper(), getParams(searchStringList));
+        return template.query(sql, memoRowMapper(), getParams(userId, searchStringList, pageNum, resultCntPerPage));
     }
-    private static String getSql(List<String> searchStringList, OrderType orderType) {
-        StringBuilder sql = new StringBuilder("select * from (select * from memo.info where is_temporary = false) m where ");
+    private static String getSql(List<String> searchStringList, OrderType orderType, Long userId) {
+        StringBuilder sql;
 
-        for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("memo_title ilike ? or ");
+        if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
+            sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false and author_id = ?) m where ");
+        } else {
+            sql = new StringBuilder("select * from (select * from post.memo where is_temporary = false) m where ");
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("memo_text::text ilike ? ");
+            sql.append("title ilike '%'||?||'%' or ");
+        }
+
+        for (int i = 0; i < searchStringList.size() ; i++) {
+            sql.append("regexp_match(text::text, '\"text\": \"([^\"]*)'||?, 'i') IS NOT null ");
             if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
         sql.append(getOrderBySql(orderType));
 
+        sql.append("LIMIT ? OFFSET ?");
+
         return sql.toString();
     }
 
-    private static Object[] getParams(List<String> searchStringList) {
-        ArrayList<String> params = new ArrayList<>();
+    private static Object[] getParams(Long userId, List<String> searchStringList, Long pageNum, Long resultCntPerPage) {
+        ArrayList<Object> params = new ArrayList<>();
+        if (!userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID)) {
+            params.add(userId);
+        }
         params.addAll(searchStringList);
         params.addAll(searchStringList);
+        params.add(resultCntPerPage);
+        params.add(resultCntPerPage * pageNum);
         return params.toArray();
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, OrderType orderType) {
-        String sql = "select * from memo.info where is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Memo> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where is_temporary = false and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, memoRowMapper(), tagText);
+        return template.query(sql, memoRowMapper(), tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     @Override
-    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType) {
-        String sql = "select * from memo.info where author_id = ? and is_temporary = false and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.memo where author_id = ? and is_temporary = false and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, memoRowMapper(), userId, tagText);
+        return template.query(sql, memoRowMapper(), userId, tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
-                return  " order by likes desc, memo_id desc";
+                return  " order by likes desc, id desc ";
             }
             case NEW -> {
-                return  " order by memo_id desc";
+                return  " order by id desc ";
             }
         }
         throw new BadRequestException("Invalid orderType value");
     }
 
     @Override
+    public List<Memo> findAllBySeriesId(Long seriesId) {
+        String sql = "select * from post.memo where series_id = ? order by series_order";
+        return template.query(sql, memoRowMapper(), seriesId);
+    }
+
+    @Override
+    public List<String> findTop3ColorsBySeriesId(Long seriesId) {
+        String sql = "SELECT color FROM post.memo WHERE series_id = ? ORDER BY series_order LIMIT 3";
+        return template.queryForList(sql, String.class, seriesId);
+    }
+
+    @Override
     public Memo findById(Long id) {
-        String sql = "select * from memo.info where memo_id = ?";
+        String sql = "select * from post.memo where id = ?";
         return template.query(sql, memoRowMapper(), id).stream().findAny().orElseThrow(() -> new MemoNotFoundException());
     }
 
     private RowMapper<Memo> memoRowMapper() {
         return ((rs, rowNum) ->
                 Memo.builder()
-                        .id(rs.getLong("memo_id"))
-                        .title(rs.getString("memo_title"))
-                        .description(rs.getString("memo_description"))
-                        .text(rs.getString("memo_text"))
-                        .color(rs.getString("memo_color"))
+                        .id(rs.getLong("id"))
+                        .title(rs.getString("title"))
+                        .description(rs.getString("description"))
+                        .text(rs.getString("text"))
+                        .color(rs.getString("color"))
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
@@ -175,20 +213,23 @@ public class MemoRepositoryJdbc implements MemoRepository{
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
+                        .seriesId(parseNullableStringtoLong(rs.getString("series_id")))
+                        .seriesTitle(rs.getString("series_title"))
                         .isTemporary(rs.getBoolean("is_temporary"))
                         .isCreated(rs.getBoolean("is_created"))
+                        .rank(rs.getString("author_rank"))
                         .build());
     }
 
     @Override
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId) {
 
-        String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, updated_date = current_timestamp, is_temporary = ? " +
-                "where memo_id = ?";
+        String sql = "update post.memo " +
+                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, updated_date = current_timestamp, is_temporary = ?, series_id = ? " +
+                "where id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), form.getSeriesId(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {
@@ -200,13 +241,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated) {
 
-        String sql = "update memo.info " +
-                "set memo_title = ?, memo_description = ?, memo_text = ?::jsonb, memo_color = ?, tags = ?, created_date = current_timestamp, updated_date = current_timestamp, is_temporary = ? , is_created = ? " +
-                "where memo_id = ?";
+        String sql = "update post.memo " +
+                "set title = ?, description = ?, text = ?::jsonb, color = ?, tags = ?, created_date = current_timestamp, updated_date = current_timestamp, is_temporary = ? , is_created = ?, series_id = ? " +
+                "where id = ?";
         try {
             if (template.update(sql,
-                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), isCreated
-                    , memoId)
+                    form.getMemoTitle(), form.getMemoDescription(), form.getMemoText(), form.getMemoColor(),TagUtils.createSqlArray(template,form.getMemoTags()), form.getIsTemporary(), isCreated, form.getSeriesId(), memoId)
                     == 0)
                 throw new MemoNotFoundException("update content fail");
         } catch (SQLException e) {
@@ -216,9 +256,9 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
     @Override
     public Memo updateLikesInMemo(Long likes, Long memoId) {
-        String sql = "update memo.info " +
+        String sql = "update post.memo " +
                 "set likes = ? " +
-                "where memo_id = ?";
+                "where id = ?";
 
         if (template.update(sql, likes, memoId) == 0) throw new MemoNotFoundException("update likes fail");
         return findById(memoId);
@@ -226,7 +266,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
 
     @Override
     public void updateAuthorProfile(Long authorId, String authorProfileImagePath) {
-        String sql = "update memo.info " +
+        String sql = "update post.memo " +
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
@@ -234,8 +274,33 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public void updateSeriesIdAndTitle(Long seriesId, String seriesTitle, Long authorId, List<Long> memoIdList) {
+
+        int updatedRows = 0;
+        for (Long memoId : memoIdList) {
+            String sql = "UPDATE post.memo " +
+                    "SET series_id = ?, series_title = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
+                    "WHERE id = ? and author_id = ? and is_temporary = false";
+
+            updatedRows += template.update(sql, seriesId, seriesTitle, memoId, authorId);
+        }
+
+        if (memoIdList.size() != updatedRows)
+            throw new UpdateFailException("update fail: request size, updated rows are not same.");
+    }
+
+    @Override
+    public void updateSeriesIdsToZero(Long seriesId, Long authorId) {
+        String sql = "UPDATE post.memo " +
+                    "SET series_id = NULL, series_title = NULL " +
+                    "WHERE is_temporary = false AND author_Id = ? AND series_id = ?";
+
+        template.update(sql, authorId, seriesId);
+    }
+
+    @Override
     public void delete(Long id) {
-        String sql = "delete from memo.info where memo_id = ?";
+        String sql = "delete from post.memo where id = ?";
         if (template.update(sql, id) == 0) throw new MemoNotFoundException("delete fail");
     }
 
@@ -243,14 +308,15 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public void updateQuestionsCountOfMemo(Long memoId, Sign sign) {
         String sql ="";
         switch(sign){
-            case PLUS -> sql = "update memo.info set question_count = question_count + 1 where memo_id = ?";
-            case MINUS-> sql = "update memo.info set question_count = question_count - 1 where memo_id = ?";
+            case PLUS -> sql = "update post.memo set question_count = question_count + 1 where id = ?";
+            case MINUS-> sql = "update post.memo set question_count = question_count - 1 where id = ?";
         }
         if(template.update(sql,memoId)==0) throw new MemoNotFoundException("update question count fail");
     }
 
+
     public Long getCommentsCount(Long id){
-        String sql = "select replies_count from memo.info where memo_id = ?";
+        String sql = "select replies_count from post.memo where id = ?";
         return template.queryForObject(sql,Long.class,id);
     }
 }

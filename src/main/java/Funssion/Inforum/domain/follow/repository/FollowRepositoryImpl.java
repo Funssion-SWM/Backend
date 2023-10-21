@@ -4,7 +4,6 @@ import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.follow.domain.Follow;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -55,15 +54,24 @@ public class FollowRepositoryImpl implements FollowRepository {
 
     @Override
     public List<MemberProfileEntity> findFollowingProfilesByUserId(Long userId) {
-        String sql = "select i.id, name, introduce, tags, image_path, follow_cnt, follower_cnt from member.follow f, member.info i where f.user_id = ? and f.followed_user_id = i.id order by f.created desc";
+        String sql = "select i.id, rank, name, introduce, tags, image_path, follow_cnt, follower_cnt from member.follow f, member.info i where f.user_id = ? and f.followed_user_id = i.id order by f.created desc";
 
         return template.query(sql, MemberProfileEntity.MemberInfoRowMapper(),userId);
     }
 
     @Override
     public List<MemberProfileEntity> findFollowedProfilesByUserId(Long userId) {
-        String sql = "select i.id, name, introduce, tags, image_path, follow_cnt, follower_cnt from member.follow f, member.info i where f.followed_user_id = ? and f.user_id = i.id order by f.created desc";
+        String sql = "select i.id, rank, name, introduce, tags, image_path, follow_cnt, follower_cnt from member.follow f, member.info i where f.followed_user_id = ? and f.user_id = i.id order by f.created desc";
 
         return template.query(sql, MemberProfileEntity.MemberInfoRowMapper(),userId);
+    }
+
+    @Override
+    public List<Long> findFollowedUserIdByUserId(Long userId) {
+        String sql = "SELECT i.id " +
+                "FROM member.follow f, member.info i " +
+                "WHERE f.followed_user_id = ? and f.user_id = i.id";
+
+        return template.queryForList(sql, Long.class, userId);
     }
 }

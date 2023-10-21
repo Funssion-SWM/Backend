@@ -54,7 +54,6 @@ public class MemberRepositoryImpl implements MemberRepository {
 
     public SaveMemberResponseDto save(SocialMember member) {
         SaveMemberResponseDto savedMember = saveSocialMemberInUserTable(member);
-
         return savedMember;
     }
 
@@ -68,7 +67,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         }
     }
     public Optional<SocialMember> findSocialMemberByEmail(String email){
-        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE is_deleted = false and EMAIL = ?";
+        String sql ="SELECT ID,NAME,EMAIL,LOGIN_TYPE,CREATED_DATE,IMAGE_PATH,INTRODUCE,TAGS,FOLLOW_CNT,FOLLOWER_CNT FROM member.info WHERE is_deleted = false and EMAIL = ? and LOGIN_TYPE = 1";
         try{
             SocialMember socialMember = jdbcTemplate.queryForObject(sql,socialMemberRowMapper(),email);
             return Optional.of(socialMember);
@@ -224,6 +223,12 @@ public class MemberRepositoryImpl implements MemberRepository {
         if (jdbcTemplate.update(sql, userId) != 1) {
             throw new BadRequestException("fail in deleting user : userId = " + userId);
         }
+    }
+
+    @Override
+    public Long getDailyScore(Long userId) {
+        String sql = "select daily_get_score from member.info where id = ?";
+        return jdbcTemplate.queryForObject(sql,Long.class,userId);
     }
 
     private RowMapper<NonSocialMember> nonSocialmemberRowMapper(){

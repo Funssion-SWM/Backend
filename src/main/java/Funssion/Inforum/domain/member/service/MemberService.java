@@ -143,7 +143,7 @@ public class MemberService {
         }
 
         boolean isEmailRegistered = memberRepository.findNonSocialMemberByEmail(email).isPresent();
-        String message = isEmailRegistered ? "해당 이메일로 코드를 전송하겠습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
+        String message = isEmailRegistered ? "해당 이메일로 코드를 전송하였습니다." : "해당 이메일로 가입된 회원 정보가 없습니다.";
         return new ValidatedDto(isEmailRegistered,message);
     }
 
@@ -248,11 +248,7 @@ public class MemberService {
     }
 
     private IsProfileSavedDto updateProfile(Long userId, MemberProfileEntity memberProfileEntity) {
-        memoRepository.updateAuthorProfile(userId, memberProfileEntity.getProfileImageFilePath());
-        commentRepository.updateProfileImageOfComment(userId, memberProfileEntity.getProfileImageFilePath());
-        commentRepository.updateProfileImageOfReComment(userId,memberProfileEntity.getProfileImageFilePath() );
-        questionRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
-        answerRepository.updateProfileImage(userId,memberProfileEntity.getProfileImageFilePath());
+        profileRepository.updateAuthorImagePathInPost(userId, memberProfileEntity.getProfileImageFilePath());
         return myRepository.updateProfile(userId, memberProfileEntity);
     }
 

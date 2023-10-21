@@ -60,11 +60,12 @@ public class MemberController {
     }
     @PostMapping("/authenticate-email/find")
     public IsSuccessResponseDto mailSendToFindPassword(@RequestBody @Valid EmailRequestDto emailDto){
-        if (memberService.isRegisteredEmail(emailDto.getEmail()).isValid()) {
+        ValidatedDto canFindEmail = memberService.isRegisteredEmail(emailDto.getEmail());
+        if (canFindEmail.isValid()) {
             mailService.sendEmailLink(emailDto.getEmail());
             return new IsSuccessResponseDto(true, "해당 이메일로 인증번호 링크를 전송하였습니다.");
         } else {
-            return new IsSuccessResponseDto(false, "해당 이메일로 등록된 회원 정보가 없습니다.");
+            return new IsSuccessResponseDto(false, canFindEmail.getMessage());
         }
     }
     @PutMapping("/password")
@@ -79,7 +80,7 @@ public class MemberController {
 
     @GetMapping("/check-duplication")
     public ValidatedDto isValidName(@RequestParam(value = "name", required = true) String name) {
-        return memberService.isValidName(name); //로그인 타입은 상관없음 리팩토링 예정
+        return memberService.isValidName(name);
     }
     @PostMapping("/nickname/{id}")
     public IsSuccessResponseDto registerName(@PathVariable("id") String userId,@RequestBody NicknameRequestDto nicknameRequestDto){

@@ -34,8 +34,8 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     public Question createQuestion(Question question) {
         List<String> questionTags = question.getTags();
 
-        String sql = "insert into question.info(author_id, author_name, author_image_path, title, text, tags, memo_id, description) " +
-                "values(?,?,?,?,?::jsonb,?,?,?)";
+        String sql = "insert into post.question(author_id, author_name, author_image_path, title, text, tags, memo_id, description,author_rank) " +
+                "values(?,?,?,?,?::jsonb,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         template.update(con->{
             PreparedStatement psmt = con.prepareStatement(sql,new String[]{"id"});
@@ -47,6 +47,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
             psmt.setArray(6, TagUtils.createSqlArray(template,questionTags));
             psmt.setLong(7,question.getMemoId());
             psmt.setString(8,question.getDescription());
+            psmt.setString(9,question.getRank());
             return psmt;
         },keyHolder);
         return this.getOneQuestion(keyHolder.getKey().longValue());
@@ -54,7 +55,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId) {
-        String sql = "update question.info " +
+        String sql = "update post.question " +
                 "set title = ?, text = ?::jsonb, tags = ?, description = ? where id = ?";
         try {
             if(template.update(sql, questionSaveDto.getTitle(), questionSaveDto.getText(), TagUtils.createSqlArray(template,questionSaveDto.getTags()),questionSaveDto.getDescription(), questionId)==0){
@@ -67,29 +68,33 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public List<Question> getQuestions(Long userId,OrderType orderBy) {
+    public List<Question> getQuestions(Long userId,OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
-                "case when L.post_id = Q.id then true else false end as is_like "+
-                "from question.info AS Q "+
-                "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
-                        "on Q.id = L.post_id ";
-        sql += getSortedSql(orderBy);
-        return template.query(sql, questionLikeRowMapper(),userId);
+                "SELECT Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "CASE " +
+                        "WHEN L.post_id = Q.id THEN true " +
+                        "ELSE false END as is_like "+
+                "FROM post.question AS Q "+
+                "LEFT JOIN (SELECT post_id FROM member.like WHERE user_id = ? AND post_type = '"+ PostType.QUESTION+"') AS L "+
+                        "on Q.id = L.post_id " +
+                        getSortedSql(orderBy) +
+                        "LIMIT ? OFFSET ?";
+        return template.query(sql, questionLikeRowMapper(),userId, resultCntPerPage, pageNum * resultCntPerPage);
     }
 
     @Override
-    public List<Question> getMyQuestions(Long userId,OrderType orderBy) {
+    public List<Question> getMyQuestions(Long userId,OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
-                        "from question.info AS Q "+
-                        "where Q.author_id = ? ";
-        return template.query(sql, questionRowMapper(),userId);
+                "select Q.id, Q.author_id, Q.author_name, Q.author_rank, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                        "from post.question AS Q "+
+                        "where Q.author_id = ? " +
+                        "limit ? offset ?";
+        return template.query(sql, questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
     public Long getAuthorId(Long questionId) {
-        String sql = "select author_id from question.info where id = ?";
+        String sql = "select author_id from post.question where id = ?";
         try{
             return template.queryForObject(sql, Long.class, questionId);
         }catch(EmptyResultDataAccessException e){
@@ -99,10 +104,10 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     @Override
     public List<Question> getQuestionsOfMemo(Long userId,Long memoId) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id, "+
                 "case when L.post_id = Q.id then true else false end as is_like "+
-                "from (select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, memo_id " +
-                        "from question.info where memo_id = ?) AS Q "+
+                "from (select id, author_id, author_name, author_image_path,author_rank, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, memo_id " +
+                        "from post.question where memo_id = ?) AS Q "+
                         "left join (select post_id from member.like where user_id = ? and post_type = '"+ PostType.QUESTION+"') AS L "+
                         "on Q.id = L.post_id";
 
@@ -111,50 +116,53 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public void updateProfileImage(Long userId, String profileImageFilePath) {
-        String sql = "update question.info " +
+        String sql = "update post.question " +
                 "set author_image_path = ? " +
                 "where author_id = ?";
 
         template.update(sql, profileImageFilePath, userId);
     }
-    public List<Question> getMyLikedQuestions(Long userId) {
+    public List<Question> getMyLikedQuestions(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
-                "from question.info AS Q " +
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank,Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from post.question AS Q " +
                 "join member.like AS L " +
                 "on Q.id = L.post_id and L.post_type = 'QUESTION' " +
                 "where L.user_id = ? "+
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Question> getQuestionsOfMyAnswer(Long userId) {
+    public List<Question> getQuestionsOfMyAnswer(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
-                "from question.info AS Q " +
-                "join (select distinct question_id from question.answer where author_id = ?) AS A " +
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from post.question AS Q " +
+                "join (select distinct question_id from post.answer where author_id = ?) AS A " +
                 "on Q.id = A.question_id " +
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
-    public List<Question> getQuestionsOfMyLikedAnswer(Long userId) {
+    public List<Question> getQuestionsOfMyLikedAnswer(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql =
-                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
-                "from question.info AS Q " +
-                "join (select distinct question_id from question.answer AS QA join member.like AS ML " +
+                "select Q.id, Q.author_id, Q.author_name, Q.author_image_path,Q.author_rank, Q.title, Q.text, Q.description, Q.likes, Q.is_solved, Q.created_date, Q.updated_date, Q.tags, Q.replies_count, Q.answers, Q.is_solved, Q.memo_id "+
+                "from post.question AS Q " +
+                "join (select distinct question_id from post.answer AS QA join member.like AS ML " +
                     "on QA.id = ML.post_id and ML.post_type = 'ANSWER' and ML.user_id = ?) AS A " +
                 "on Q.id = A.question_id " +
-                "order by Q.id desc";
-        return template.query(sql,questionRowMapper(),userId);
+                "order by Q.id desc " +
+                "limit ? offset ?";
+        return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
     public Question getOneQuestion(Long questionId) {
-        String sql = "select id, author_id, author_name, author_image_path, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
-                "from question.info where id = ?";
+        String sql = "select id, author_id, author_name, author_image_path, author_rank, title, text, description, likes, is_solved, created_date, updated_date, tags, replies_count, answers, is_solved, memo_id " +
+                "from post.question where id = ?";
         try{
             return template.queryForObject(sql,questionRowMapper(),questionId);
         }catch(EmptyResultDataAccessException e){
@@ -164,19 +172,19 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public void deleteQuestion(Long questionId) {
-        String sql = "delete from question.info where id = ?";
+        String sql = "delete from post.question where id = ?";
         if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
     }
 
     @Override
     public void solveQuestion(Long questionId) {
-        String sql = "update question.info set is_solved = true where id = ?";
+        String sql = "update post.question set is_solved = true where id = ?";
         exceptionHandlingOfNonUniqueSolved(questionId);
         if (template.update(sql,questionId)==0) throw new QuestionNotFoundException("삭제할 질문이 존재하지 않습니다.");
     }
 
     private void exceptionHandlingOfNonUniqueSolved(Long questionId){
-        String sql = "select count(id) from question.info where is_solved is true and id = ?";
+        String sql = "select count(id) from post.question where is_solved is true and id = ?";
         Long selectedAnswerCount = template.queryForObject(sql, Long.class, questionId);
         if (selectedAnswerCount !=0){
             throw new DuplicateSelectedAnswerException("두개의 답변을 채택할 순 없습니다.");
@@ -184,56 +192,64 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     }
 
     @Override
-    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType) {
+    public List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long pageNum, Long resultCntPerPage) {
         String sql = getSql(searchStringList, orderType);
 
-        return template.query(sql, questionRowMapper(), getParams(searchStringList));
+        return template.query(sql, questionRowMapper(), getParams(searchStringList, pageNum, resultCntPerPage));
     }
     private static String getSql(List<String> searchStringList, OrderType orderType) {
-        StringBuilder sql = new StringBuilder("select * from question.info where ");
+        StringBuilder sql = new StringBuilder("select * from post.question where ");
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("title ilike ? or ");
+            sql.append("title ilike '%'||?||'%' or ");
         }
 
         for (int i = 0; i < searchStringList.size() ; i++) {
-            sql.append("text::text ilike ? ");
+            sql.append("regexp_match(text::text, '\"text\": \"([^\"]*)'||?, 'i') IS NOT null ");
             if (i != searchStringList.size() - 1) sql.append("or ");
         }
 
         sql.append(getOrderBySql(orderType));
 
+        sql.append("LIMIT ? OFFSET ?");
+
         return sql.toString();
     }
 
-    private static Object[] getParams(List<String> searchStringList) {
-        ArrayList<String> params = new ArrayList<>();
+    private static Object[] getParams(List<String> searchStringList, Long pageNum, Long resultCntPerPage) {
+        ArrayList<Object> params = new ArrayList<>();
         params.addAll(searchStringList);
         params.addAll(searchStringList);
+        params.add(resultCntPerPage);
+        params.add(pageNum * resultCntPerPage);
         return params.toArray();
     }
 
     @Override
-    public List<Question> findAllByTag(String tagText, OrderType orderType) {
-        String sql = "select * from question.info where ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Question> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.question where ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, questionRowMapper(), tagText);
+        return template.query(sql, questionRowMapper(), tagText, resultCntPerPage, pageNum*resultCntPerPage);
     }
 
     @Override
-    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType) {
-        String sql = "select * from question.info where author_id = ? and ? ilike any(tags)" + getOrderBySql(orderType);
+    public List<Question> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage) {
+        String sql = "select * from post.question where author_id = ? and ? ilike any(tags)" +
+                getOrderBySql(orderType) +
+                "LIMIT ? OFFSET ?";
 
-        return template.query(sql, questionRowMapper(), userId, tagText);
+        return template.query(sql, questionRowMapper(), userId, tagText, resultCntPerPage, resultCntPerPage * pageNum);
     }
 
     private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
-                return  " order by likes desc, id desc";
+                return  " order by likes desc, id desc ";
             }
             case NEW -> {
-                return  " order by id desc";
+                return  " order by id desc ";
             }
         }
         throw new BadRequestException("Invalid orderType value");
@@ -241,7 +257,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
 
     @Override
     public Question updateLikesInQuestion(Long likes, Long questionId) {
-        String sql = "update question.info " +
+        String sql = "update post.question " +
                 "set likes = ? " +
                 "where id = ?";
 
@@ -253,13 +269,13 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     private String getSortedSql(OrderType orderBy){
         switch (orderBy){
             case HOT:
-                return "order by likes desc, created_date desc";
+                return "order by likes desc, created_date desc ";
             case NEW:
-                return "order by created_date desc";
+                return "order by created_date desc ";
             case ANSWERS:
-                return "order by answers desc";
+                return "order by answers desc ";
             case SOLVED:
-                return "where is_solved is true order by likes desc";
+                return "where is_solved is true order by likes desc ";
         }
         throw new BadRequestException("유효하지 않은 정렬 방식입니다.");
     }
@@ -271,6 +287,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .rank(rs.getString("author_rank"))
                         .title(rs.getString("title"))
                         .text(rs.getString("text"))
                         .description(rs.getString("description"))
@@ -292,6 +309,7 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                         .authorId(rs.getLong("author_id"))
                         .authorName(rs.getString("author_name"))
                         .authorImagePath(rs.getString("author_image_path"))
+                        .rank(rs.getString("author_rank"))
                         .title(rs.getString("title"))
                         .text(rs.getString("text"))
                         .description(rs.getString("description"))

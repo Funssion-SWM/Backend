@@ -28,6 +28,8 @@ import Funssion.Inforum.domain.post.qna.exception.DuplicateSelectedAnswerExcepti
 import Funssion.Inforum.domain.post.qna.exception.QuestionNotFoundException;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.score.Rank;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,6 +46,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static Funssion.Inforum.domain.post.qna.Constant.DEFAULT_PAGE_NUM;
+import static Funssion.Inforum.domain.post.qna.Constant.DEFAULT_RESULT_SIZE_PER_PAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -70,6 +74,8 @@ class QnAIntegrationTest {
     LikeService likeService;
     @Autowired
     LikeRepository likeRepository;
+    @Autowired
+    ScoreRepository scoreRepository;
 
     static final String AUTHORIZED_USER = "999";
 
@@ -140,7 +146,7 @@ class QnAIntegrationTest {
 
         answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
-        List<Question> questions = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        List<Question> questions = questionRepository.getQuestions(saveMemberId, OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(questions.get(0).getAnswersCount()).isEqualTo(1);
 
         LocalDateTime appliedDateTime = question.getCreatedDate();
@@ -192,12 +198,12 @@ class QnAIntegrationTest {
         answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
         Answer beDeletedAnswer = answerService.createAnswerOfQuestion(answerSaveDto, question.getId(), answerAuthorId);
 
-        List<Question> questionsBeforeDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        List<Question> questionsBeforeDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(questionsBeforeDelete.get(0).getAnswersCount()).isEqualTo(2);
 
         answerService.deleteAnswer(beDeletedAnswer.getId(),beDeletedAnswer.getAuthorId());
 
-        List<Question> questionsAfterDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW);
+        List<Question> questionsAfterDelete = questionRepository.getQuestions(saveMemberId, OrderType.NEW,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(questionsAfterDelete.get(0).getAnswersCount()).isEqualTo(1);
     }
 
@@ -227,7 +233,7 @@ class QnAIntegrationTest {
         makePureQuestion();
         makeQuestionOfOtherAuthor();
 
-        List<Question> myQuestions = questionRepository.getMyQuestions(saveMemberId, OrderType.NEW);
+        List<Question> myQuestions = questionRepository.getMyQuestions(saveMemberId, OrderType.NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(myQuestions).hasSize(2);
     }
 
@@ -244,7 +250,7 @@ class QnAIntegrationTest {
         likeService.likePost(PostType.QUESTION, question1.getId());
         likeService.likePost(PostType.QUESTION, question2.getId());
 
-        List<Question> myLikedQuestions = questionRepository.getMyLikedQuestions(likeUserId);
+        List<Question> myLikedQuestions = questionRepository.getMyLikedQuestions(likeUserId, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(myLikedQuestions).hasSize(2);
     }
 
@@ -264,7 +270,7 @@ class QnAIntegrationTest {
         answerService.createAnswerOfQuestion(answerSaveDto,question2.getId(),answerAuthorId);
         answerService.createAnswerOfQuestion(answerSaveDto,question3.getId(),answerAuthorId);
 
-        List<Question> questionsOfMyAnswer = questionRepository.getQuestionsOfMyAnswer(answerAuthorId);
+        List<Question> questionsOfMyAnswer = questionRepository.getQuestionsOfMyAnswer(answerAuthorId, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(questionsOfMyAnswer).hasSize(2);
     }
 
@@ -287,7 +293,7 @@ class QnAIntegrationTest {
         likeService.likePost(PostType.ANSWER, answersOfQuestion1.get(0).getId());
         likeService.likePost(PostType.ANSWER, answersOfQuestion2.get(0).getId());
 
-        List<Question> questionsOfMyLikedAnswer = questionRepository.getQuestionsOfMyLikedAnswer(likeUserId);
+        List<Question> questionsOfMyLikedAnswer = questionRepository.getQuestionsOfMyLikedAnswer(likeUserId, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE);
         assertThat(questionsOfMyLikedAnswer).hasSize(2);
     }
 
@@ -386,7 +392,7 @@ class QnAIntegrationTest {
                 "Backend","Java","Spring"
         };
         List<String> testTags = new ArrayList<>(Arrays.asList(testTagsStringList));
-        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,false);
+        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags,null, false);
         Memo memo1 = Memo.builder()
                 .title(form1.getMemoTitle())
                 .text(form1.getMemoText())
@@ -395,6 +401,7 @@ class QnAIntegrationTest {
                 .authorId(9999L)
                 .authorName("Jinu")
                 .authorImagePath("http:jinu")
+                .rank(Rank.BRONZE_5.toString())
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
                 .isTemporary(false)
@@ -451,7 +458,7 @@ class QnAIntegrationTest {
         @DisplayName("인기순으로 정렬")
         void getHottest(){
             saveQuestions();
-            List<Question> hottestQuestionList = questionService.getQuestions(saveMemberId, OrderType.HOT);
+            List<Question> hottestQuestionList = questionService.getQuestions(saveMemberId, OrderType.HOT,DEFAULT_PAGE_NUM,DEFAULT_RESULT_SIZE_PER_PAGE);
             assertThat(hottestQuestionList).hasSize(3);
         }
     }

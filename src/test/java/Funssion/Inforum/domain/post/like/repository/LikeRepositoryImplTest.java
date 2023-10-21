@@ -23,7 +23,7 @@ class LikeRepositoryImplTest {
     @Autowired
     private LikeRepository likeRepository;
 
-    private final Like like1 = new Like(0L,9999L, PostType.BLOG, 99999L, new Timestamp(0));
+    private final Like like1 = new Like(0L,9999L, PostType.ANSWER, 99999L, new Timestamp(0));
     private final Like like2 = new Like(0L,9998L, PostType.MEMO, 99998L, new Timestamp(0));
     private final Like like3 = new Like(0L,9998L, PostType.MEMO, 99997L, new Timestamp(0));
     private final Like like4 = new Like(0L,9999L, PostType.QUESTION, 99996L,new Timestamp(0));

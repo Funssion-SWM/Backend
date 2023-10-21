@@ -2,15 +2,18 @@ package Funssion.Inforum.domain.post.qna.service;
 
 import Funssion.Inforum.common.constant.CRUDType;
 import Funssion.Inforum.common.constant.OrderType;
+import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
+
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
@@ -18,6 +21,8 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.service.ScoreService;
+import Funssion.Inforum.domain.profile.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -29,19 +34,27 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.PostType.QUESTION;
+import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class QuestionServiceImpl implements QuestionService {
+    private final ScoreService scoreService;
+
     private final QuestionRepository questionRepository;
     private final MyRepository myRepository;
     private final MemoRepository memoRepository;
     private final S3Repository s3Repository;
+    private final NotificationRepository notificationRepository;
+    private final ProfileRepository profileRepository;
+    private final FollowRepository followRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -56,9 +69,63 @@ public class QuestionServiceImpl implements QuestionService {
     public Question createQuestion(QuestionSaveDto questionSaveDto, Long authorId, Long memoId)
     {
         findMemoAndUpdateQuestionsCount(memoId, Sign.PLUS);
-        Question question = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
-        createOrUpdateHistory(authorId,question.getCreatedDate(),Sign.PLUS);
-        return question;
+        Question createdQuestion = questionRepository.createQuestion(addAuthorInfo(questionSaveDto, authorId,memoId));
+        createOrUpdateHistory(authorId,createdQuestion.getCreatedDate(),Sign.PLUS);
+        scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_QUESTION,createdQuestion.getId());
+        sendNotification(memoId, createdQuestion);
+        return createdQuestion;
+    }
+
+    private void sendNotification(Long memoId, Question createdQuestion) {
+        ArrayList<Long> noticedUserList = new ArrayList<>();
+        noticedUserList.add(createdQuestion.getAuthorId());
+        sendNotificationToLinkedMemoAuthor(memoId, createdQuestion, noticedUserList);
+        sendNotificationToFollower(createdQuestion, noticedUserList);
+    }
+
+    private void sendNotificationToLinkedMemoAuthor(Long memoId, Question createdQuestion, ArrayList<Long> noticedUserList) {
+        if (memoId.toString().equals(Constant.NONE_MEMO_QUESTION)) return;
+
+        Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
+
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(receiverId)
+                        .postTypeToShow(QUESTION)
+                        .postIdToShow(createdQuestion.getId())
+                        .senderId(createdQuestion.getAuthorId())
+                        .senderPostType(QUESTION)
+                        .senderRank(createdQuestion.getRank())
+                        .senderPostId(createdQuestion.getId())
+                        .senderName(createdQuestion.getAuthorName())
+                        .senderImagePath(createdQuestion.getAuthorImagePath())
+                        .notificationType(NEW_QUESTION)
+                        .build()
+        );
+        noticedUserList.add(receiverId);
+    }
+
+    private void sendNotificationToFollower(Question createdQuestion, ArrayList<Long> noticedUserList) {
+        List<Long> followerIdList =
+                followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
+        for (Long receiverId : followerIdList) {
+            if (noticedUserList.contains(receiverId)) continue;
+            notificationRepository.save(
+                    Notification.builder()
+                            .receiverId(receiverId)
+                            .postTypeToShow(QUESTION)
+                            .postIdToShow(createdQuestion.getId())
+                            .senderId(createdQuestion.getAuthorId())
+                            .senderPostType(QUESTION)
+                            .senderPostId(createdQuestion.getId())
+                            .senderName(createdQuestion.getAuthorName())
+                            .senderImagePath(createdQuestion.getAuthorImagePath())
+                            .senderRank(createdQuestion.getRank())
+                            .notificationType(NEW_POST_FOLLOWED)
+                            .build()
+            );
+            noticedUserList.add(receiverId);
+        }
     }
 
     private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {
@@ -89,8 +156,8 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> getQuestions(Long userId, OrderType orderBy) {
-        return questionRepository.getQuestions(userId, orderBy);
+    public List<Question> getQuestions(Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
+        return questionRepository.getQuestions(userId, orderBy, pageNum, resultCntPerPage);
     }
     @Override
     public List<Question> getQuestionsOfMemo(Long userId, Long memoId) {
@@ -102,25 +169,22 @@ public class QuestionServiceImpl implements QuestionService {
             String searchString,
             Long userId,
             OrderType orderBy,
-            Boolean isTag) {
+            Boolean isTag,
+            Long pageNum,
+            Long resultCntPerPage) {
 
         if (isTag)
-            return getQuestionsSearchedByTag(searchString, userId, orderBy);
+            return getQuestionsSearchedByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
 
-        return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy);
+        return questionRepository.findAllBySearchQuery(getSearchStringList(searchString), orderBy, pageNum, resultCntPerPage);
+
     }
 
-    private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy) {
+    private List<Question> getQuestionsSearchedByTag(String searchString, Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
         if (userId.equals(SecurityContextUtils.ANONYMOUS_USER_ID))
-            return questionRepository.findAllByTag(searchString, orderBy);
+            return questionRepository.findAllByTag(searchString, orderBy, pageNum, resultCntPerPage);
 
-        return questionRepository.findAllByTag(searchString, userId, orderBy);
-    }
-
-    private static List<String> getSearchStringList(String searchString) {
-        return Arrays.stream(searchString.split(" "))
-                .map(str -> "%" + str + "%")
-                .toList();
+        return questionRepository.findAllByTag(searchString, userId, orderBy, pageNum, resultCntPerPage);
     }
 
     @Override
@@ -141,6 +205,9 @@ public class QuestionServiceImpl implements QuestionService {
         s3Repository.deleteFromText(QUESTION_DIR, willBeDeletedQuestion.getText());
         questionRepository.deleteQuestion(questionId);
         myRepository.updateHistory(authorId,QUESTION,Sign.MINUS,willBeDeletedQuestion.getCreatedDate().toLocalDate());
+
+        scoreService.subtractUserScore(authorId,ScoreType.MAKE_QUESTION, willBeDeletedQuestion.getId());
+        notificationRepository.delete(QUESTION, questionId);
         return new IsSuccessResponseDto(true,"성공적으로 질문이 삭제되었습니다.");
     }
 

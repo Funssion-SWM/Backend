@@ -1,10 +1,13 @@
 package Funssion.Inforum.domain.mypage.controller;
 
+import Funssion.Inforum.domain.mypage.dto.MyRankScoreDto;
 import Funssion.Inforum.domain.mypage.dto.MyRecordNumDto;
 import Funssion.Inforum.domain.mypage.dto.MyUserInfoDto;
+import Funssion.Inforum.domain.mypage.dto.addPercentageOfScoreDto;
 import Funssion.Inforum.domain.mypage.service.MyService;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.qna.domain.Question;
+import Funssion.Inforum.domain.post.series.dto.response.SeriesListDto;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,36 +32,78 @@ public class MyController {
     }
 
     @GetMapping("/memos")
-    public List<MemoListDto> getMyMemos(@PathVariable @Min(1) Long userId) {
-        return myService.getMyMemos(userId);
+    public List<MemoListDto> getMyMemos(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMyMemos(userId, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/memos/liked")
-    public List<MemoListDto> getMyLikedMemos(@PathVariable @Min(1) Long userId) {
-        return myService.getMyLikedMemos(userId);
+    public List<MemoListDto> getMyLikedMemos(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMyLikedMemos(userId, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/memos/drafts")
     public List<MemoListDto> getMyDraftMemos(@PathVariable @Min(1) Long userId) {return myService.getMyDraftMemos(userId);}
 
     @GetMapping("/questions")
-    public List<Question> getMyQuestions(@PathVariable @Min(1) Long userId ){
-        return myService.getMyQuestions(userId);
+    public List<Question> getMyQuestions(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ){
+        return myService.getMyQuestions(userId, pageNum, resultCntPerPage);
     }
     @GetMapping("/questions/liked")
-    public List<Question> getMyLikedQuestions(@PathVariable @Min(1) Long userId ){
-        return myService.getMyLikedQuestions(userId);
+    public List<Question> getMyLikedQuestions(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ){
+        return myService.getMyLikedQuestions(userId, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/questions/answered")
-    public List<Question> getQuestionsOfMyAnswer(@PathVariable @Min(1) Long userId ){
-        return myService.getQuestionsOfMyAnswer(userId);
+    public List<Question> getQuestionsOfMyAnswer(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ){
+        return myService.getQuestionsOfMyAnswer(userId, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/questions/answer/liked")
-    public List<Question> getQuestionsOfMyLikedAnswer(@PathVariable @Min(1) Long userId){
-        return myService.getQuestionsOfMyLikedAnswer(userId);
+    public List<Question> getQuestionsOfMyLikedAnswer(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage){
+        return myService.getQuestionsOfMyLikedAnswer(userId, pageNum, resultCntPerPage);
     }
+
+    @GetMapping("/series")
+    public List<SeriesListDto> getMySeries(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMySeries(userId, pageNum, resultCntPerPage);
+    }
+
+    @GetMapping("/series/liked")
+    public List<SeriesListDto> getMyLikedSeries(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
+    ) {
+        return myService.getMyLikedSeries(userId, pageNum, resultCntPerPage);
+    }
+
     @GetMapping("/history")
     public List<MyRecordNumDto> getHistory(
             @PathVariable @Min(1) Long userId,
@@ -67,4 +112,13 @@ public class MyController {
         return myService.getHistory(userId, year, month);
     }
 
+    @GetMapping("/rank")
+    public MyRankScoreDto getRankAndScore(@PathVariable @Min(1) Long userId){
+        return myService.getRankAndScoreOf(userId);
+    }
+
+    @GetMapping("/stats")
+    public addPercentageOfScoreDto getActivityStatus(@PathVariable @Min(1) Long userId){
+        return myService.getActivityStatsOf(userId);
+    }
 }

@@ -1,18 +1,23 @@
 package Funssion.Inforum.domain.post.memo.service;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
+import Funssion.Inforum.domain.score.repository.ScoreRepository;
+import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -25,12 +30,15 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
-import static Funssion.Inforum.common.constant.CRUDType.*;
+import static Funssion.Inforum.common.constant.CRUDType.READ;
 import static Funssion.Inforum.common.constant.DateType.*;
-import static Funssion.Inforum.common.constant.OrderType.*;
-import static org.assertj.core.api.Assertions.*;
+import static Funssion.Inforum.common.constant.OrderType.HOT;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +48,12 @@ public class MemoServiceTest {
     @Mock TagRepository tagRepository;
     @Mock MyRepository myRepository;
     @Mock S3Repository s3Repository;
+    @Mock
+    ScoreRepository scoreRepository;
+    @Mock
+    ScoreService scoreService;
+    @Mock FollowRepository followRepository;
+    @Mock NotificationRepository notificationRepository;
     @InjectMocks MemoService memoService;
 
     MockedStatic<SecurityContextUtils> mockSecurityContextUtils;
@@ -85,6 +99,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now().minusDays(1))
                 .likes(0L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "JPA"))
                 .build();
         memo2 = Memo.builder()
@@ -99,6 +114,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(10000L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring", "JDK"))
                 .build();
         memo3 = Memo.builder()
@@ -113,6 +129,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(9999L)
                 .isTemporary(false)
+                .isCreated(true)
                 .memoTags(List.of("Java", "Spring-Security", "JWT"))
                 .build();
         memo4 = Memo.builder()
@@ -127,6 +144,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("JSP"))
                 .isCreated(Boolean.FALSE)
                 .build();
@@ -142,6 +160,7 @@ public class MemoServiceTest {
                 .createdDate(LocalDateTime.now())
                 .likes(0L)
                 .isTemporary(true)
+                .isCreated(true)
                 .memoTags(List.of("Junit"))
                 .isCreated(Boolean.TRUE)
                 .build();
@@ -183,7 +202,7 @@ public class MemoServiceTest {
                     .willReturn(List.of(memo3, memo2, memo1));
             given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3, memo1));
-            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(toNumOfDays(DAY)), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
+            given(memoRepository.findAllByDaysOrderByLikes(ArgumentMatchers.eq(DAY), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                     .willReturn(List.of(memo2, memo3));
 
             List<MemoListDto> memosForMainPageOrderByDays = memoService.getMemosForMainPage(WEEK, NEW, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
@@ -286,10 +305,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("유저 ID, 태그로 메모 검색")
             void searchMemosByTagAndUserID() {
-                given(memoRepository.findAllByTag(any(), AdditionalMatchers.not(eq(SecurityContextUtils.ANONYMOUS_USER_ID)), any()))
+                given(memoRepository.findAllByTag(any(), AdditionalMatchers.not(eq(SecurityContextUtils.ANONYMOUS_USER_ID)), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo2, memo1));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", userID1, HOT, true);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", userID1, HOT, true, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto2, memoListDto1);
             }
@@ -297,10 +316,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("태그로 메모 검색")
             void searchMemosByTag() {
-                given(memoRepository.findAllByTag(any(), any()))
+                given(memoRepository.findAllByTag(any(), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo3, memo2));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, NEW, true);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, NEW, true, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto3, memoListDto2);
             }
@@ -308,10 +327,10 @@ public class MemoServiceTest {
             @Test
             @DisplayName("텍스트로 메모 검색")
             void searchMemosBySearchString() {
-                given(memoRepository.findAllBySearchQuery(any(), any()))
+                given(memoRepository.findAllBySearchQuery(any(), any(), any(), eq(DEFAULT_PAGE_NUM), eq(DEFAULT_MEMO_CNT)))
                         .willReturn(List.of(memo3, memo2, memo1));
 
-                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, HOT, false);
+                List<MemoListDto> searchMemos = memoService.searchMemosBy("Java", SecurityContextUtils.ANONYMOUS_USER_ID, HOT, false, DEFAULT_PAGE_NUM, DEFAULT_MEMO_CNT);
 
                 assertThat(searchMemos).containsExactly(memoListDto3, memoListDto2, memoListDto1);
             }
@@ -349,6 +368,8 @@ public class MemoServiceTest {
                     .willReturn(memo1);
             given(tagRepository.saveTags(any(), any()))
                     .willReturn(new IsSuccessResponseDto(true, "save success"));
+            given(followRepository.findFollowedUserIdByUserId(any()))
+                    .willReturn(Collections.emptyList());
             willThrow(HistoryNotFoundException.class)
                     .given(myRepository)
                     .updateHistory(any(), any(), any(), any());
@@ -433,6 +454,8 @@ public class MemoServiceTest {
                         .willReturn(memo4);
                 given(memoRepository.updateContentInMemo(memoSaveDto, memoID4, Boolean.TRUE))
                         .willReturn(memo2);
+                given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID4, memoSaveDto);
 
@@ -448,6 +471,8 @@ public class MemoServiceTest {
                         .willReturn(memo5);
                 given(memoRepository.updateContentInMemo(memoSaveDto, memoID5))
                         .willReturn(memo2);
+                given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID5, memoSaveDto);
 
@@ -467,12 +492,9 @@ public class MemoServiceTest {
                         .willReturn(userID1);
                 given(memoRepository.findById(memoID2))
                         .willReturn(memo2);
-                given(memoRepository.updateContentInMemo(tempMemoSaveDto, memoID2))
-                        .willReturn(memo4);
 
-                MemoDto updated = memoService.updateMemo(memoID2, tempMemoSaveDto);
-
-                assertThat(tempMemoSaveDto).isEqualTo(MemoSaveDto.valueOf(updated));
+                assertThatThrownBy(() -> memoService.updateMemo(memoID2, tempMemoSaveDto))
+                        .isInstanceOf(BadRequestException.class);
             }
 
             @Test
@@ -501,6 +523,8 @@ public class MemoServiceTest {
                     .willReturn(memo4);
             given(tagRepository.updateTags(eq(memoID4), any()))
                     .willThrow(SQLException.class);
+            given(followRepository.findFollowedUserIdByUserId(any()))
+                    .willReturn(Collections.emptyList());
 
             assertThatThrownBy(() -> memoService.updateMemo(memoID4, memoSaveDto))
                     .isInstanceOf(ArrayToListException.class);
@@ -603,5 +627,6 @@ public class MemoServiceTest {
 
             memoService.deleteMemo(memoID4);
         }
+
     }
 }

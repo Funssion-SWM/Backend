@@ -9,6 +9,7 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
+import Funssion.Inforum.domain.post.comment.domain.ReComment;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
@@ -22,6 +23,7 @@ import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
+import Funssion.Inforum.domain.score.Rank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -269,7 +271,7 @@ class CommentIntegrationTest {
         }
 
         @Test
-        @DisplayName("메모 게시글 댓글 삭제")
+        @DisplayName("메모 게시글의 대댓글이 달리지 않은 댓글 삭제")
         void deleteCommentOfMemo(){
             CommentSaveDto commentSaveDtoIn_MEMO = createCommentSaveDto(PostType.MEMO);
 
@@ -280,6 +282,64 @@ class CommentIntegrationTest {
             commentService.deleteComment(comment.getId());
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
             assertThat(commentsAtPostAfterDelete).hasSize(0);
+        }
+        @Test
+        @DisplayName("질문 게시글 댓글의 대댓글이 달렸을 경우 댓글을 삭제할 경우, 완전삭제는 되지 않는다.")
+        void deleteCommentWhichHasRecomments(){
+
+            Long recommentAuthorId = makeRecommentUser();
+            CommentSaveDto commentSaveDtoIn_QUESTION = createCommentSaveDto(PostType.QUESTION);
+
+            Comment comment = commentService.createComment(commentSaveDtoIn_QUESTION, saveMemberId);
+            List<CommentListDto> commentsAtPostBeforeDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostBeforeDelete).hasSize(1);
+
+            ReCommentSaveDto reCommentSaveDto = new ReCommentSaveDto(comment.getId(), "대댓글 내용입니다.");
+            commentService.createReComment(reCommentSaveDto,recommentAuthorId);
+
+            commentService.deleteComment(comment.getId());
+            List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
+        }
+        @Test
+        @DisplayName("대댓글이 달리고 댓글이 삭제된 후에, 대댓글이 지워지고 대댓글 수가 0이되면 댓글도 삭제된다.")
+        void deleteCommentWhenUserDeleteCommentAndRecommentsDeleted(){
+            Long recommentAuthorId = makeRecommentUser();
+            CommentSaveDto commentSaveDtoIn_QUESTION = createCommentSaveDto(PostType.QUESTION);
+
+            Comment comment = commentService.createComment(commentSaveDtoIn_QUESTION, saveMemberId);
+            List<CommentListDto> commentsAtPostBeforeDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostBeforeDelete).hasSize(1);
+
+            ReCommentSaveDto reCommentSaveDto = new ReCommentSaveDto(comment.getId(), "대댓글 내용입니다.");
+            ReComment reComment = commentService.createReComment(reCommentSaveDto, recommentAuthorId);
+            commentService.deleteComment(comment.getId());
+            List<CommentListDto> commentsAtPostAfterDeleteComment = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostAfterDeleteComment.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
+
+            commentService.deleteReComment(reComment.getId());
+            List<CommentListDto> commentsAtPostAfterDeleteRecomment = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostAfterDeleteRecomment).hasSize(0);
+        }
+
+        private Long makeRecommentUser() {
+            MemberSaveDto memberSaveDto = MemberSaveDto.builder()
+                    .userName("tester")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .userPw("a1234567!")
+                    .userEmail("tester@gmail.com")
+                    .build();
+            MemberProfileEntity memberProfileEntity = MemberProfileEntity.builder()
+                    .nickname("tester")
+                    .profileImageFilePath("taehoon-image")
+                    .introduce("introduce of taehoon")
+                    .userTags(List.of("tag1", "tag2"))
+                    .build();
+
+            SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(NonSocialMember.createNonSocialMember(memberSaveDto));
+            Long recommentAuthorId = saveMemberResponseDto.getId();
+            myRepository.createProfile(recommentAuthorId, memberProfileEntity);
+            return recommentAuthorId;
         }
 
         @Test
@@ -294,6 +354,7 @@ class CommentIntegrationTest {
             commentService.deleteComment(comment.getId());
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
             assertThat(commentsAtPostAfterDelete).hasSize(0);
+
         }
     }
 
@@ -317,6 +378,7 @@ class CommentIntegrationTest {
                 .isSelected(false)
                 .likes(0L)
                 .repliesCount(0L)
+                .rank(Rank.BRONZE_5.toString())
                 .text("{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"질문입니다.\", \"type\": \"text\"}]}]}")
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())
@@ -331,6 +393,7 @@ class CommentIntegrationTest {
                 .authorImagePath("이미지경로")
                 .memoId(memoId)
                 .answersCount(0L)
+                .rank(Rank.BRONZE_5.toString())
                 .isSolved(false)
                 .likes(0L)
                 .title("질문 제목")
@@ -343,7 +406,7 @@ class CommentIntegrationTest {
     }
 
     private static Memo createMemo(){
-        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",createTagList(),false);
+        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",createTagList(),null,false );
 
         return Memo.builder()
                 .id(MEMO_ID)
@@ -353,6 +416,7 @@ class CommentIntegrationTest {
                 .color(form1.getMemoColor())
                 .authorId(saveMemberId)
                 .authorName("Jinu")
+                .rank(Rank.BRONZE_5.toString())
                 .authorImagePath("http:jinu")
                 .createdDate(LocalDateTime.now())
                 .updatedDate(LocalDateTime.now())

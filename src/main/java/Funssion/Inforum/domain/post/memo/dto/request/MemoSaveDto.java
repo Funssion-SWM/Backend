@@ -2,18 +2,17 @@ package Funssion.Inforum.domain.post.memo.dto.request;
 
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Data
 @Builder
 @EqualsAndHashCode
-@NoArgsConstructor // cannot deserialize from object value (no delegate- or property-based creator) 오류 해결 위한 빈 생성자 생성
+@NoArgsConstructor
+@AllArgsConstructor
 public class MemoSaveDto {
     @NotBlank(message = "제목을 입력해주세요")
     private String memoTitle;
@@ -22,18 +21,18 @@ public class MemoSaveDto {
     private String memoText;
     @NotBlank(message = "색을 지정해주세요")
     private String memoColor;
-
     private List<String> memoTags;
+    @Builder.Default
+    private Long seriesId = null;
     @Builder.Default
     private Boolean isTemporary = false;
 
-    public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor,List<String> memoTags, Boolean isTemporary) {
+    public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor, List<String> memoTags) {
         this.memoTitle = memoTitle;
         this.memoDescription = memoDescription;
         this.memoText = memoText;
         this.memoColor = memoColor;
         this.memoTags = memoTags;
-        this.isTemporary = isTemporary;
     }
 
     public static MemoSaveDto valueOf(MemoDto memo) {
@@ -43,6 +42,7 @@ public class MemoSaveDto {
                 .memoTags(memo.getMemoTags())
                 .memoText(memo.getMemoText())
                 .memoDescription(memo.getMemoDescription())
+                .seriesId(memo.getSeriesId())
                 .isTemporary(memo.getIsTemporary())
                 .build();
     }
@@ -54,6 +54,7 @@ public class MemoSaveDto {
                 .memoTags(memo.getMemoTags())
                 .memoText(memo.getText())
                 .memoDescription(memo.getDescription())
+                .seriesId(memo.getSeriesId())
                 .isTemporary(memo.getIsTemporary())
                 .build();
     }

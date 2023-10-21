@@ -16,17 +16,19 @@ import java.util.List;
 public interface CommentRepository {
     Comment createComment(Comment comment);
 
-    void createReComment(ReComment reComment);
+    ReComment createReComment(ReComment reComment);
     IsSuccessResponseDto updateComment(CommentUpdateDto commentUpdateDto, Long commentId);
 
     IsSuccessResponseDto updateReComment(ReCommentUpdateDto reCommentUpdateDto, Long reCommentId);
 
     IsSuccessResponseDto deleteComment(Long commentId);
+    IsSuccessResponseDto deleteCommentWhichHasRecomment(Long commentId);
     IsSuccessResponseDto deleteReComment(Long reCommentId);
     /*
        getComments 관련하여, 댓글 좋아요 여부 정보를 로그인 상태에 따라,
        member.like table과의 join으로 처리합니다. -> 튜닝해야할 지도
      */
+    Long getRecommentsCountOfComment(Long commentId);
 
     List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId);
 
@@ -46,4 +48,7 @@ public interface CommentRepository {
 
     void plusCommentsCountOfPost(PostType postType, Long postId);
     void subtractCommentsCountOfPost(PostIdAndTypeInfo postIdAndTypeInfo);
+
+    List<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long postId);
+
 }

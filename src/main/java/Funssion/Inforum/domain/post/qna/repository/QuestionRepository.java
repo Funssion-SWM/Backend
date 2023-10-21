@@ -12,8 +12,8 @@ public interface QuestionRepository {
 
     Question updateQuestion(QuestionSaveDto questionSaveDto, Long questionId);
 
-    List<Question> getQuestions(Long userId, OrderType orderBy);
-    List<Question> getMyQuestions(Long userId, OrderType orderBy);
+    List<Question> getQuestions(Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage);
+    List<Question> getMyQuestions(Long userId, OrderType orderBy, Long pageNum, Long resultCntPerPage);
 
 
     Long getAuthorId(Long questionId);
@@ -26,14 +26,14 @@ public interface QuestionRepository {
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 
-    List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType);
-    List<Question> findAllByTag(String tagText, OrderType orderType);
-    List<Question> findAllByTag(String tagText, Long userId, OrderType orderType);
+    List<Question> findAllBySearchQuery(List<String> searchStringList, OrderType orderType, Long pageNum, Long resultCntPerPage);
+    List<Question> findAllByTag(String tagText, OrderType orderType, Long pageNum, Long resultCntPerPage);
+    List<Question> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage);
 
     void updateProfileImage(Long userId, String profileImageFilePath);
-    List<Question> getMyLikedQuestions(Long userId);
+    List<Question> getMyLikedQuestions(Long userId, Long pageNum, Long resultCntPerPage);
 
-    List<Question> getQuestionsOfMyAnswer(Long userId);
+    List<Question> getQuestionsOfMyAnswer(Long userId, Long pageNum, Long resultCntPerPage);
 
-    List<Question> getQuestionsOfMyLikedAnswer(Long userId);
+    List<Question> getQuestionsOfMyLikedAnswer(Long userId, Long pageNum, Long resultCntPerPage);
 }

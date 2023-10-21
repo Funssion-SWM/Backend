@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @SuperBuilder
 @ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"seriesId", "seriesTitle"})
 public class Memo extends Post {
     private String title;
     private String description;
@@ -26,7 +26,8 @@ public class Memo extends Post {
     private List<String> memoTags;
     private Boolean isTemporary;
     private Boolean isCreated;
-
+    private Long seriesId;
+    private String seriesTitle;
 
 
     public Memo(MemoSaveDto form, Long authorId, MemberProfileEntity authorProfile, LocalDateTime createdDate, LocalDateTime updatedDate) {
@@ -36,6 +37,7 @@ public class Memo extends Post {
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
         this.memoTags = form.getMemoTags();
+        this.seriesId = form.getSeriesId();
         this.isTemporary = form.getIsTemporary();
     }
 
@@ -45,6 +47,7 @@ public class Memo extends Post {
         this.text = form.getMemoText();
         this.color = form.getMemoColor();
         this.memoTags = form.getMemoTags();
+        this.seriesId = form.getSeriesId();
         this.isTemporary = form.getIsTemporary();
     }
 }

@@ -23,13 +23,14 @@ public class MemoListDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private String authorRank;
     private Long repliesCount;
     private Long questionCount;
     private Long likes;
     private Boolean isLike;
     private List<String> memoTags;
     private Boolean isTemporary;
-
+    private Long seriesId;
 
     public MemoListDto(Memo memo) {
         this.memoId = memo.getId();
@@ -41,11 +42,13 @@ public class MemoListDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.authorRank = memo.getRank();
         this.repliesCount = memo.getRepliesCount();
         this.likes = memo.getLikes();
         this.memoTags = memo.getMemoTags();
         this.isTemporary = memo.getIsTemporary();
         this.questionCount = memo.getQuestionCount();
+        this.seriesId = memo.getSeriesId();
 
         setMemoTagsLimit(2);
     }

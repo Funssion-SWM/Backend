@@ -12,6 +12,7 @@ public class ReCommentListDto {
     private Long authorId;
     private String authorName;
     private String authorImagePath;
+    private String authorRank;
     private String commentText;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;

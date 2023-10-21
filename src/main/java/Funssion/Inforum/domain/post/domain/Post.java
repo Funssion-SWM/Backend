@@ -5,14 +5,12 @@ import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Getter
 @SuperBuilder
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = {"id", "createdDate"})
 @AllArgsConstructor
 @NoArgsConstructor
 public class Post {
@@ -20,6 +18,7 @@ public class Post {
     private Long authorId;
     private String authorName;
     private String authorImagePath;
+    private String rank;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private Long likes;
@@ -28,6 +27,7 @@ public class Post {
         this.authorId = authorId;
         this.authorName = authorProfile.getNickname();
         this.authorImagePath = authorProfile.getProfileImageFilePath();
+        this.rank = authorProfile.getRank();
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
     }

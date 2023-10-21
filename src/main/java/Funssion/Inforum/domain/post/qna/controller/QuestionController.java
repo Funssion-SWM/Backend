@@ -54,9 +54,12 @@ public class QuestionController {
 
 
     @GetMapping
-    public List<Question> getQuestions(@RequestParam (required = false, defaultValue = "NEW") OrderType orderBy){
+    public List<Question> getQuestions(
+            @RequestParam (required = false, defaultValue = "NEW") OrderType orderBy,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage){
         Long loginId = AuthUtils.getUserId(CRUDType.READ);
-        return questionService.getQuestions(loginId,orderBy);
+        return questionService.getQuestions(loginId,orderBy, pageNum, resultCntPerPage);
     }
 
     @GetMapping("/{id}")
@@ -76,13 +79,15 @@ public class QuestionController {
             @RequestParam(required = false) String searchString,
             @RequestParam(required = false, defaultValue =  SecurityContextUtils.ANONYMOUS_USER_ID_STRING) @Min(0) Long userId,
             @RequestParam OrderType orderBy,
-            @RequestParam Boolean isTag
+            @RequestParam Boolean isTag,
+            @RequestParam(required = false, defaultValue = "0") @Min(0) Long pageNum,
+            @RequestParam(required = false, defaultValue = "12") @Min(1) Long resultCntPerPage
     ) {
-        if (Objects.isNull(searchString) || searchString.isEmpty()) {
+        if (Objects.isNull(searchString) || searchString.isBlank()) {
             return new ArrayList<>();
         }
 
-        return questionService.searchQuestionsBy(searchString, userId, orderBy, isTag);
+        return questionService.searchQuestionsBy(searchString, userId, orderBy, isTag, pageNum, resultCntPerPage);
     }
 
     @PostMapping("/image")

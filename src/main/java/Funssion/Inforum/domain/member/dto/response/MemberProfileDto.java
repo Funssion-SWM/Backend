@@ -1,10 +1,10 @@
 package Funssion.Inforum.domain.member.dto.response;
 
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.score.Rank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -19,6 +19,7 @@ public class MemberProfileDto {
     private final List<String> userTags;
     private final Long followCnt;
     private final Long followerCnt;
+    private final Rank rank;
     private Boolean isFollowed;
 
     public static MemberProfileDto valueOf(MemberProfileEntity memberProfileEntity) {
@@ -30,6 +31,7 @@ public class MemberProfileDto {
                 .userTags(memberProfileEntity.getUserTags())
                 .followCnt(memberProfileEntity.getFollowCnt())
                 .followerCnt(memberProfileEntity.getFollowerCnt())
+                .rank(Rank.valueOf(memberProfileEntity.getRank()))
                 .isFollowed(Boolean.FALSE)
                 .build();
     }

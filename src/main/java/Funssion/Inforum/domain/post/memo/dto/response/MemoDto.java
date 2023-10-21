@@ -14,6 +14,7 @@ public class MemoDto {
     private Long authorId;
     private String authorName;
     private String authorProfileImagePath;
+    private String authorRank;
     private String memoTitle;
     private String memoDescription;
     private String memoText;
@@ -22,7 +23,10 @@ public class MemoDto {
     private LocalDateTime updatedDate;
     private Long likes;
     private List<String> memoTags;
+    private Long seriesId;
+    private String seriesTitle;
     private Boolean isTemporary;
+    private Boolean isCreated;
     private Boolean isMine;
 
     public MemoDto(Memo memo) {
@@ -30,6 +34,7 @@ public class MemoDto {
         this.authorId = memo.getAuthorId();
         this.authorName = memo.getAuthorName();
         this.authorProfileImagePath = memo.getAuthorImagePath();
+        this.authorRank = memo.getRank();
         this.memoTitle = memo.getTitle();
         this.memoDescription = memo.getDescription();
         this.memoText = memo.getText();
@@ -38,7 +43,10 @@ public class MemoDto {
         this.updatedDate = memo.getUpdatedDate();
         this.memoTags = memo.getMemoTags();
         this.likes = memo.getLikes();
+        this.seriesId = memo.getSeriesId();
+        this.seriesTitle = memo.getSeriesTitle();
         this.isTemporary = memo.getIsTemporary();
+        this.isCreated = memo.getIsCreated();
     }
 
     public void setIsMine(Long authorId) {
