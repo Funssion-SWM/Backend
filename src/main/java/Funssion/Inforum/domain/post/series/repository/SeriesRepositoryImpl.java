@@ -133,9 +133,9 @@ public class SeriesRepositoryImpl implements SeriesRepository {
         String lastSeachString = searhStringList.get(searhStringList.size() - 1);
         for (String searchString : searhStringList) {
             if (searchString.equals(lastSeachString)) {
-                conditionalStatement.append("title ilike ? or regexp_match(text::text, '\"text\": \"([^\"]*)'||?, 'i') IS NOT null");
+                conditionalStatement.append("title ilike ? or description ilike ?");
             } else {
-                conditionalStatement.append("title ilike ? or regexp_match(text::text, '\"text\": \"([^\"]*)'||?, 'i') IS NOT null or ");
+                conditionalStatement.append("title ilike ? or description ilike ? or ");
             }
             params.add("%" + searchString + "%");
             params.add(searchString);

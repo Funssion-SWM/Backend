@@ -7,6 +7,7 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -149,6 +150,11 @@ public class MemoService {
     public MemoDto getMemoBy(Long memoId) {
 
         Memo memo = memoRepository.findById(memoId);
+        Long userId = SecurityContextUtils.getUserId();
+        if (memo.getIsTemporary() && userId.equals(memo.getAuthorId())) {
+            throw new ForbiddenException("남의 임시메모에는 접근할 수 없습니다.");
+        }
+
         MemoDto responseDto = new MemoDto(memo);
         responseDto.setIsMine(SecurityContextUtils.getUserId());
         return responseDto;

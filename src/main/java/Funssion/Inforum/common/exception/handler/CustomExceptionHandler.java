@@ -5,6 +5,7 @@ import Funssion.Inforum.common.exception.etc.DuplicateException;
 import Funssion.Inforum.common.exception.etc.ImageIOException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.etc.ValueTooLongException;
+import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.exception.response.ErrorResult;
 import jakarta.validation.ValidationException;
@@ -49,6 +50,13 @@ public class CustomExceptionHandler {
     @ResponseStatus(NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public ErrorResult handleNotFoundEx(NotFoundException e) {
+        log.warn("error message={}", e.getMessage(), e);
+        return e.getErrorResult();
+    }
+
+    @ResponseStatus(FORBIDDEN)
+    @ExceptionHandler(ForbiddenException.class)
+    public ErrorResult handleForbiddenEx(ForbiddenException e) {
         log.warn("error message={}", e.getMessage(), e);
         return e.getErrorResult();
     }
