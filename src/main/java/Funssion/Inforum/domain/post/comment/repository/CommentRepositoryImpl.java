@@ -61,7 +61,7 @@ public class CommentRepositoryImpl implements CommentRepository{
         return getCommentById(keyHolder.getKey().longValue());
     }
     private Comment getCommentById(Long commentId){
-        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date, author_rank " +
+        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date, author_rank, is_user_delete " +
                 "from post.comment where id =?";
         return template.queryForObject(sql,commentRowMapper(),commentId);
     }
@@ -95,8 +95,8 @@ public class CommentRepositoryImpl implements CommentRepository{
     public List<Comment> findIfUserRegisterAnotherCommentOfPost(Long userId, Long commentId){
         PostInfo postInfoOfComment = getPostInfoOfComment(userId, commentId);
 
-        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date" +
-                " from post.comment where author_id = ? and post_type = ? and post_id = ? and id != ?";
+        String sql = "select id,post_id, author_id,author_image_path, author_name, author_rank, likes, recomments, post_type, comment_text, created_date, updated_date, is_user_delete" +
+                " from post.comment where author_id = ? and post_type = ? and post_id = ? and is_user_delete is false and id != ?";
 
         return template.query(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId);
     }
@@ -126,11 +126,23 @@ public class CommentRepositoryImpl implements CommentRepository{
 
     }
 
+
+
+    @Override
+    public IsSuccessResponseDto deleteCommentWhichHasRecomment(Long commentId) {
+        String sql = "UPDATE post.comment " +
+                "SET comment_text = '삭제된 댓글입니다.', is_user_delete = true, updated_date = current_timestamp " +
+                "WHERE id = ?";
+        if(template.update(sql, commentId) == 0){
+            throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
+        }
+
+        return new IsSuccessResponseDto(true,"댓글이 삭제되었습니다.");
+    }
+
     @Override
     public IsSuccessResponseDto deleteComment(Long commentId) {
-        String sql = "UPDATE post.comment " +
-                "SET comment_text = '삭제된 댓글입니다.', updated_date = current_timestamp " +
-                "WHERE id = ?";
+        String sql = "delete from post.comment where id = ?";
         if(template.update(sql, commentId) == 0){
             throw new UpdateFailException("댓글 삭제에 실패하였습니다.");
         }
@@ -142,14 +154,24 @@ public class CommentRepositoryImpl implements CommentRepository{
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
         Long parentCommentId = getParentCommentId(reCommentId);
         deleteReCommentsInTable(reCommentId);
-        updateNumberOfReCommentsOfComment(parentCommentId,true);
+        Long reCommentCountOfComment = updateNumberOfReCommentsOfComment(parentCommentId, true);
+        if(reCommentCountOfComment ==0){
+            Comment parentComment = getCommentById(parentCommentId);
+            if(parentComment.getIsUserDelete()) deleteComment(parentCommentId);
+        }
         return new IsSuccessResponseDto(true,"대댓글이 삭제되었습니다.");
     }
 
+    @Override
+    public Long getRecommentsCountOfComment(Long commentId) {
+        String sql = "SELECT count(id) " +
+                "FROM post.recomment " +
+                "WHERE parent_id = ?";
+        return template.queryForObject(sql,Long.class,commentId);
+    }
+
     private void deleteReCommentsInTable(Long reCommentId) {
-        String sql = "UPDATE post.recomment " +
-                "SET comment_text = '삭제된 댓글입니다.', updated_date = current_timestamp " +
-                "WHERE id =?";
+        String sql = "delete from post.recomment where id =?";
         if(template.update(sql, reCommentId) == 0){
             throw new UpdateFailException("대댓글 삭제에 실패하였습니다.");
         }
@@ -191,14 +213,14 @@ public class CommentRepositoryImpl implements CommentRepository{
         return keyHolder.getKey().longValue();
     }
 
-    private void updateNumberOfReCommentsOfComment(Long commentId, Boolean isDelete) {
+    private Long updateNumberOfReCommentsOfComment(Long commentId, Boolean isDelete) {
         String sql = isDelete? "update post.comment set recomments = recomments - 1 where id = ?"
                 :"update post.comment set recomments = recomments + 1 where id = ?";
         int updatedRow = template.update(sql, commentId);
         if (updatedRow != 1){
             throw new UpdateFailException("대댓글 수 갱신에 실패하였습니다.");
         }
-        
+        return getRecommentsCountOfComment(commentId);
     }
 
 
@@ -413,6 +435,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
                         .likes(rs.getLong("likes"))
                         .rank(rs.getString("author_rank"))
+                        .isUserDelete(rs.getBoolean("is_user_delete"))
                         .build());
     };
     private RowMapper<ReComment> reCommentRowMapper() {

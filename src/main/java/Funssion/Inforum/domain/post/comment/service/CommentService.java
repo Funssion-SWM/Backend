@@ -123,7 +123,13 @@ public class CommentService {
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
         scoreService.subtractUserScore(commentRepository.findAuthorIdByCommentId(commentId,false),ScoreType.MAKE_COMMENT,commentId);
         notificationRepository.delete(COMMENT, commentId);
-        return commentRepository.deleteComment(commentId);
+        return doesItHaveRecomments(commentId) ?
+                commentRepository.deleteCommentWhichHasRecomment(commentId) :
+                commentRepository.deleteComment(commentId);
+    }
+
+    private boolean doesItHaveRecomments(Long commentId) {
+        return commentRepository.getRecommentsCountOfComment(commentId) != 0;
     }
 
     @Transactional(readOnly = true)
@@ -132,7 +138,7 @@ public class CommentService {
     }
 
     @Transactional
-    public IsSuccessResponseDto createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
+    public ReComment createReComment(ReCommentSaveDto reCommentSaveDto,Long authorId){
         MemberProfileEntity authorProfile = myRepository.findProfileByUserId(authorId);
         Long parentCommentId = reCommentSaveDto.getParentCommentId();
         ReComment createdRecomment = commentRepository.createReComment(new ReComment(
@@ -140,8 +146,7 @@ public class CommentService {
         );
 
         sendNotification(authorId, parentCommentId, createdRecomment);
-
-        return new IsSuccessResponseDto(true,"대댓글이 등록되었습니다.");
+        return createdRecomment;
     }
 
     private void sendNotification(Long authorId, Long parentCommentId, ReComment createdRecomment) {

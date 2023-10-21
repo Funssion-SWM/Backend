@@ -145,6 +145,7 @@ create table post.comment(
     comment_text text not null,
     created_date timestamp default current_timestamp,
     updated_date timestamp default current_timestamp,
+    is_user_delete boolean not null default false,
     CONSTRAINT non_negative_recomments CHECK (recomments >= 0)
 );
 
