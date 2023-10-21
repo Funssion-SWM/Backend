@@ -101,13 +101,13 @@ public class ScoreService {
     private void handleSpecialCaseOfComment(Long userId, ScoreType scoreType, Optional<Score> scoreHistoryInfoById) {
         if(scoreType == ScoreType.MAKE_COMMENT){
             List<Comment> registeredCommentsList = commentRepository.findIfUserRegisterAnotherCommentOfPost(userId, scoreHistoryInfoById.get().getPostId());
-            if(isAotherCommentIn(registeredCommentsList)) {
+            if(isAnotherCommentIn(registeredCommentsList)) {
                 checkUserDailyScoreAndAdd(userId, ScoreType.MAKE_COMMENT, registeredCommentsList.get(0).getId());
             };
         }
     }
 
-    private static boolean isAotherCommentIn(List<Comment> registeredCommentsList) {
+    private static boolean isAnotherCommentIn(List<Comment> registeredCommentsList) {
         return registeredCommentsList.size() != 0;
     }
 

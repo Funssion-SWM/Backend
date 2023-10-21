@@ -18,6 +18,7 @@ public class Comment extends Post {
     private PostType postTypeWithComment;
     @NotEmpty
     private String commentText;
+    private Boolean isUserDelete;
     private Long postId;
     private long replies;
 

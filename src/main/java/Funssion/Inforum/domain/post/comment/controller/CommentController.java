@@ -57,7 +57,9 @@ public class CommentController {
     @PostMapping("/recomments")
     public IsSuccessResponseDto createReComment(@RequestBody ReCommentSaveDto reCommentSaveDto){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
-        return commentService.createReComment(reCommentSaveDto,authorId);
+        commentService.createReComment(reCommentSaveDto,authorId);
+        return new IsSuccessResponseDto(true,"대댓글이 등록되었습니다.");
+
     }
 
     @PatchMapping("/recomments/{reCommentId}")
