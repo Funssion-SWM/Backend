@@ -54,7 +54,6 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         else{
             authorities.add(new SimpleGrantedAuthority("ROLE_EXIST_USER"));
             User savedUser = new User (String.valueOf(socialMember.get().getUserId()),password,authorities);
-            log.info("check for signin");
             return new CustomUserDetails(savedUser.getUsername(),authorities,savedUser,oAuth2User.getAttributes());
         }
     }
