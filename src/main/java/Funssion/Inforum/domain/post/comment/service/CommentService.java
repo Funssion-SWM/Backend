@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.notification.domain.Notification;
@@ -119,6 +120,8 @@ public class CommentService {
 
     @Transactional
     public IsSuccessResponseDto deleteComment(Long commentId) {
+        if(commentRepository.doesUserDeleteComment(commentId)) throw new DeleteFailException("이미 삭제된 댓글입니다.");
+
         PostIdAndTypeInfo postIdByCommentId = commentRepository.getPostIdByCommentId(commentId);
         commentRepository.subtractCommentsCountOfPost(postIdByCommentId);
         scoreService.subtractUserScore(commentRepository.findAuthorIdByCommentId(commentId,false),ScoreType.MAKE_COMMENT,commentId);
@@ -212,6 +215,8 @@ public class CommentService {
     }
 
     public IsSuccessResponseDto deleteReComment(Long reCommentId) {
+        commentRepository.findReComment(reCommentId).orElseThrow(()-> new DeleteFailException("이미 삭제된 대댓글입니다."));
+
         notificationRepository.delete(RECOMMENT, reCommentId);
         return commentRepository.deleteReComment(reCommentId);
     }
