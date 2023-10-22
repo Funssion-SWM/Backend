@@ -5,11 +5,14 @@ import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
+import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.member.service.MemberService;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
 import Funssion.Inforum.domain.post.comment.domain.ReComment;
@@ -57,7 +60,10 @@ public class MemberIntegrationTest {
 
     @Autowired
     MemberRepository memberRepository;
-
+    @Autowired
+    AuthCodeRepository authCodeRepository;
+    @Autowired
+    MemberService memberService;
     @Autowired
     MyRepository myRepository;
 
@@ -87,9 +93,12 @@ public class MemberIntegrationTest {
     Comment savedComment;
     ReCommentListDto savedReComment;
 
+    NonSocialMember saveMember;
+
+
     @BeforeEach
     void init() {
-        savedNonsocialMember = memberRepository.save(NonSocialMember.builder()
+        saveMember = NonSocialMember.builder()
                 .userPw("1234")
                 .userEmail(savedNonsocialMemberEmail)
                 .loginType(LoginType.NON_SOCIAL)
@@ -99,7 +108,8 @@ public class MemberIntegrationTest {
                 .createdDate(LocalDateTime.now())
                 .tags("Java")
                 .imagePath(savedMemberImagePath)
-                .build());
+                .build();
+        savedNonsocialMember = memberRepository.save(saveMember);
 
         savedNonsocialMemberId = savedNonsocialMember.getId();
 
@@ -210,6 +220,86 @@ public class MemberIntegrationTest {
         assertThat(message).isEqualTo("해당 이메일로 가입된 회원 정보가 없습니다.");
         Object success = JsonPath.read(contentAsString, "$.isSuccess");
         assertThat(success).isEqualTo(false);
+    }
+
+    @Nested
+    @DisplayName("회원 정보 수정")
+    class editMember{
+        @Test
+        @DisplayName("비밀번호 수정시 해당 사람의 비밀번호만 수정되어야 합니다.")
+        void editUserPassword(){
+            NonSocialMember saveAnotherNonSocialMember = NonSocialMember.builder()
+                    .userPw("a1234561!")
+                    .userEmail("changed@gmail.com")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .authId(2L)
+                    .userName("tester")
+                    .introduce("hi")
+                    .createdDate(LocalDateTime.now())
+                    .tags("Java")
+                    .imagePath("testerimagepath")
+                    .build();
+            SaveMemberResponseDto saveAnotherUser = memberRepository.save(saveAnotherNonSocialMember);
+
+            String code = "A12345";
+            authCodeRepository.insertEmailCodeForVerification(LocalDateTime.now().plusMinutes(5),saveAnotherNonSocialMember.getUserEmail(),code);
+
+            PasswordUpdateDto passwordUpdateDto = PasswordUpdateDto.builder()
+                    .email(saveAnotherNonSocialMember.getUserEmail())
+                    .userPw(saveAnotherNonSocialMember.getUserPw())
+                    .code("123456")
+                    .build();
+
+            memberService.findAndChangePassword(passwordUpdateDto);
+        }
+
+        @Test
+        @DisplayName("비밀번호를 수정할 때, 인증 코드가 중복 되어도(1/10^6확률), email과 함께 검증하기 때문에, 보안적인 이슈가 없습니다")
+        void authenticationSuccess() throws Exception {
+            NonSocialMember saveAnotherNonSocialMember = NonSocialMember.builder()
+                    .userPw("a1234561!")
+                    .userEmail("changed@gmail.com")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .authId(2L)
+                    .userName("tester")
+                    .introduce("hi")
+                    .createdDate(LocalDateTime.now())
+                    .tags("Java")
+                    .imagePath("testerimagepath")
+                    .build();
+            SaveMemberResponseDto saveAnotherUser = memberRepository.save(saveAnotherNonSocialMember);
+
+            String code = "A12345";
+            authCodeRepository.insertEmailCodeForVerification(LocalDateTime.now().plusMinutes(5),saveAnotherNonSocialMember.getUserEmail(),code);
+            authCodeRepository.insertEmailCodeForVerification(LocalDateTime.now().plusMinutes(5),saveMember.getUserEmail(),code);
+
+            PasswordUpdateDto passwordUpdateDto1 = PasswordUpdateDto.builder()
+                    .email(saveAnotherNonSocialMember.getUserEmail())
+                    .userPw("change123")
+                    .code(code)
+                    .build();
+
+            PasswordUpdateDto passwordUpdateDto2 = PasswordUpdateDto.builder()
+                    .email(saveMember.getUserEmail())
+                    .userPw("change321")
+                    .code(code)
+                    .build();
+
+            memberService.findAndChangePassword(passwordUpdateDto1);
+            memberService.findAndChangePassword(passwordUpdateDto2);
+
+            mvc.perform(post("/users/login")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                    .param("username",saveAnotherNonSocialMember.getUserEmail())
+                    .param("password",passwordUpdateDto1.getUserPw()))
+                    .andExpect(status().isOk());
+            mvc.perform(post("/users/login")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                    .param("username",saveAnotherNonSocialMember.getUserEmail())
+                    .param("password",saveMember.getUserPw()))
+                    .andExpect(status().isUnauthorized());
+        }
+
     }
 
     @Nested

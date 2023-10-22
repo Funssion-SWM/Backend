@@ -272,8 +272,9 @@ public class MemberService {
         return memberProfileDto;
     }
 
-    public IsSuccessResponseDto findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {
-        memberRepository.findEmailByAuthCode(passwordUpdateDto.getCode());
+    public IsSuccessResponseDto
+    findAndChangePassword(PasswordUpdateDto passwordUpdateDto) {
+        memberRepository.findEmailByAuthCode(passwordUpdateDto);
         return memberRepository.findAndChangePassword(passwordUpdateDto);
     }
 }

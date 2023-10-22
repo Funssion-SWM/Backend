@@ -119,10 +119,10 @@ public class MemberRepositoryImpl implements MemberRepository {
     }
 
     @Override
-    public String findEmailByAuthCode(String code) {
-        String sql = "select email from member.auth_code where code = ? and expiration = false";
+    public String findEmailByAuthCode(PasswordUpdateDto passwordUpdateDto) {
+        String sql = "select email from member.auth_code where code = ? and email = ? and expiration = false";
         try{
-            return jdbcTemplate.queryForObject(sql,String.class,code);
+            return jdbcTemplate.queryForObject(sql,String.class,passwordUpdateDto.getCode(), passwordUpdateDto.getEmail());
         }catch (EmptyResultDataAccessException e){
             throw new NotFoundException("이미 만료된 이메일 인증 링크입니다.");
         }catch (IncorrectResultSizeDataAccessException e){
