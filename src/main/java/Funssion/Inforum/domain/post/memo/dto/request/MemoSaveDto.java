@@ -25,6 +25,8 @@ public class MemoSaveDto {
     @Builder.Default
     private Long seriesId = null;
     @Builder.Default
+    private String seriesTitle = null;
+    @Builder.Default
     private Boolean isTemporary = false;
 
     public MemoSaveDto(String memoTitle, String memoDescription, String memoText, String memoColor, List<String> memoTags) {
@@ -43,6 +45,7 @@ public class MemoSaveDto {
                 .memoText(memo.getMemoText())
                 .memoDescription(memo.getMemoDescription())
                 .seriesId(memo.getSeriesId())
+                .seriesTitle(memo.getSeriesTitle())
                 .isTemporary(memo.getIsTemporary())
                 .build();
     }
@@ -55,6 +58,7 @@ public class MemoSaveDto {
                 .memoText(memo.getText())
                 .memoDescription(memo.getDescription())
                 .seriesId(memo.getSeriesId())
+                .seriesTitle(memo.getSeriesTitle())
                 .isTemporary(memo.getIsTemporary())
                 .build();
     }
