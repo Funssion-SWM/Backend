@@ -251,9 +251,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId) {
         String sql =
-                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.author_rank, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
+                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.author_rank, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date, COMMENT.is_user_delete, "+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
-                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date " +
+                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, is_user_delete " +
                 "FROM post.comment where post_type = ? and post_id = ?) COMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON COMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = false " +
                         "order by COMMENT.created_date";
@@ -364,7 +364,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
-        String sql = "select id,author_id,author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, 'false' as is_liked " +
+        String sql = "select id,author_id,author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, is_user_delete, 'false' as is_liked " +
                 "from post.comment " +
                 "where id = ?";
         try {
@@ -419,6 +419,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .commentText(rs.getString("comment_text"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .isUserDelete(rs.getBoolean("is_user_delete"))
                         .isLike(rs.getBoolean("is_liked"))
                         .likes(rs.getLong("likes"))
                         .reCommentsNumber(rs.getLong("recomments"))
