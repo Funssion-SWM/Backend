@@ -20,5 +20,6 @@ public class CommentListDto {
     private Long likes;
     private Long reCommentsNumber;
     private Boolean isLike;
+    private Boolean isUserDelete;
 
 }
