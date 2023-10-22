@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.comment.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.etc.CreateFailException;
+import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -100,6 +101,29 @@ public class CommentRepositoryImpl implements CommentRepository{
 
         return template.query(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId);
     }
+
+    @Override
+    public Boolean doesUserDeleteComment(Long commentId) {
+        String sql = "select is_user_delete from post.comment where id = ?";
+        try {
+            return template.queryForObject(sql, Boolean.class, commentId);
+        }catch(EmptyResultDataAccessException e){
+            throw new DeleteFailException("이미 삭제된 댓글입니다.");
+        }
+    }
+
+    @Override
+    public Optional<ReComment> findReComment(Long reCommentId) {
+        String sql = "SELECT * " +
+                "FROM post.recomment " +
+                "WHERE id = ?";
+        try {
+            return Optional.of(template.queryForObject(sql, reCommentRowMapper(), reCommentId));
+        }catch(EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
     private PostInfo getPostInfoOfComment(Long userId, Long postId){
         String sql = "select post_id, post_type" +
                 " from post.comment where author_id = ? and id = ?";
