@@ -88,6 +88,8 @@ public class QuestionServiceImpl implements QuestionService {
 
         Long receiverId = profileRepository.findAuthorId(MEMO, memoId);
 
+        if (noticedUserList.contains(receiverId)) return;
+
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(receiverId)
