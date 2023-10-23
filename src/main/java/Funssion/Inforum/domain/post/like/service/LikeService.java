@@ -135,6 +135,7 @@ public class LikeService {
         int currentRankIndex = ranks.indexOf(beforeRank);
         int updatedRankIndex = isLevelUp? currentRankIndex + 1: currentRankIndex - 1;
         Rank beUpdateRank = ranks.get(updatedRankIndex);
+        postRepository.updateRankOfAllPostTypeAndNotification(beUpdateRank,userId);
         return scoreRepository.updateRank(beUpdateRank, userId);
     }
 
