@@ -11,10 +11,8 @@ import Funssion.Inforum.domain.post.like.domain.Like;
 import Funssion.Inforum.domain.post.like.dto.response.DisLikeResponseDto;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.like.repository.LikeRepository;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
-import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.repository.PostRepository;
@@ -124,7 +122,7 @@ public class LikeService {
             Long addedScore = calculateAddingScore(userDailyScore, ScoreType.LIKE);
             Long updateDailyScore = calculateDailyScore(userDailyScore, ScoreType.LIKE);
             Long resultUserScore = scoreRepository.updateUserScoreAtDay(authorId, addedScore, updateDailyScore);
-            scoreRepository.saveScoreHistory(likerId,ScoreType.LIKE,addedScore,postId,authorId); //score DB에는 좋아요를 한 사람의 정보와, 좋아요 받은사람의 정보 테이블에 들어갑니다.
+            scoreRepository.saveScoreHistory(likerId,ScoreType.LIKE,addedScore,postId,postType,authorId); //score DB에는 좋아요를 한 사람의 정보와, 좋아요 받은사람의 정보 테이블에 들어갑니다.
             Rank beforeRank = Rank.valueOf(scoreRepository.getRank(authorId));
             if(resultUserScore >= beforeRank.getMax()){
                 updateRank(authorId,beforeRank,true);
@@ -198,21 +196,9 @@ public class LikeService {
 
     private void updateLikesInPost(PostType postType, Long postId, Sign sign) {
         switch (postType) {
-            case MEMO -> {
-                Memo memo = memoRepository.findById(postId);
-                Long updatedLikes = memo.updateLikes(sign);
-                memoRepository.updateLikesInMemo(updatedLikes, postId);
-            }
-            case QUESTION ->{
-                Question question = questionRepository.getOneQuestion(postId);
-                Long updatedLikes = question.updateLikes(sign);
-                questionRepository.updateLikesInQuestion(updatedLikes,postId);
-            }
-            case ANSWER ->{
-                Answer answer = answerRepository.getAnswerById(postId);
-                Long updatedLikes = answer.updateLikes(sign);
-                answerRepository.updateLikesInAnswer(updatedLikes,postId);
-            }
+            case MEMO -> memoRepository.updateLikesInMemo(postId,sign);
+            case QUESTION -> questionRepository.updateLikesInQuestion(postId,sign);
+            case ANSWER -> answerRepository.updateLikesInAnswer(postId,sign);
             case SERIES -> seriesRepository.updateLikes(postId, sign);
 
             default -> throw new BadRequestException("정의되지 않은 게시물 타입입니다.");

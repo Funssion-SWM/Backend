@@ -9,7 +9,6 @@ import Funssion.Inforum.domain.post.like.repository.LikeRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
-import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.score.Rank;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,7 @@ import java.util.List;
 
 import static Funssion.Inforum.common.constant.DateType.DAY;
 import static Funssion.Inforum.common.constant.OrderType.NEW;
-import static Funssion.Inforum.domain.post.qna.Constant.*;
+import static Funssion.Inforum.domain.post.qna.Constant.DEFAULT_RESULT_SIZE_PER_PAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -176,9 +175,9 @@ class MemoRepositoryJdbcTest {
         @Test
         @DisplayName("메모 좋아요 수정")
         void updateLikesTest() {
-            Memo likesUpdatedMemo = repository.updateLikesInMemo(createdMemo.updateLikes(Sign.PLUS), createdMemo.getId());
+            Memo likesUpdatedMemo = repository.updateLikesInMemo(createdMemo.getId(), Sign.PLUS);
 
-            assertThat(likesUpdatedMemo.getLikes()).isEqualTo(createdMemo.getLikes());
+            assertThat(likesUpdatedMemo.getLikes()).isEqualTo(createdMemo.getLikes() + 1);
         }
 
         @Test

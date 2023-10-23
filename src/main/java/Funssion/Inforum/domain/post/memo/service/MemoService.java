@@ -151,7 +151,7 @@ public class MemoService {
 
         Memo memo = memoRepository.findById(memoId);
         Long userId = SecurityContextUtils.getUserId();
-        if (memo.getIsTemporary() && userId.equals(memo.getAuthorId())) {
+        if (memo.getIsTemporary() && !userId.equals(memo.getAuthorId())) {
             throw new ForbiddenException("남의 임시메모에는 접근할 수 없습니다.");
         }
 
@@ -193,6 +193,7 @@ public class MemoService {
         if (willBeUpdatedMemo.getIsTemporary()) {
             createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
             sendNotificationToFollower(userId, willBeUpdatedMemo);
+            scoreService.checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_MEMO, willBeUpdatedMemo.getId());
         }
         // 등록된 글 -> 임시글
         else {

@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.score.repository;
 
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.ScoreType;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
@@ -45,13 +46,20 @@ public class ScoreRepository {
     }
 
     public Optional<Score> saveScoreHistory(Long userId, ScoreType scoreType, Long score, Long postId){
-        String sql = "insert into score.info(user_id,score_type,score,post_id) values (?,?,?,?)";
-        if(template.update(sql,userId,scoreType.toString(),score,postId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
+        String postType = switch(scoreType){
+            case MAKE_MEMO -> "MEMO";
+            case BEST_ANSWER, MAKE_ANSWER -> "ANSWER";
+            case MAKE_QUESTION, SELECT_ANSWER -> "QUESTION";
+            case MAKE_COMMENT -> "COMMENT";
+            default -> throw new IllegalStateException("Unexpected value: " + scoreType);
+        };
+        String sql = "insert into score.info(user_id,score_type,score, post_type, post_id) values (?,?,?,?,?)";
+        if(template.update(sql,userId,scoreType.toString(),score,postType,postId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
         return findScoreHistoryInfoById(userId,scoreType,postId);
     }
-    public Optional<Score> saveScoreHistory(Long userId, ScoreType scoreType, Long score, Long postId, Long likedAuthorId){
-        String sql = "insert into score.info(user_id,score_type,score,post_id,liked_author_id) values (?,?,?,?,?)";
-        if(template.update(sql,userId,scoreType.toString(),score,postId,likedAuthorId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
+    public Optional<Score> saveScoreHistory(Long userId, ScoreType scoreType, Long score, Long postId, PostType postType, Long likedAuthorId){
+        String sql = "insert into score.info(user_id,score_type,score,post_id,post_type,liked_author_id) values (?,?,?,?,?,?)";
+        if(template.update(sql,userId,scoreType.toString(),score,postId,postType.toString(),likedAuthorId)==0) throw new ScoreUpdateFailException("Score History를 저장할 수 없습니다.");
         return findScoreHistoryInfoById(userId,scoreType,postId);
     }
 
