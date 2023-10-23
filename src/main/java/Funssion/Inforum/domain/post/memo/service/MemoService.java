@@ -151,7 +151,7 @@ public class MemoService {
 
         Memo memo = memoRepository.findById(memoId);
         Long userId = SecurityContextUtils.getUserId();
-        if (memo.getIsTemporary() && userId.equals(memo.getAuthorId())) {
+        if (memo.getIsTemporary() && !userId.equals(memo.getAuthorId())) {
             throw new ForbiddenException("남의 임시메모에는 접근할 수 없습니다.");
         }
 
