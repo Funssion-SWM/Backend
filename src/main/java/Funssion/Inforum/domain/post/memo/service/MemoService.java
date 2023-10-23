@@ -193,6 +193,7 @@ public class MemoService {
         if (willBeUpdatedMemo.getIsTemporary()) {
             createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
             sendNotificationToFollower(userId, willBeUpdatedMemo);
+            scoreService.checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_MEMO, willBeUpdatedMemo.getId());
         }
         // 등록된 글 -> 임시글
         else {
