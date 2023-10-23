@@ -53,7 +53,6 @@ public class PostRepositoryImpl implements PostRepository {
         }
         return true;
     }
-
     @Override
     public ScoreAndCountDao getAllPostScoreAndCount(Long userId) {
         return getScoreAndCountOfEachScoreType(userId);
