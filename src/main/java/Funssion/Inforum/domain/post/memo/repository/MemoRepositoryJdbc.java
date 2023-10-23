@@ -6,7 +6,6 @@ import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
-import Funssion.Inforum.common.utils.CustomStringUtils;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
@@ -14,6 +13,7 @@ import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import Funssion.Inforum.domain.tag.TagUtils;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -25,9 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-import static Funssion.Inforum.common.utils.CustomStringUtils.*;
+import static Funssion.Inforum.common.utils.CustomStringUtils.parseNullableStringtoLong;
 
 @Repository
 @Slf4j
@@ -255,12 +254,19 @@ public class MemoRepositoryJdbc implements MemoRepository{
         return findById(memoId);
     }
     @Override
-    public Memo updateLikesInMemo(Long likes, Long memoId) {
+    public Memo updateLikesInMemo(Long memoId, Sign sign) {
         String sql = "update post.memo " +
-                "set likes = ? " +
+                "set likes = likes + ? " +
                 "where id = ?";
 
-        if (template.update(sql, likes, memoId) == 0) throw new MemoNotFoundException("update likes fail");
+        try {
+            int updatedRows = template.update(sql, sign.getValue(), memoId);
+            if (updatedRows != 1) {
+                throw new UpdateFailException("update likes in series fail id = " + memoId);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("좋아요 수는 0 아래로 내려갈 수 없습니다.", e);
+        }
         return findById(memoId);
     }
 

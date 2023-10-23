@@ -103,7 +103,7 @@ class PostRepositoryImplTest {
     void getScoreAndCountOfEachScoreType() {
         Long userId = 10L;
         Long likedUserId = 20L;
-        scoreRepository.saveScoreHistory(userId, ScoreType.LIKE, ScoreType.LIKE.getScore(), 1L,likedUserId);
+        scoreRepository.saveScoreHistory(userId, ScoreType.LIKE, ScoreType.LIKE.getScore(), 1L,PostType.SERIES,likedUserId);
         scoreRepository.saveScoreHistory(likedUserId, ScoreType.MAKE_MEMO, 35L, 1L);
         scoreRepository.saveScoreHistory(likedUserId, ScoreType.MAKE_MEMO, ScoreType.MAKE_MEMO.getScore(), 2L);
         ScoreAndCountDao allPostScoreAndCount = postRepository.getAllPostScoreAndCount(likedUserId);
