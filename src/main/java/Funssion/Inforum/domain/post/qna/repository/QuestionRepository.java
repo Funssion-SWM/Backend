@@ -1,7 +1,7 @@
 package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.domain.post.memo.domain.Memo;
+import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 
@@ -22,7 +22,7 @@ public interface QuestionRepository {
 
     void deleteQuestion(Long questionId);
     void solveQuestion(Long questionId);
-    Question updateLikesInQuestion(Long likes, Long questionId);
+    Question updateLikesInQuestion(Long questionId, Sign sign);
 
     List<Question> getQuestionsOfMemo(Long userId, Long memoId);
 

@@ -167,8 +167,7 @@ class LikeServiceTest {
                     .willReturn(userID1);
             given(likeRepository.findByUserIdAndPostInfo(any(), any(), any()))
                     .willReturn(Optional.of(like1));
-            given(memoRepository.findById(memoID1))
-                    .willReturn(memo1);
+
 
             likeService.unlikePost(MEMO, memoID1);
         }

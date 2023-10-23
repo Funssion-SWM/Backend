@@ -2,9 +2,12 @@ package Funssion.Inforum.domain.post.qna.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.exception.badrequest.BadRequestException;
+import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.exception.AnswerNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -100,12 +103,19 @@ public class AnswerRepositoryImpl implements AnswerRepository {
     }
 
     @Override
-    public Answer updateLikesInAnswer(Long likes, Long answerId) {
+    public Answer updateLikesInAnswer(Long answerId,Sign sign) {
         String sql = "update post.answer " +
-                "set likes = ? " +
+                "set likes = likes + ? " +
                 "where id = ?";
 
-        if (template.update(sql, likes, answerId) == 0) throw new AnswerNotFoundException("update likes fail");
+        try {
+            int updatedRows = template.update(sql, sign.getValue(), answerId);
+            if (updatedRows != 1) {
+                throw new UpdateFailException("update likes in series fail id = " + answerId);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("좋아요 수는 0 아래로 내려갈 수 없습니다.", e);
+        }
         return getAnswerById(answerId);
     }
 
