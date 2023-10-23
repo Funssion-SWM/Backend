@@ -25,6 +25,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
+import Funssion.Inforum.domain.post.repository.PostRepository;
 import Funssion.Inforum.domain.score.domain.Score;
 import Funssion.Inforum.domain.score.dto.UserInfoWithScoreRank;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 @SpringBootTest
 @Transactional
@@ -70,6 +72,8 @@ class ScoreIntegrationTest {
     CommentService commentService;
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    PostRepository postRepository;
     static Long saveMemberId;
     static Long saveMemberIdForEachTest;
 
@@ -178,6 +182,25 @@ class ScoreIntegrationTest {
             assertThat(scoreRepository.getScoreAndRank(saveMemberIdForEachTest).getScore()).isEqualTo(scoreOfBestAnswer + scoreOfAnswer);
             assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_4.toString());
 
+        }
+        @Test
+        @DisplayName("유저의 등급이 전체 table에 갱신되는지 확인")
+        void addScoreAndUpdateRankOfAllPost(){
+
+            Question question = makePureQuestion();
+            Answer answerOfQuestion = answerService.createAnswerOfQuestion(createAnswerSaveDto(), question.getId(), saveMemberIdForEachTest);
+            assertThat(scoreRepository.getRank(saveMemberIdForEachTest)).isEqualTo(Rank.BRONZE_5.toString());
+
+            assertThatCode(()->answerService.selectAnswer(saveMemberId, question.getId(), answerOfQuestion.getId())).doesNotThrowAnyException();
+
+        }
+
+        @Test
+        @DisplayName("좋아요를 받을 경우 랭크가 오를때, 전체 table에 갱신되는지 확인 -- 좋아요 로직만 분리되어 있어서 체크하는 것임")
+        void addScoreAndUpdateRankOfAllPostWhenLiked(){
+            MemoDto memoDto = createMemo();
+            manyUsersLikeMemo(10L,memoDto); //매번 새로운 user설정해서 상황 가정함.
+            assertThat(postRepository.isRankUpdateAllPost(Rank.BRONZE_4,memoDto.getAuthorId())).isEqualTo(true);
         }
 
         @Test

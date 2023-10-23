@@ -7,6 +7,7 @@ import Funssion.Inforum.domain.mypage.dto.ScoreAndCount;
 import Funssion.Inforum.domain.mypage.domain.ScoreAndCountDao;
 import Funssion.Inforum.domain.mypage.domain.ScoreAndCountDao.ScoreAndCountDaoBuilder;
 import Funssion.Inforum.domain.score.Rank;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -35,6 +36,22 @@ public class PostRepositoryImpl implements PostRepository {
     public void updateRankOfAllPostTypeAndNotification(Rank updateRank, Long userId) {
         updateAuthorRankOfAllPostType(updateRank, userId);
         updateSenderRankOfNotification(updateRank, userId);
+    }
+
+    @Override
+    public boolean isRankUpdateAllPost(Rank updatedRank, Long userId) {
+        for (PostType postType : PostType.values()) {
+            String sql = "SELECT author_rank" +
+                    " FROM post." + postType.getValue() +
+                    " WHERE author_id = ?";
+            try {
+                if (!template.queryForObject(sql, String.class, userId).equals(updatedRank.toString())) {
+                    return false;
+                }
+            }catch(EmptyResultDataAccessException e){}
+
+        }
+        return true;
     }
 
     @Override
