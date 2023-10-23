@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.comment.service;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -14,6 +15,7 @@ import Funssion.Inforum.domain.post.comment.dto.request.CommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.request.CommentUpdateDto;
 import Funssion.Inforum.domain.post.comment.dto.request.ReCommentSaveDto;
 import Funssion.Inforum.domain.post.comment.dto.response.CommentListDto;
+import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.domain.Post;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -301,6 +304,45 @@ class CommentIntegrationTest {
             List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
             assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
         }
+
+        @Test
+        @DisplayName("질문 게시글 댓글삭제를 계속해도 0 아래로 떨어지지 않고, exception을 던진다")
+        void deleteSameCommentALot(){
+
+            Long recommentAuthorId = makeRecommentUser();
+            CommentSaveDto commentSaveDtoIn_QUESTION = createCommentSaveDto(PostType.QUESTION);
+
+            Comment comment = commentService.createComment(commentSaveDtoIn_QUESTION, saveMemberId);
+            List<CommentListDto> commentsAtPostBeforeDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostBeforeDelete).hasSize(1);
+
+            ReCommentSaveDto reCommentSaveDto = new ReCommentSaveDto(comment.getId(), "대댓글 내용입니다.");
+            commentService.createReComment(reCommentSaveDto,recommentAuthorId);
+
+            commentService.deleteComment(comment.getId());
+            assertThatThrownBy(()->commentService.deleteComment(comment.getId())).isExactlyInstanceOf(DeleteFailException.class);
+            List<CommentListDto> commentsAtPostAfterDelete = commentService.getCommentsAtPost(comment.getPostTypeWithComment(), comment.getPostId(), saveMemberId);
+            assertThat(commentsAtPostAfterDelete.get(0).getCommentText()).isEqualTo("삭제된 댓글입니다.");
+        }
+        @Test
+        @DisplayName("질문 게시글 댓글삭제를 계속해도 0 아래로 떨어지지 않고, exception을 던진다")
+        void deleteSameReCommentALot(){
+            Long recommentAuthorId = makeRecommentUser();
+            CommentSaveDto commentSaveDtoIn_QUESTION = createCommentSaveDto(PostType.QUESTION);
+
+            Comment comment = commentService.createComment(commentSaveDtoIn_QUESTION, saveMemberId);
+            ReCommentSaveDto reCommentSaveDto = new ReCommentSaveDto(comment.getId(), "대댓글 내용입니다.");
+            ReComment reComment = commentService.createReComment(reCommentSaveDto, recommentAuthorId);
+
+            commentService.deleteReComment(reComment.getId());
+            List<ReCommentListDto> reCommentListAfterDeleteOnce= commentRepository.getReCommentsAtComment(comment.getId(), recommentAuthorId);
+            assertThat(reCommentListAfterDeleteOnce).hasSize(0);
+
+            assertThatThrownBy(()->commentService.deleteReComment(reComment.getId())).isExactlyInstanceOf(DeleteFailException.class);
+            List<ReCommentListDto> reCommentListAfterDeleteMany = commentRepository.getReCommentsAtComment(comment.getId(), recommentAuthorId);
+            assertThat(reCommentListAfterDeleteMany).hasSize(0);
+
+        }
         @Test
         @DisplayName("대댓글이 달리고 댓글이 삭제된 후에, 대댓글이 지워지고 대댓글 수가 0이되면 댓글도 삭제된다.")
         void deleteCommentWhenUserDeleteCommentAndRecommentsDeleted(){
@@ -406,7 +448,7 @@ class CommentIntegrationTest {
     }
 
     private static Memo createMemo(){
-        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",createTagList(),null,false );
+        MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",createTagList());
 
         return Memo.builder()
                 .id(MEMO_ID)

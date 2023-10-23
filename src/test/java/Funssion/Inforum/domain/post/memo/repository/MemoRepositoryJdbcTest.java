@@ -50,15 +50,16 @@ class MemoRepositoryJdbcTest {
     Long testSeriesId2 = 10000L;
     String testSeriesTitle1 = "java";
     String testSeriesTitle2 = "java2";
-    MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags, 999_999_999L,false);
-    MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green", testTags, 999_999_998L,false);
-    MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue",testTags, 999_999_997L, false);
+    MemoSaveDto form1 = new MemoSaveDto("JPA란?", "JPA일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"안녕하세요!!\", \"type\": \"text\"}]}]}", "yellow",testTags, 999_999_999L,"series1" ,false);
+    MemoSaveDto form2 = new MemoSaveDto("JDK란?", "JDK일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\", \"content\": [{\"text\": \"Hello!\", \"type\": \"text\"}]}]}", "green", testTags, 999_999_998L,"series2",false);
+    MemoSaveDto form3 = new MemoSaveDto("JWT란?", "JWT일까?","{\"type\": \"doc\", \"content\": [{\"type\": \"paragraph\"}]}", "blue",testTags, 999_999_997L,"series3", false);
     Memo memo1 = Memo.builder()
             .title(form1.getMemoTitle())
             .text(form1.getMemoText())
             .description(form1.getMemoDescription())
             .color(form1.getMemoColor())
             .seriesId(form1.getSeriesId())
+            .seriesTitle(form1.getSeriesTitle())
             .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
@@ -75,6 +76,7 @@ class MemoRepositoryJdbcTest {
             .description(form2.getMemoDescription())
             .color(form2.getMemoColor())
             .seriesId(form2.getSeriesId())
+            .seriesTitle(form2.getSeriesTitle())
             .authorId(userId1)
             .authorName("Jinu")
             .authorImagePath("http:jinu")
@@ -91,6 +93,7 @@ class MemoRepositoryJdbcTest {
             .description(form3.getMemoDescription())
             .color(form3.getMemoColor())
             .seriesId(form3.getSeriesId())
+            .seriesTitle(form3.getSeriesTitle())
             .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
@@ -107,6 +110,7 @@ class MemoRepositoryJdbcTest {
             .description(form3.getMemoDescription())
             .color(form3.getMemoColor())
             .seriesId(form3.getSeriesId())
+            .seriesTitle(form3.getSeriesTitle())
             .authorId(userId2)
             .authorName("Jinu2")
             .authorImagePath("http:jinu2")
@@ -131,6 +135,7 @@ class MemoRepositoryJdbcTest {
             Memo savedMemo = repository.findById(createdMemo.getId());
             assertThat(createdMemo).isEqualTo(savedMemo);
             assertThat(createdMemo.getSeriesId()).isEqualTo(savedMemo.getSeriesId());
+            assertThat(createdMemo.getSeriesTitle()).isEqualTo(savedMemo.getSeriesTitle());
         }
     }
 

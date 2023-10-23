@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.post.comment.repository;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.etc.CreateFailException;
+import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -100,6 +101,29 @@ public class CommentRepositoryImpl implements CommentRepository{
 
         return template.query(sql, commentRowMapper(), userId,postInfoOfComment.getPostType().toString(),postInfoOfComment.getPostId(),commentId);
     }
+
+    @Override
+    public Boolean doesUserDeleteComment(Long commentId) {
+        String sql = "select is_user_delete from post.comment where id = ?";
+        try {
+            return template.queryForObject(sql, Boolean.class, commentId);
+        }catch(EmptyResultDataAccessException e){
+            throw new DeleteFailException("이미 삭제된 댓글입니다.");
+        }
+    }
+
+    @Override
+    public Optional<ReComment> findReComment(Long reCommentId) {
+        String sql = "SELECT * " +
+                "FROM post.recomment " +
+                "WHERE id = ?";
+        try {
+            return Optional.of(template.queryForObject(sql, reCommentRowMapper(), reCommentId));
+        }catch(EmptyResultDataAccessException e){
+            return Optional.empty();
+        }
+    }
+
     private PostInfo getPostInfoOfComment(Long userId, Long postId){
         String sql = "select post_id, post_type" +
                 " from post.comment where author_id = ? and id = ?";
@@ -227,9 +251,9 @@ public class CommentRepositoryImpl implements CommentRepository{
     @Override
     public List<CommentListDto> getCommentsAtPost(PostType postType, Long postId, Long userId) {
         String sql =
-                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.author_rank, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date,"+
+                "SELECT COMMENT.id, COMMENT.author_id, COMMENT.author_image_path, COMMENT.author_name, COMMENT.author_rank, COMMENT.likes, COMMENT.recomments, COMMENT.comment_text, COMMENT.created_date, COMMENT.updated_date, COMMENT.is_user_delete, "+
                 "CASE WHEN whoLikeCOMMENT.user_id = ? THEN TRUE ELSE FALSE END AS is_liked "+
-                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date " +
+                "FROM (SELECT id, author_id, author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, is_user_delete " +
                 "FROM post.comment where post_type = ? and post_id = ?) COMMENT "+
                 "LEFT JOIN member.like_comment whoLikeCOMMENT ON COMMENT.id = whoLikeCOMMENT.comment_id AND whoLikeCOMMENT.user_id = ? AND whoLikeCOMMENT.is_recomment = false " +
                         "order by COMMENT.created_date";
@@ -340,7 +364,7 @@ public class CommentRepositoryImpl implements CommentRepository{
 
 
     private Optional<CommentListDto> findParentCommentById(Long commentId){
-        String sql = "select id,author_id,author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, 'false' as is_liked " +
+        String sql = "select id,author_id,author_image_path, author_name, author_rank, likes, recomments, comment_text, created_date, updated_date, is_user_delete, 'false' as is_liked " +
                 "from post.comment " +
                 "where id = ?";
         try {
@@ -395,6 +419,7 @@ public class CommentRepositoryImpl implements CommentRepository{
                         .commentText(rs.getString("comment_text"))
                         .createdDate(rs.getTimestamp("created_date").toLocalDateTime())
                         .updatedDate(rs.getTimestamp("updated_date").toLocalDateTime())
+                        .isUserDelete(rs.getBoolean("is_user_delete"))
                         .isLike(rs.getBoolean("is_liked"))
                         .likes(rs.getLong("likes"))
                         .reCommentsNumber(rs.getLong("recomments"))
