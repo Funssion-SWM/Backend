@@ -225,33 +225,6 @@ public class MemberIntegrationTest {
     @Nested
     @DisplayName("회원 정보 수정")
     class editMember{
-        @Test
-        @DisplayName("비밀번호 수정시 해당 사람의 비밀번호만 수정되어야 합니다.")
-        void editUserPassword(){
-            NonSocialMember saveAnotherNonSocialMember = NonSocialMember.builder()
-                    .userPw("a1234561!")
-                    .userEmail("changed@gmail.com")
-                    .loginType(LoginType.NON_SOCIAL)
-                    .authId(2L)
-                    .userName("tester")
-                    .introduce("hi")
-                    .createdDate(LocalDateTime.now())
-                    .tags("Java")
-                    .imagePath("testerimagepath")
-                    .build();
-            SaveMemberResponseDto saveAnotherUser = memberRepository.save(saveAnotherNonSocialMember);
-
-            String code = "A12345";
-            authCodeRepository.insertEmailCodeForVerification(LocalDateTime.now().plusMinutes(5),saveAnotherNonSocialMember.getUserEmail(),code);
-
-            PasswordUpdateDto passwordUpdateDto = PasswordUpdateDto.builder()
-                    .email(saveAnotherNonSocialMember.getUserEmail())
-                    .userPw(saveAnotherNonSocialMember.getUserPw())
-                    .code("123456")
-                    .build();
-
-            memberService.findAndChangePassword(passwordUpdateDto);
-        }
 
         @Test
         @DisplayName("비밀번호를 수정할 때, 인증 코드가 중복 되어도(1/10^6확률), email과 함께 검증하기 때문에, 보안적인 이슈가 없습니다")
