@@ -9,6 +9,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,12 +23,14 @@ public class NotificationService {
     private final AnswerRepository answerRepository;
     private final CommentRepository commentRepository;
 
+    @Transactional(readOnly = true)
     public List<NotificationListDto> getNotifications(Long userId) {
         return notificationRepository.find30DaysNotificationsMaximum20ByUserId(userId).stream()
                 .map(NotificationListDto::valueOf)
                 .toList();
     }
 
+    @Transactional
     public void checkNotifications(Long userId) {
         notificationRepository.updateIsCheckedToTrue(userId);
     }
