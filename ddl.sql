@@ -94,6 +94,8 @@ CREATE TABLE member.info (
     created_date timestamp,
     follow_cnt int8 not null default 0,
     follower_cnt int8 not null default 0,
+    company varchar(20) null,
+    role varchar(15) not null default 'ROLE_USER',
     is_deleted bool not null default false,
     rank varchar(15) not null default 'BRONZE_5',
     score int8 not null default 0,

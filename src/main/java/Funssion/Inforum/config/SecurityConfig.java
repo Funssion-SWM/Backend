@@ -1,5 +1,9 @@
 package Funssion.Inforum.config;
 
+import Funssion.Inforum.access_handler.AuthenticationSuccessHandler;
+import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
+import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
+import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
 import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.*;
 import lombok.RequiredArgsConstructor;

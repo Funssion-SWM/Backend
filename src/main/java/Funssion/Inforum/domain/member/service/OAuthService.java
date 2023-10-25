@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.SocialMember;
@@ -38,21 +39,21 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         String email = oAuth2User.getAttribute("email");
         String nickname = UUID.randomUUID().toString().substring(0,15);
         String password = "default";
-//        Role role = Role.ROLE_USER;
 
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
-        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        List<GrantedAuthority> authorities = new ArrayList<>();
 
         if(socialMember.isEmpty()){
             SocialMember savedSocialMember = SocialMember.createSocialMember(email, nickname);
             SaveMemberResponseDto savedResponse = memberRepository.save(savedSocialMember);
-            authorities.add(new SimpleGrantedAuthority("ROLE_FIRST_JOIN"));
+            authorities.add(new SimpleGrantedAuthority(savedResponse.getRole()));
+            authorities.add(new SimpleGrantedAuthority(Role.OAUTH_FIRST_JOIN));
             User savedUser = new User (String.valueOf(savedResponse.getId()),password,authorities);
             return new CustomUserDetails(String.valueOf(savedResponse.getId()),authorities,savedUser,oAuth2User.getAttributes());
         }
         else{
-            authorities.add(new SimpleGrantedAuthority("ROLE_EXIST_USER"));
+            authorities.add(new SimpleGrantedAuthority(socialMember.get().getRole()));
             User savedUser = new User (String.valueOf(socialMember.get().getUserId()),password,authorities);
             return new CustomUserDetails(savedUser.getUsername(),authorities,savedUser,oAuth2User.getAttributes());
         }

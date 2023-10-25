@@ -1,6 +1,8 @@
-package Funssion.Inforum.jwt;
+package Funssion.Inforum.access_handler;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.jwt.TokenProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -100,9 +102,7 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
     private String redirectUriByFirstJoinOrNot(Authentication authentication){
         OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = oAuth2User.getAuthorities();
-        //사실 authority 가 ROLE_FIRST_JOIN인게 이상하긴함. 하지만 authentication 객체를 활용하기 위해서 해당 방법을 사용하였음.
-        //어차피 role은 우리 로직엔 사용되지 않기 때문임.
-        if(authorities.stream().filter(o -> o.getAuthority().equals("ROLE_FIRST_JOIN")).findAny().isPresent()){
+        if(authorities.stream().filter(o -> o.getAuthority().equals(Role.OAUTH_FIRST_JOIN)).findAny().isPresent()){
             return UriComponentsBuilder.fromHttpUrl(signUpURI)
                     .path(authentication.getName())
                     .build().toString();

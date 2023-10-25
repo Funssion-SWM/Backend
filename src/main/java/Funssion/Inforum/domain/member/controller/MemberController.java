@@ -48,6 +48,11 @@ public class MemberController {
     public SaveMemberResponseDto create(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid MemberSaveDto memberSaveDto) throws IOException { //dto로 바꿔야함
         return memberService.requestMemberRegistration(memberSaveDto,request,response);
     }
+    @PostMapping("/employer")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SaveMemberResponseDto createEmployer(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid EmployerSaveDto employerSaveDto) throws IOException { //dto로 바꿔야함
+        return memberService.requestEmployerRegistration(employerSaveDto,request,response);
+    }
 
     @PostMapping("/authenticate-email")
     public IsSuccessResponseDto mailSend(@RequestBody @Valid EmailRequestDto emailDto) {

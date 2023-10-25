@@ -6,7 +6,6 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
-// 상속을 이용하여 Social 로그인 Member, Non Social 로그인 Member 분리
 @Getter
 @SuperBuilder
 public class Member {
@@ -29,4 +28,6 @@ public class Member {
     private Long followCnt;
 
     private Long followerCnt;
+
+    private String role;
 }

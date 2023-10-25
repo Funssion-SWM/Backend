@@ -1,11 +1,13 @@
 package Funssion.Inforum.domain.member.entity;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -36,9 +38,12 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
         this.attributes = attributes;
     }
 
-    //Non Social Login 용
-    public CustomUserDetails(Long authId, String userEmail, String userPw, boolean emailVerified,boolean locked) {
+    //Non Social + Employer 로그인 용도
+
+    //Employer Login 용
+    public CustomUserDetails(Long authId, String role, String userEmail, String userPw, boolean emailVerified, boolean locked) {
         this.id = String.valueOf(authId);
+        this.authorities = new ArrayList<>(Collections.singleton(new SimpleGrantedAuthority(role)));
         this.email = userEmail;
         this.password = userPw;
         this.emailVerified = emailVerified;
@@ -57,7 +62,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (user ==null){ //non social
-            return Collections.emptyList();
+            return this.authorities;
         }
         else { //social
             return user.getAuthorities();

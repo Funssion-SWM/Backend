@@ -1,4 +1,4 @@
-package Funssion.Inforum.jwt;
+package Funssion.Inforum.access_handler;
 
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
