@@ -5,6 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -30,29 +31,38 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     private Map<String, Object> attributes;
 
     //Social Login 용
-    public CustomUserDetails(String id, String roles, Map<String, Object> attributes) {
+    public CustomUserDetails(String id`, String roles, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
-        this.authorities = createAuthorities(roles);
+        this.authorities = createAuthoritiesOfSocial(roles);
         this.attributes = attributes;
     }
 
     //Non Social + Employer 로그인 용도
     public CustomUserDetails(Long authId, String roles, String userEmail, String userPw, boolean emailVerified, boolean locked) {
         this.id = String.valueOf(authId);
-        this.authorities = createAuthorities(roles);
+        this.authorities = createAuthoritiesOfSocial(roles);
         this.email = userEmail;
         this.password = userPw;
         this.emailVerified = emailVerified;
         this.locked = !locked;
     }
 
-    private Collection<GrantedAuthority> createAuthorities(String roles){
+    private Collection<GrantedAuthority> createAuthoritiesOfNonSocial(String roles){
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
         for(String role : roles.split(",")){
             if (!StringUtils.hasText(role)) continue;
             authorities.add(new SimpleGrantedAuthority(role));
+        }
+        return authorities;
+    }
+    private Collection<GrantedAuthority> createAuthoritiesOfSocial(String roles){
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+        for(String role : roles.split(",")){
+            if (!StringUtils.hasText(role)) continue;
+            authorities.add(new OAuth2UserAuthority(role,this.attributes));
         }
         return authorities;
     }
