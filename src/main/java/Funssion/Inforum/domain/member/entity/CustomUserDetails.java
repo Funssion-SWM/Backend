@@ -5,6 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
         for(String role : roles.split(",")){
+            if (!StringUtils.hasText(role)) continue;
             authorities.add(new SimpleGrantedAuthority(role));
         }
         return authorities;
