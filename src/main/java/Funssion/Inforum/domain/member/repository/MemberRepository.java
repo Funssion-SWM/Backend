@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.member.repository;
 
 import Funssion.Inforum.common.constant.Sign;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
+import Funssion.Inforum.domain.member.dto.request.EmployerSaveDto;
 import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.Member;
@@ -15,6 +16,8 @@ import java.util.Optional;
 public interface MemberRepository {
     SaveMemberResponseDto save(NonSocialMember nonSocialMember) ;
     SaveMemberResponseDto save(SocialMember socialMember);
+    SaveMemberResponseDto save(EmployerSaveDto employerSaveDto);
+    boolean authorizeEmployer(Long tempEmployerId);
     Optional<NonSocialMember> findNonSocialMemberByEmail(String email);
     Optional<SocialMember> findSocialMemberByEmail(String email);
     Optional<Member> findByName(String Name);

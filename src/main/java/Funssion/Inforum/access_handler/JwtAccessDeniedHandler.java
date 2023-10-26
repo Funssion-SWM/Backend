@@ -1,4 +1,4 @@
-package Funssion.Inforum.jwt;
+package Funssion.Inforum.access_handler;
 
 import Funssion.Inforum.common.exception.response.ErrorResult;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ListIterator;
 
 @Slf4j
 @Repository
@@ -33,7 +32,6 @@ public class S3Repository {
     public String upload(MultipartFile memberProfileImage, String bucketName, String imageName) {
         try {
             ObjectMetadata imageMetaData = S3Utils.getObjectMetaData(memberProfileImage);
-            log.info("bucket = {} image = {}", bucketName, imageName);
             s3Client.putObject(bucketName, imageName, memberProfileImage.getInputStream(), imageMetaData);
             return getImageURL(bucketName, imageName);
         } catch (IOException e) {

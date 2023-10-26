@@ -5,27 +5,25 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 public class TokenProvider implements InitializingBean {
 
-    private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private static final String AUTHORITIES_KEY = "auth";
     private final String secret;
     private final long accessTokenValidityInMilliseconds;
@@ -56,7 +54,7 @@ public class TokenProvider implements InitializingBean {
         // 토큰의 expire 시간을 설정
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
-        log.info("[Login] User Id = {}",authentication.getName());
+        log.info("[Login] User Id = {}, authority = {}",authentication.getName(), authorities);
         return Jwts.builder()
                 .setSubject(authentication.getName()) // user_id가 반환됨
                 .claim(AUTHORITIES_KEY, authorities) // 정보 저장
@@ -88,10 +86,9 @@ public class TokenProvider implements InitializingBean {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        Collection<? extends GrantedAuthority> authorities = Collections.emptyList(); //authorities를 빈 리스트로 설정했으므로, 그대로 대입.
-//                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-//                        .map(SimpleGrantedAuthority::new)
-//                        .collect(Collectors.toList());
+        List<SimpleGrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
         User principal = new User(claims.getSubject(), "", authorities);
 
