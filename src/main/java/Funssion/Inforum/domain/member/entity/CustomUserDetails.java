@@ -31,7 +31,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     private Map<String, Object> attributes;
 
     //Social Login 용
-    public CustomUserDetails(String id`, String roles, Map<String, Object> attributes) {
+    public CustomUserDetails(String id, String roles, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
         this.authorities = createAuthoritiesOfSocial(roles);
