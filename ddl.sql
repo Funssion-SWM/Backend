@@ -132,6 +132,17 @@ CREATE TABLE "member".notification (
     created timestamp NOT NULL DEFAULT current_timestamp
 );
 
+CREATE TABLE member.professional_profile (
+    user_id int8 not null PRIMARY KEY,
+    introduce TEXT,
+    tech_stack TEXT,
+    answer1 TEXT,
+    answer2 TEXT,
+    answer3 TEXT,
+    description TEXT,
+    resume TEXT
+);
+
 create table post.comment(
     id serial primary key,
     author_id int8 not null,
