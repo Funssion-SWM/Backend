@@ -41,7 +41,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     //Non Social + Employer 로그인 용도
     public CustomUserDetails(Long authId, String roles, String userEmail, String userPw, boolean emailVerified, boolean locked) {
         this.id = String.valueOf(authId);
-        this.authorities = createAuthoritiesOfSocial(roles);
+        this.authorities = createAuthoritiesOfNonSocial(roles);
         this.email = userEmail;
         this.password = userPw;
         this.emailVerified = emailVerified;
