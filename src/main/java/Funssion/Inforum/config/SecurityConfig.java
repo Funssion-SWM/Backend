@@ -5,7 +5,8 @@ import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
 import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
 import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
 import Funssion.Inforum.domain.member.service.OAuthService;
-import Funssion.Inforum.jwt.*;
+import Funssion.Inforum.jwt.JwtSecurityConfig;
+import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,22 +19,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @Configuration
@@ -136,35 +128,35 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-        return (authorities) -> {
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-
-            authorities.forEach(authority -> {
-                if (OidcUserAuthority.class.isInstance(authority)) {
-                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-
-                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-
-                    // Map the claims found in idToken and/or userInfo
-                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-
-                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-
-                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-
-                    // Map the attributes found in userAttributes
-                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-
-                }
-            });
-
-            return mappedAuthorities;
-
-
-        };
-    }
+//    @Bean
+//    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
+//        return (authorities) -> {
+//            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
+//
+//            authorities.forEach(authority -> {
+//                if (OidcUserAuthority.class.isInstance(authority)) {
+//                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
+//
+//                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
+//                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
+//
+//                    // Map the claims found in idToken and/or userInfo
+//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
+//
+//                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
+//                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
+//
+//                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
+//
+//                    // Map the attributes found in userAttributes
+//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
+//
+//                }
+//            });
+//
+//            return mappedAuthorities;
+//
+//
+//        };
+//    }
 }

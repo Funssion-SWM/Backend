@@ -5,7 +5,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -34,21 +33,21 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     public CustomUserDetails(String id, String roles, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
-        this.authorities = createAuthoritiesOfSocial(roles,attributes);
+        this.authorities = createAuthorities(roles);
         this.attributes = attributes;
     }
 
     //Non Social + Employer 로그인 용도
     public CustomUserDetails(Long authId, String roles, String userEmail, String userPw, boolean emailVerified, boolean locked) {
         this.id = String.valueOf(authId);
-        this.authorities = createAuthoritiesOfNonSocial(roles);
+        this.authorities = createAuthorities(roles);
         this.email = userEmail;
         this.password = userPw;
         this.emailVerified = emailVerified;
         this.locked = !locked;
     }
 
-    private Collection<GrantedAuthority> createAuthoritiesOfNonSocial(String roles){
+    private Collection<GrantedAuthority> createAuthorities(String roles){
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
         for(String role : roles.split(",")){
@@ -57,15 +56,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
         }
         return authorities;
     }
-    private Collection<GrantedAuthority> createAuthoritiesOfSocial(String roles,Map<String, Object> attributes){
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-        for(String role : roles.split(",")){
-            if (!StringUtils.hasText(role)) continue;
-            authorities.add(new OAuth2UserAuthority(role,attributes));
-        }
-        return authorities;
-    }
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;

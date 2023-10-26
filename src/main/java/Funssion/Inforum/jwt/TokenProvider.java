@@ -47,38 +47,20 @@ public class TokenProvider implements InitializingBean {
     }
 
     public String createAccessToken(Authentication authentication) {
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
         // 토큰의 expire 시간을 설정
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
-
-        if (authentication instanceof UsernamePasswordAuthenticationToken) {
-            String authorities = authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(","));
-
-            log.info("[Login] User Id = {}, authority = {}", authentication.getName(), authorities);
-            return Jwts.builder()
-                    .setSubject(authentication.getName()) // user_id가 반환됨
-                    .claim(AUTHORITIES_KEY, authorities) // 정보 저장
-                    .signWith(key, SignatureAlgorithm.HS512) // 사용할 암호화 알고리즘과 , signature 에 들어갈 secret값 세팅
-                    .setExpiration(validity) // set Expire Time 해당 옵션 안넣으면 expire안함
-                    .compact();
-        }
-        else{
-            //OAuth의 경우 SimpleGrantedAuthority가 아닌 OAuth2UserAuthority 같음.
-            String authorities = authentication.getAuthorities().stream()
-                    .map(OAuth2UserAuthority->OAuth2UserAuthority.getAuthority())
-                    .collect(Collectors.joining(","));
-            log.info("[Login] User Id = {}, authority = {}", authentication.getName(), authorities);
-
-            return Jwts.builder()
-                    .setSubject(authentication.getName()) // user_id가 반환됨
-                    .claim(AUTHORITIES_KEY, authorities) // 정보 저장
-                    .signWith(key, SignatureAlgorithm.HS512) // 사용할 암호화 알고리즘과 , signature 에 들어갈 secret값 세팅
-                    .setExpiration(validity) // set Expire Time 해당 옵션 안넣으면 expire안함
-                    .compact();
-        }
-
+        log.info("[Login] User Id = {}, authority = {}",authentication.getName(), authorities);
+        return Jwts.builder()
+                .setSubject(authentication.getName()) // user_id가 반환됨
+                .claim(AUTHORITIES_KEY, authorities) // 정보 저장
+                .signWith(key, SignatureAlgorithm.HS512) // 사용할 암호화 알고리즘과 , signature 에 들어갈 secret값 세팅
+                .setExpiration(validity) // set Expire Time 해당 옵션 안넣으면 expire안함
+                .compact();
     }
     public String createRefreshToken(Authentication authentication) {
         String authorities = authentication.getAuthorities().stream()
@@ -104,10 +86,9 @@ public class TokenProvider implements InitializingBean {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        List<GrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        List<SimpleGrantedAuthority> authorities = Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
-
 
         User principal = new User(claims.getSubject(), "", authorities);
 
