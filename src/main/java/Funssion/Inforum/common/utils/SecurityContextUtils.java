@@ -1,6 +1,7 @@
 package Funssion.Inforum.common.utils;
 
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public abstract class SecurityContextUtils {
@@ -12,6 +13,11 @@ public abstract class SecurityContextUtils {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         if (userId.equals(ANONYMOUS_USER_NAME)) return ANONYMOUS_USER_ID;
         return Long.valueOf(userId);
+    }
+    public static String getAuthority(){
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .stream().map(GrantedAuthority::getAuthority).toList().get(0);
+        //더 큰 역할이 첫번째 원소에 옵니다.
     }
 
     public static Long getAuthorizedUserId() {

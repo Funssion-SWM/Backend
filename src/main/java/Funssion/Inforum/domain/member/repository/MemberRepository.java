@@ -17,6 +17,7 @@ public interface MemberRepository {
     SaveMemberResponseDto save(NonSocialMember nonSocialMember) ;
     SaveMemberResponseDto save(SocialMember socialMember);
     SaveMemberResponseDto save(EmployerSaveDto employerSaveDto);
+    boolean authorizeEmployer(Long tempEmployerId);
     Optional<NonSocialMember> findNonSocialMemberByEmail(String email);
     Optional<SocialMember> findSocialMemberByEmail(String email);
     Optional<Member> findByName(String Name);

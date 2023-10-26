@@ -1,10 +1,12 @@
 package Funssion.Inforum.domain.member;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.EmailRequestDto;
+import Funssion.Inforum.domain.member.dto.request.EmployerSaveDto;
 import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -12,6 +14,7 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.member.service.MemberService;
 import Funssion.Inforum.domain.mypage.repository.MyRepository;
 import Funssion.Inforum.domain.post.comment.domain.Comment;
@@ -32,25 +35,37 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration
 @Transactional
 @AutoConfigureMockMvc
 public class MemberIntegrationTest {
@@ -66,6 +81,8 @@ public class MemberIntegrationTest {
     MemberService memberService;
     @Autowired
     MyRepository myRepository;
+    @Autowired
+    AuthService authService;
 
     @Autowired
     MemoRepository memoRepository;
@@ -81,12 +98,14 @@ public class MemberIntegrationTest {
 
     Long savedNonsocialMemberId;
     Long savedSocialMemberId;
+    Long savedEmployerId;
     String savedNonsocialMemberEmail = "nonsocial@gmail.com";
     String savedSocialMemberEmail = "social@gmail.com";
     String savedMemberName = "jinu";
     String savedMemberImagePath = "https://image";
     SaveMemberResponseDto savedNonsocialMember;
     SaveMemberResponseDto savedSocialMember;
+    SaveMemberResponseDto savedEmployer;
     Memo savedMemo;
     Question savedQuestion;
     Answer savedAnswer;
@@ -94,7 +113,6 @@ public class MemberIntegrationTest {
     ReCommentListDto savedReComment;
 
     NonSocialMember saveMember;
-
 
     @BeforeEach
     void init() {
@@ -124,6 +142,18 @@ public class MemberIntegrationTest {
                 .build());
 
         savedSocialMemberId = savedSocialMember.getId();
+
+        EmployerSaveDto employerSaveDto = EmployerSaveDto.builder()
+                .userEmail("employer@gmail.com")
+                .userPw("a1234567!")
+                .userName("employer")
+                .loginType(LoginType.NON_SOCIAL)
+                .companyName("inflearn")
+                .build();
+        savedEmployer = memberRepository.save(employerSaveDto);
+        savedEmployerId = savedEmployer.getId();
+        memberRepository.authorizeEmployer(savedEmployerId);
+
 
         savedMemo = memoRepository.create(Memo.builder()
                 .title("JPA")
@@ -184,6 +214,108 @@ public class MemberIntegrationTest {
         savedReComment = commentRepository.getReCommentsAtComment(savedComment.getId(), savedNonsocialMemberId).get(0);
     }
 
+    @Nested
+    @DisplayName("회원가입")
+    class SignUp{
+        @Test
+        @DisplayName("채용자 회원가입")
+        void employerSignUp() throws Exception {
+            ObjectMapper objectMapper = new ObjectMapper();
+            EmployerSaveDto employerSaveJSONDto = EmployerSaveDto.builder()
+                    .userEmail("employer_join@gmail.com")
+                    .userPw("a1234567!")
+                    .userName("test")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .companyName("inflearn")
+                    .build();
+            String employerSaveStringDto = objectMapper.writeValueAsString(employerSaveJSONDto);
+            mvc.perform(post("/users/employer")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(employerSaveStringDto));
+            assertThat(memberRepository.findNonSocialMemberByEmail(employerSaveJSONDto.getUserEmail())
+                    .get().getRole()).isEqualTo(Role.TEMP_EMPLOYER.toString());
+        }
+    }
+
+    @Nested
+    @DisplayName("로그인")
+    class signIn{
+        @Test
+        @DisplayName("인증받은 채용자가 로그인 되었는지 확인")
+        void employerLoginSucceed() throws Exception {
+            EmployerSaveDto employerSaveJSONDto = EmployerSaveDto.builder()
+                    .userEmail("employer_auth@gmail.com")
+                    .userPw("a1234567!")
+                    .userName("employer")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .companyName("inflearn")
+                    .build();
+            SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(employerSaveJSONDto);
+            memberRepository.authorizeEmployer(saveMemberResponseDto.getId());
+
+            mvc.perform(post("/users/login")
+                            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                            .param("username",employerSaveJSONDto.getUserEmail())
+                            .param("password",employerSaveJSONDto.getUserPw()))
+                    .andExpect(status().isOk());
+
+        }
+        @Test
+        @DisplayName("인증받은 채용자의 role 확인")
+        void authorizedEmployerRoleCheck() throws Exception {
+            EmployerSaveDto employerSaveJSONDto = EmployerSaveDto.builder()
+                    .userEmail("employer12@gmail.com")
+                    .userPw("a1234567!")
+                    .userName("employer")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .companyName("inflearn")
+                    .build();
+            SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(employerSaveJSONDto);
+            memberRepository.authorizeEmployer(saveMemberResponseDto.getId());
+
+            mvc.perform(post("/users/login")
+                            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                            .param("username",employerSaveJSONDto.getUserEmail())
+                            .param("password",employerSaveJSONDto.getUserPw()))
+                    .andExpect(status().isOk());
+            UserDetails userDetails = authService.loadUserByUsername(employerSaveJSONDto.getUserEmail());
+            assertThat(userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                    .contains(Role.EMPLOYER.getRoles().split(",")[0]).hasSize(2);
+
+
+        }
+
+        @Test
+        @DisplayName("인증받은 employer 유저의 경우 해당 유저만 접근 가능한 페이지인지 확인")
+        void testAccessSucceedByEmployer() throws Exception {
+            UserDetails userDetails = authService.loadUserByUsername(savedEmployer.getEmail());
+            User principal = new User(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            mvc.perform(get("/users/employer"))
+                    .andExpect(status().isOk());
+        }
+        @Test
+        @DisplayName("인증받지 않은 employer 유저의 경우 employer 페이지에 접속 불가능한지 확인")
+        void testAccessFailByEmployer() throws Exception {
+            EmployerSaveDto employerSaveJSONDto = EmployerSaveDto.builder()
+                    .userEmail("employernotauth@gmail.com")
+                    .userPw("a1234567!")
+                    .userName("employer")
+                    .loginType(LoginType.NON_SOCIAL)
+                    .companyName("inflearn")
+                    .build();
+            SaveMemberResponseDto saveMemberResponseDto = memberRepository.save(employerSaveJSONDto);
+            assertThat(saveMemberResponseDto.getRole().equals("TEMP_EMPLOYER"));
+            UserDetails userDetails = authService.loadUserByUsername(saveMemberResponseDto.getEmail());
+            User principal = new User(userDetails.getUsername(), userDetails.getPassword(), userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            mvc.perform(get("/users/employer"))
+                    .andExpect(status().isForbidden());
+        }
+    }
     @Test
     @DisplayName("이메일로 비밀번호를 찾을 때, 구글로그인으로 등록된 계정인 경우 해당 사실을 알려주어야 함")
     void findPasswordWhenGoogleLoginMustNotify() throws Exception {

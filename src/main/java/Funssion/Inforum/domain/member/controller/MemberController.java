@@ -18,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.CurrentSecurityContext;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,6 +75,10 @@ public class MemberController {
     public IsSuccessResponseDto updatePassword(@RequestBody @Valid PasswordUpdateDto passwordUpdateDto ){
         return memberService.findAndChangePassword(passwordUpdateDto);
     }
+    @GetMapping("/employer")
+    public String checkEmployerRole(){
+        return "check";
+    }
 
     @PostMapping("/authenticate-code")
     public ValidatedDto AuthCheck(@RequestBody @Valid CodeCheckDto codeCheckDto) {
@@ -93,11 +95,11 @@ public class MemberController {
     }
 
     @GetMapping("/check")
-    public ValidMemberDto method(@CurrentSecurityContext SecurityContext context) {
-        String userId = context.getAuthentication().getName();
-        Long loginId = userId.equals("anonymousUser") ? -1L : Long.valueOf(userId);
-        boolean isLogin = !userId.equals("anonymousUser");
-        return new ValidMemberDto(loginId, isLogin);
+    public ValidMemberDto method() {
+        Long loginId = SecurityContextUtils.getUserId();
+        String authority = SecurityContextUtils.getAuthority();
+        boolean isLogin = !loginId.equals(SecurityContextUtils.ANONYMOUS_USER_ID);
+        return new ValidMemberDto(loginId, isLogin,authority);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

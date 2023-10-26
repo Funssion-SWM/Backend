@@ -9,7 +9,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 
@@ -30,27 +29,32 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     private Map<String, Object> attributes;
 
     //Social Login 용
-    public CustomUserDetails(String id, Collection<GrantedAuthority> authorities,User user, Map<String, Object> attributes) {
+    public CustomUserDetails(String id, String roles, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
-        this.authorities = authorities; // social 회원가입 여부를 나타내는 것으로 사용됨
-        this.user=user;
+        this.authorities = createAuthorities(roles); // social 회원가입 여부를 나타내는 것으로 사용됨
+        this.user= new User (id,"default",authorities);
         this.attributes = attributes;
     }
 
     //Non Social + Employer 로그인 용도
-
-    //Employer Login 용
-    public CustomUserDetails(Long authId, String role, String userEmail, String userPw, boolean emailVerified, boolean locked) {
+    public CustomUserDetails(Long authId, String roles, String userEmail, String userPw, boolean emailVerified, boolean locked) {
         this.id = String.valueOf(authId);
-        this.authorities = new ArrayList<>(Collections.singleton(new SimpleGrantedAuthority(role)));
+        this.authorities = createAuthorities(roles);
         this.email = userEmail;
         this.password = userPw;
         this.emailVerified = emailVerified;
         this.locked = !locked;
     }
 
+    private Collection<GrantedAuthority> createAuthorities(String roles){
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
 
+        for(String role : roles.split(",")){
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+        return authorities;
+    }
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;

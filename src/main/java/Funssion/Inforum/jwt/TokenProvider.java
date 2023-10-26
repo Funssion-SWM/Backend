@@ -54,7 +54,7 @@ public class TokenProvider implements InitializingBean {
         // 토큰의 expire 시간을 설정
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
-        log.info("[Login] User Id = {}",authentication.getName());
+        log.info("[Login] User Id = {}, authority = {}",authentication.getName(), authorities);
         return Jwts.builder()
                 .setSubject(authentication.getName()) // user_id가 반환됨
                 .claim(AUTHORITIES_KEY, authorities) // 정보 저장

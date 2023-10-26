@@ -67,6 +67,15 @@ public class MemberRepositoryImpl implements MemberRepository {
         return savedEmployer;
     }
 
+    @Override
+    public boolean authorizeEmployer(Long tempEmployerId) {
+        String sql = "UPDATE member.info " +
+                "SET role = 'EMPLOYER' " +
+                "WHERE id = ?";
+        if(jdbcTemplate.update(sql,tempEmployerId) == 0) throw new UpdateFailException("해당 채용자가 존재하지 않습니다.");
+        return true;
+    }
+
     public Optional<NonSocialMember> findNonSocialMemberByEmail(String email) {
         String sql ="SELECT A.ID AS A_ID ,U.ID AS U_ID,A.PASSWORD,U.ROLE,U.EMAIL,U.FOLLOW_CNT,U.FOLLOWER_CNT FROM member.info AS U JOIN MEMBER.AUTH AS A ON U.ID = A.USER_ID WHERE U.IS_DELETED = false AND U.EMAIL = ?";
         try{
@@ -192,7 +201,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         String name = member.getUserName();
         String email = member.getUserEmail();
         LoginType loginType = member.getLoginType();
-        String insertedRole = Role.USER;
+        String insertedRole = Role.USER.toString();
         String userSql = "insert into member.info(name,email,login_type,created_date,role) values(?,?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
@@ -219,7 +228,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         LocalDateTime createdDate = LocalDateTime.now();
         String name = member.getUserName();
         String email = member.getUserEmail();
-        String insertedRole = Role.USER;
+        String insertedRole = Role.USER.toString();
         String userSql = "insert into member.info(name,email,login_type,created_date,role) values(?,?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con-> {
@@ -278,7 +287,7 @@ public class MemberRepositoryImpl implements MemberRepository {
     private SaveMemberResponseDto saveEmployerInUserTable(EmployerSaveDto employer){
         String userSql = "insert into member.info(name,email,login_type,company,created_date,role) values(?,?,?,?,?,?)";
         KeyHolder userKeyHolder = new GeneratedKeyHolder();
-        String insertedRole = Role.TEMP_EMPLOYER;
+        String insertedRole = Role.TEMP_EMPLOYER.toString();
         jdbcTemplate.update(con-> {
             PreparedStatement psmt = con.prepareStatement(userSql, new String[]{"id"});
             psmt.setString(1, employer.getUserName());

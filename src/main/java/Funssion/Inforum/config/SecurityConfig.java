@@ -69,6 +69,8 @@ public class SecurityConfig {
                         authorizeRequests
                                 .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/users/employer").hasRole("EMPLOYER")
                                 //users 포함한 end point 보안 적용 X
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",

@@ -10,7 +10,7 @@ public abstract class LikeUtils {
 
     public static boolean isLikeMatched(List<Like> likeList, Long memoId) {
         for (Like like : likeList) {
-            log.info("like = {}, memoId = {}", like, memoId);
+//            log.info("like = {}, memoId = {}", like, memoId);
         }
         return likeList.stream()
                 .filter(like -> like.getPostId().equals(memoId))
