@@ -34,7 +34,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
     public CustomUserDetails(String id, String roles, Map<String, Object> attributes) {
         //PrincipalOauth2UserService 참고
         this.id = id;
-        this.authorities = createAuthoritiesOfSocial(roles);
+        this.authorities = createAuthoritiesOfSocial(roles,attributes);
         this.attributes = attributes;
     }
 
@@ -57,12 +57,12 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
         }
         return authorities;
     }
-    private Collection<GrantedAuthority> createAuthoritiesOfSocial(String roles){
+    private Collection<GrantedAuthority> createAuthoritiesOfSocial(String roles,Map<String, Object> attributes){
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
         for(String role : roles.split(",")){
             if (!StringUtils.hasText(role)) continue;
-            authorities.add(new OAuth2UserAuthority(role,this.attributes));
+            authorities.add(new OAuth2UserAuthority(role,attributes));
         }
         return authorities;
     }
