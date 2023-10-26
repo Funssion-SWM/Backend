@@ -3,6 +3,7 @@ package Funssion.Inforum.domain.professionalprofile.repository;
 import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
+import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
 import Funssion.Inforum.domain.tag.TagUtils;
@@ -26,11 +27,11 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     }
 
     @Override
-    public void create(ProfessionalProfile professionalProfile) {
+    public void create(Long userId, CreateProfessionalProfileDto professionalProfile) {
         String sql = "INSERT INTO member.professional_profile (user_id, introduce, tech_stack, description, answer1, answer2, answer3, resume) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
-        template.update(sql, getAllParams(professionalProfile));
+        template.update(sql, getAllParams(userId, professionalProfile));
     }
 
     @Override
@@ -87,9 +88,9 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
         return paramList.toArray();
     }
 
-    private Object[] getAllParams(ProfessionalProfile profile) {
+    private Object[] getAllParams(Long userId, CreateProfessionalProfileDto profile) {
         ArrayList<Object> paramList = new ArrayList<>();
-        paramList.add(profile.getUserId());
+        paramList.add(userId);
         paramList.add(profile.getIntroduce());
         paramList.add(profile.getTechStack());
         paramList.add(profile.getDescription());

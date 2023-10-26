@@ -5,6 +5,7 @@ import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
+import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
 import org.assertj.core.api.Assertions;
@@ -28,7 +29,16 @@ class ProfessionalProfileRepositoryImplTest {
     ProfessionalProfileRepository profileRepository;
 
     SaveMemberResponseDto createdMember;
-    ProfessionalProfile professionalProfile;
+    ProfessionalProfile savedProfile;
+    CreateProfessionalProfileDto createProfessionalProfileDto = CreateProfessionalProfileDto.builder()
+            .introduce("hi")
+            .techStack("{\"java\": 5}")
+            .description("java gosu")
+            .answer1("yes")
+            .answer2("no")
+            .answer3("good")
+            .resume("{\"content\": \"i'm a amazing programmer\"}")
+            .build();;
 
     @BeforeEach
     void init() {
@@ -36,28 +46,12 @@ class ProfessionalProfileRepositoryImplTest {
                 SocialMember.createSocialMember("test@gmail.com", "jinu")
         );
 
-        professionalProfile = ProfessionalProfile.builder()
-                .userId(createdMember.getId())
-                .introduce("hi")
-                .techStack("{\"java\": 5}")
-                .description("java gosu")
-                .answer1("yes")
-                .answer2("no")
-                .answer3("good")
-                .resume("{\"content\": \"i'm a amazing programmer\"}")
-                .build();
-
         profileRepository.create(
-                professionalProfile
+                createdMember.getId(),
+                createProfessionalProfileDto
         );
-    }
 
-    @Test
-    @DisplayName("자소서, 이력서 조회하기")
-    void findByUserId() {
-        ProfessionalProfile saved = profileRepository.findByUserId(createdMember.getId());
-
-        assertThat(saved).isEqualTo(professionalProfile);
+        savedProfile = profileRepository.findByUserId(createdMember.getId());
     }
 
     @Test
@@ -72,9 +66,9 @@ class ProfessionalProfileRepositoryImplTest {
                 .answer3("updated")
                 .build();
 
-        profileRepository.updatePersonalStatement(createdMember.getId(), updatePersonalStatementDto);
+        profileRepository.updatePersonalStatement(savedProfile.getUserId(), updatePersonalStatementDto);
 
-        ProfessionalProfile updatedProfile = profileRepository.findByUserId(createdMember.getId());
+        ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
 
         assertThat(updatedProfile.getIntroduce()).isEqualTo(updatePersonalStatementDto.getIntroduce());
         assertThat(updatedProfile.getTechStack()).isEqualTo(updatePersonalStatementDto.getTechStack());
@@ -83,7 +77,7 @@ class ProfessionalProfileRepositoryImplTest {
         assertThat(updatedProfile.getAnswer2()).isEqualTo(updatePersonalStatementDto.getAnswer2());
         assertThat(updatedProfile.getAnswer3()).isEqualTo(updatePersonalStatementDto.getAnswer3());
         //resume는 원본과 같은지
-        assertThat(updatedProfile.getResume()).isEqualTo(professionalProfile.getResume());
+        assertThat(updatedProfile.getResume()).isEqualTo(savedProfile.getResume());
     }
 
     @Test
