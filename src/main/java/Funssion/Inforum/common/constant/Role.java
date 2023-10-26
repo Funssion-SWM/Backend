@@ -22,8 +22,8 @@ public enum Role {
         priorRoles += ","+addRole;
         return priorRoles;
     }
-    public static String addRole(String roles, String addRole){
-        roles += ","+addRole;
+    public static String addRole(String roles, Role role){
+        roles += ","+role.getRoles();
         return roles;
     }
 }
