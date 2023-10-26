@@ -33,7 +33,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
         //PrincipalOauth2UserService 참고
         this.id = id;
         this.authorities = createAuthorities(roles); // social 회원가입 여부를 나타내는 것으로 사용됨
-        this.user= new User (id,"default",authorities);
+//        this.user= new User (id,"default",this.authorities);
         this.attributes = attributes;
     }
 
@@ -65,12 +65,10 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (user ==null){ //non social
             return this.authorities;
-        }
-        else { //social
-            return user.getAuthorities();
-        }
+//        else { //social
+//            return user.getAuthorities();
+//        }
     }
 
     /**
