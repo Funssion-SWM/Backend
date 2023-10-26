@@ -44,6 +44,7 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
             return new CustomUserDetails(String.valueOf(savedResponse.getId()),roles,oAuth2User.getAttributes());
         }
         else{
+            log.info("roles in load user = {}",Role.getIncludingRoles(socialMember.get().getRole()));
             return new CustomUserDetails(String.valueOf(socialMember.get().getUserId()),Role.getIncludingRoles(socialMember.get().getRole()),oAuth2User.getAttributes());
         }
     }
