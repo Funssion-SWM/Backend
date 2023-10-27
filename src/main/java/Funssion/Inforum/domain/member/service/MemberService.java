@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
@@ -30,6 +31,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -85,7 +87,11 @@ public class MemberService {
 
     private Collection<GrantedAuthority> setAuthorityOf(SaveMemberResponseDto savedMember) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(savedMember.getRole()));
+        String roles = Role.getIncludingRoles(savedMember.getRole());
+        for(String role : roles.split(",")){
+            if (!StringUtils.hasText(role)) continue;
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
         return authorities;
     }
 

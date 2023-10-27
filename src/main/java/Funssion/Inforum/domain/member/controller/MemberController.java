@@ -48,7 +48,7 @@ public class MemberController {
     }
     @PostMapping("/employer")
     @ResponseStatus(HttpStatus.CREATED)
-    public SaveMemberResponseDto createEmployer(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid EmployerSaveDto employerSaveDto) throws IOException { //dto로 바꿔야함
+    public SaveMemberResponseDto createEmployer(HttpServletRequest request, HttpServletResponse response, @RequestBody @Valid EmployerSaveDto employerSaveDto) throws IOException {
         return memberService.requestEmployerRegistration(employerSaveDto,request,response);
     }
 

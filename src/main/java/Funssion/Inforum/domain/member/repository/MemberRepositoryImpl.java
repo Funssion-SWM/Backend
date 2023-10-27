@@ -63,7 +63,6 @@ public class MemberRepositoryImpl implements MemberRepository {
     public SaveMemberResponseDto save(EmployerSaveDto employerSaveDto) {
         SaveMemberResponseDto savedEmployer = saveEmployerInUserTable(employerSaveDto);
         saveEmployerInAuthTable(employerSaveDto,savedEmployer.getId());
-
         return savedEmployer;
     }
 
