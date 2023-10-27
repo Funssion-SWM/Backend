@@ -66,6 +66,17 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     }
 
     @Override
+    public void updateVisibility(Long userId, Boolean isVisible) {
+        String sql = "UPDATE member.professional_profile " +
+                "SET is_visible = ? " +
+                "WHERE user_id = ?";
+
+        int updatedRows = template.update(sql, isVisible, userId);
+        if (updatedRows != 1)
+            throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
+    }
+
+    @Override
     public void delete(Long userId) {
         String sql = "DELETE FROM member.professional_profile " +
                 "WHERE user_id = ?";
@@ -111,6 +122,7 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
                 .answer2(rs.getString("answer2"))
                 .answer3(rs.getString("answer3"))
                 .resume(rs.getString("resume"))
+                .isVisible(rs.getBoolean("is_visible"))
                 .build();
     }
 }

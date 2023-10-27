@@ -1,11 +1,10 @@
 package Funssion.Inforum.domain.professionalprofile.dto.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
-@RequiredArgsConstructor
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateResumeDto {
-    private final String resume;
+    private String resume;
 }

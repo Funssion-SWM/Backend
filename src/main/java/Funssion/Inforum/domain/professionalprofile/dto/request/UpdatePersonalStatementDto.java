@@ -1,17 +1,22 @@
 package Funssion.Inforum.domain.professionalprofile.dto.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
-@RequiredArgsConstructor
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdatePersonalStatementDto {
-    private final String introduce;
-    private final String techStack;
-    private final String description;
-    private final String answer1;
-    private final String answer2;
-    private final String answer3;
+    @NotBlank(message = "한줄 자기소개는 필수 입력 사항입니다.")
+    private String introduce;
+    @NotBlank(message = "기술 스택은 필수 입력 사항입니다.")
+    private String techStack;
+    private String description;
+    @NotBlank(message = "질문 1에 대한 답변을 작성해주세요.")
+    private String answer1;
+    @NotBlank(message = "질문 2에 대한 답변을 작성해주세요.")
+    private String answer2;
+    @NotBlank(message = "질문 3에 대한 답변을 작성해주세요.")
+    private String answer3;
 }

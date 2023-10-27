@@ -11,5 +11,6 @@ public interface ProfessionalProfileRepository {
     ProfessionalProfile findByUserId(Long userId);
     void updatePersonalStatement(Long userId, UpdatePersonalStatementDto personalStatement);
     void updateResume(Long userId, UpdateResumeDto resume);
+    void updateVisibility(Long userId, Boolean isVisible);
     void delete(Long userId);
 }

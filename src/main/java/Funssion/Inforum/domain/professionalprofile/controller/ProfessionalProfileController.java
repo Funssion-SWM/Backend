@@ -7,6 +7,8 @@ import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
 import Funssion.Inforum.domain.professionalprofile.dto.response.ProfessionalProfileResponseDto;
 import Funssion.Inforum.domain.professionalprofile.service.ProfessionalProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,8 +19,9 @@ public class ProfessionalProfileController {
     private final ProfessionalProfileService professionalProfileService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public void createProfessionalProfile(
-            @RequestBody CreateProfessionalProfileDto createProfessionalProfileDto
+            @RequestBody @Validated CreateProfessionalProfileDto createProfessionalProfileDto
             ) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
         professionalProfileService.createProfessionalProfile(userId, createProfessionalProfileDto);
@@ -26,7 +29,7 @@ public class ProfessionalProfileController {
 
     @PutMapping("/personal-statement")
     public void updatePersonalStatement(
-            @RequestBody UpdatePersonalStatementDto updatePersonalStatementDto
+            @RequestBody @Validated UpdatePersonalStatementDto updatePersonalStatementDto
             ) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
         professionalProfileService.updatePersonalStatement(userId, updatePersonalStatementDto);
@@ -38,6 +41,12 @@ public class ProfessionalProfileController {
             ) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
         professionalProfileService.updateResume(userId, updateResumeDto);
+    }
+
+    @PostMapping("/visibility")
+    public void updateVisibility(@RequestParam Boolean isVisible) {
+        Long userId = SecurityContextUtils.getAuthorizedUserId();
+        professionalProfileService.updateVisibility(userId, isVisible);
     }
 
 

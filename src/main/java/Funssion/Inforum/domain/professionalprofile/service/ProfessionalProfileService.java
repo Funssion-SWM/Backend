@@ -1,5 +1,8 @@
 package Funssion.Inforum.domain.professionalprofile.service;
 
+import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
 import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
 import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
@@ -16,6 +19,12 @@ public class ProfessionalProfileService {
     private final ProfessionalProfileRepository professionalProfileRepository;
 
     public ProfessionalProfileResponseDto getProfessionalProfile(Long userId) {
+        Long clientId = SecurityContextUtils.getUserId();
+        ProfessionalProfile professionalProfile = professionalProfileRepository.findByUserId(userId);
+
+        if (!professionalProfile.getIsVisible() && !clientId.equals(userId))
+            throw new ForbiddenException("비공개 설정된 프로필은 열람할 수 없습니다.");
+
         return ProfessionalProfileResponseDto.valueOf(
                 professionalProfileRepository.findByUserId(userId)
         );
@@ -31,5 +40,9 @@ public class ProfessionalProfileService {
 
     public void updateResume(Long userId, UpdateResumeDto updateResumeDto) {
         professionalProfileRepository.updateResume(userId, updateResumeDto);
+    }
+
+    public void updateVisibility(Long userId, Boolean isVisible) {
+        professionalProfileRepository.updateVisibility(userId, isVisible);
     }
 }

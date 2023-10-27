@@ -18,4 +18,5 @@ public class ProfessionalProfile {
     private final String answer3;
     private final String description;
     private final String resume;
+    private final Boolean isVisible;
 }

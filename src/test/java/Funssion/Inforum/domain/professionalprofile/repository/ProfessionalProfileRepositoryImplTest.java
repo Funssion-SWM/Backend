@@ -15,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Transactional
 class ProfessionalProfileRepositoryImplTest {
 
     @Autowired
@@ -85,9 +87,9 @@ class ProfessionalProfileRepositoryImplTest {
     void updateResume() {
         UpdateResumeDto updateResumeDto = new UpdateResumeDto("updated");
 
-        profileRepository.updateResume(createdMember.getId(), updateResumeDto);
+        profileRepository.updateResume(savedProfile.getUserId(), updateResumeDto);
 
-        ProfessionalProfile updated = profileRepository.findByUserId(createdMember.getId());
+        ProfessionalProfile updated = profileRepository.findByUserId(savedProfile.getUserId());
 
         assertThat(updated).hasFieldOrPropertyWithValue("resume", "updated");
     }
@@ -95,9 +97,19 @@ class ProfessionalProfileRepositoryImplTest {
     @Test
     @DisplayName("자기소개서, 이력서 삭제하기")
     void delete() {
-        profileRepository.delete(createdMember.getId());
+        profileRepository.delete(savedProfile.getUserId());
 
-        assertThatThrownBy(() -> profileRepository.findByUserId(createdMember.getId()))
+        assertThatThrownBy(() -> profileRepository.findByUserId(savedProfile.getUserId()))
                 .isInstanceOf(EmptyResultDataAccessException.class);
+    }
+
+    @Test
+    @DisplayName("visibility 설정 업데이트하기")
+    void updateVisibility() {
+        profileRepository.updateVisibility(savedProfile.getUserId(), false);
+        ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
+
+        assertThat(savedProfile.getIsVisible()).isTrue();
+        assertThat(updatedProfile.getIsVisible()).isFalse();
     }
 }
