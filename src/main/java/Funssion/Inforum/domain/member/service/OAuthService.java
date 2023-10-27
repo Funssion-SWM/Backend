@@ -40,11 +40,9 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
             SocialMember savedSocialMember = SocialMember.createSocialMember(email, nickname);
             SaveMemberResponseDto savedResponse = memberRepository.save(savedSocialMember);
             String roles = Role.addRole(Role.getIncludingRoles(savedResponse.getRole()), Role.OAUTH_FIRST_JOIN);// 최초 회원가입을 위한 임시 role 추가
-            log.info("roles in load user = {}",roles);
             return new CustomUserDetails(String.valueOf(savedResponse.getId()),roles,oAuth2User.getAttributes());
         }
         else{
-            log.info("roles in load user = {}",Role.getIncludingRoles(socialMember.get().getRole()));
             return new CustomUserDetails(String.valueOf(socialMember.get().getUserId()),Role.getIncludingRoles(socialMember.get().getRole()),oAuth2User.getAttributes());
         }
     }
