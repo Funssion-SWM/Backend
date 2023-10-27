@@ -134,13 +134,14 @@ CREATE TABLE "member".notification (
 
 CREATE TABLE member.professional_profile (
     user_id int8 not null PRIMARY KEY,
-    introduce TEXT,
-    tech_stack TEXT,
-    answer1 TEXT,
-    answer2 TEXT,
-    answer3 TEXT,
+    introduce TEXT not null ,
+    tech_stack TEXT not null ,
+    answer1 TEXT not null ,
+    answer2 TEXT not null ,
+    answer3 TEXT not null ,
     description TEXT,
-    resume TEXT
+    resume TEXT,
+    is_visible boolean not null default true
 );
 
 create table post.comment(
