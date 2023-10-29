@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/users/employer").hasRole("EMPLOYER")
-                                //users 포함한 end point 보안 적용 X
+                                //users 포함한 end point 보안 적용
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",
                                         "/users/authenticate-email/find",
@@ -71,6 +71,7 @@ public class SecurityConfig {
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
+                                .requestMatchers("/employer/**").hasRole("EMPLOYER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
@@ -127,36 +128,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-//    @Bean
-//    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-//        return (authorities) -> {
-//            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-//
-//            authorities.forEach(authority -> {
-//                if (OidcUserAuthority.class.isInstance(authority)) {
-//                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-//
-//                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-//                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-//
-//                    // Map the claims found in idToken and/or userInfo
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-//                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-//
-//                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-//
-//                    // Map the attributes found in userAttributes
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                }
-//            });
-//
-//            return mappedAuthorities;
-//
-//
-//        };
-//    }
 }

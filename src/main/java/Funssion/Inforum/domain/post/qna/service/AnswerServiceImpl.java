@@ -68,15 +68,16 @@ public class AnswerServiceImpl implements AnswerService {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(profileRepository.findAuthorId(QUESTION, questionId))
-                        .postTypeToShow(QUESTION)
+                        .postTypeToShow(null)
                         .postIdToShow(questionId)
                         .senderId(createdAnswer.getAuthorId())
-                        .senderPostType(ANSWER)
-                        .senderRank(createdAnswer.getRank())
-                        .senderPostId(createdAnswer.getId())
                         .senderName(createdAnswer.getAuthorName())
                         .senderImagePath(createdAnswer.getAuthorImagePath())
+                        .senderRank(createdAnswer.getRank())
+                        .senderPostType(null)
+                        .senderPostId(createdAnswer.getId())
                         .notificationType(NEW_ANSWER)
+                        .created(LocalDateTime.now())
                         .build()
         );
     }

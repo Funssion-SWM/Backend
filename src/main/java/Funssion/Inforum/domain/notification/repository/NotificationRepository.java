@@ -1,6 +1,5 @@
 package Funssion.Inforum.domain.notification.repository;
 
-import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.notification.domain.Notification;
 
@@ -12,5 +11,6 @@ public interface NotificationRepository {
     void updateIsCheckedToTrue(Long userId);
     void delete(PostType senderPostType, Long senderPostId);
     void deleteFollowNotification(Long receiverId, Long senderId);
+    void deleteEmployerNotification(Long employerId, Long employeeId);
     List<Notification> find30DaysNotificationsMaximum20ByUserId(Long receiverId);
 }
