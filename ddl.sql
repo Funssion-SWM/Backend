@@ -2,6 +2,7 @@ CREATE SCHEMA member;
 create schema post;
 create schema tag;
 create schema score;
+create schema employer;
 create sequence post.memo_series_order_seq start 1;
 
 CREATE TABLE tag.memo_to_tag (
@@ -145,6 +146,12 @@ CREATE TABLE member.professional_profile (
     resume TEXT,
     is_visible boolean not null default true
 );
+
+CREATE TABLE employer.to_employee(
+    employer_id int8 not null,
+    employee_id int8 not null,
+    primary key(employer_id,employee_id)
+)
 
 create table post.comment(
     id serial primary key,

@@ -78,6 +78,14 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public void deleteEmployerNotification(Long employerId, Long employeeId) {
+        String sql = "DELETE FROM member.notification " +
+                "WHERE receiver_id = ? AND sender_id = ? AND notification_type = 'NEW_EMPLOYER'";
+
+        if (template.update(sql, employeeId, employerId) != 1) throw new DeleteFailException("");
+    }
+
+    @Override
     public List<Notification> find30DaysNotificationsMaximum20ByUserId(Long receiverId) {
         String sql = "SELECT * FROM member.notification " +
                 "WHERE receiver_id = ? and created > current_timestamp  - interval '30 days' order by id desc limit 20";

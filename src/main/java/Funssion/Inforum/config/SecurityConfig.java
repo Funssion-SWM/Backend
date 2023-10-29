@@ -63,7 +63,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/users/employer").hasRole("EMPLOYER")
-                                //users 포함한 end point 보안 적용 X
+                                //users 포함한 end point 보안 적용
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",
                                         "/users/authenticate-email/find",
@@ -71,6 +71,7 @@ public class SecurityConfig {
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
+                                .requestMatchers("/employer/**").hasRole("EMPLOYER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect

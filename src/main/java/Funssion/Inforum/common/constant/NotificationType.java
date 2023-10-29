@@ -12,7 +12,8 @@ public enum NotificationType {
     NEW_QUESTION("메모에 대한 새로운 질문이 있습니다."),
     NEW_FOLLOWER("새로운 유저가 나를 팔로우했습니다."),
     NEW_POST_FOLLOWED("팔로잉한 유저가 새 컨텐츠를 업로드했습니다."),
-    NEW_ACCEPTED("답변이 채택되었습니다.");
+    NEW_ACCEPTED("답변이 채택되었습니다."),
+    NEW_EMPLOYER("고용자가 나를 관심 등록하였습니다.");
 
     public static NotificationType of(String string) {
         try {
