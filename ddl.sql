@@ -136,12 +136,12 @@ CREATE TABLE "member".notification (
 
 CREATE TABLE member.professional_profile (
     user_id int8 not null PRIMARY KEY,
-    introduce TEXT not null ,
-    tech_stack TEXT not null ,
-    answer1 TEXT not null ,
-    answer2 TEXT not null ,
-    answer3 TEXT not null ,
-    description TEXT,
+    introduce varchar(502),
+    tech_stack jsonb,
+    answer1 varchar(502),
+    answer2 varchar(502),
+    answer3 varchar(502),
+    description varchar(502),
     resume TEXT,
     is_visible boolean not null default true
 );

@@ -1,14 +1,10 @@
 package Funssion.Inforum.domain.professionalprofile.repository;
 
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
-import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
-import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
-import org.assertj.core.api.Assertions;
+import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +14,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -32,9 +27,9 @@ class ProfessionalProfileRepositoryImplTest {
 
     SaveMemberResponseDto createdMember;
     ProfessionalProfile savedProfile;
-    CreateProfessionalProfileDto createProfessionalProfileDto = CreateProfessionalProfileDto.builder()
+    SaveProfessionalProfileDto saveProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
-            .techStack("{\"java\": 5}")
+            .techStack("[{\"stack\": \"java\", \"level\": 5}]")
             .description("java gosu")
             .answer1("yes")
             .answer2("no")
@@ -50,25 +45,26 @@ class ProfessionalProfileRepositoryImplTest {
 
         profileRepository.create(
                 createdMember.getId(),
-                createProfessionalProfileDto
+                saveProfessionalProfileDto
         );
 
         savedProfile = profileRepository.findByUserId(createdMember.getId());
     }
 
     @Test
-    @DisplayName("자기소개서 수정하기")
+    @DisplayName("부가 프로필 수정하기")
     void updatePersonalStatement() {
-        UpdatePersonalStatementDto updatePersonalStatementDto = UpdatePersonalStatementDto.builder()
+        SaveProfessionalProfileDto updatePersonalStatementDto = SaveProfessionalProfileDto.builder()
                 .introduce("updated")
-                .techStack("{\"updated\": 3}")
+                .techStack("[{\"level\": 5, \"stack\": \"updated\"}]")
                 .description("updated")
                 .answer1("updated")
                 .answer2("updated")
                 .answer3("updated")
+                .resume("updated")
                 .build();
 
-        profileRepository.updatePersonalStatement(savedProfile.getUserId(), updatePersonalStatementDto);
+        profileRepository.update(savedProfile.getUserId(), updatePersonalStatementDto);
 
         ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
 
@@ -78,20 +74,7 @@ class ProfessionalProfileRepositoryImplTest {
         assertThat(updatedProfile.getAnswer1()).isEqualTo(updatePersonalStatementDto.getAnswer1());
         assertThat(updatedProfile.getAnswer2()).isEqualTo(updatePersonalStatementDto.getAnswer2());
         assertThat(updatedProfile.getAnswer3()).isEqualTo(updatePersonalStatementDto.getAnswer3());
-        //resume는 원본과 같은지
-        assertThat(updatedProfile.getResume()).isEqualTo(savedProfile.getResume());
-    }
-
-    @Test
-    @DisplayName("이력서 수정하기")
-    void updateResume() {
-        UpdateResumeDto updateResumeDto = new UpdateResumeDto("updated");
-
-        profileRepository.updateResume(savedProfile.getUserId(), updateResumeDto);
-
-        ProfessionalProfile updated = profileRepository.findByUserId(savedProfile.getUserId());
-
-        assertThat(updated).hasFieldOrPropertyWithValue("resume", "updated");
+        assertThat(updatedProfile.getResume()).isEqualTo(updatePersonalStatementDto.getResume());
     }
 
     @Test

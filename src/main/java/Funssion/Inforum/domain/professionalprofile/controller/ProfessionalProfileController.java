@@ -1,9 +1,7 @@
 package Funssion.Inforum.domain.professionalprofile.controller;
 
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
+import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.response.ProfessionalProfileResponseDto;
 import Funssion.Inforum.domain.professionalprofile.service.ProfessionalProfileService;
 import lombok.RequiredArgsConstructor;
@@ -21,26 +19,18 @@ public class ProfessionalProfileController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createProfessionalProfile(
-            @RequestBody @Validated CreateProfessionalProfileDto createProfessionalProfileDto
+            @RequestBody @Validated SaveProfessionalProfileDto saveProfessionalProfileDto
             ) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
-        professionalProfileService.createProfessionalProfile(userId, createProfessionalProfileDto);
+        professionalProfileService.createProfessionalProfile(userId, saveProfessionalProfileDto);
     }
 
-    @PutMapping("/personal-statement")
-    public void updatePersonalStatement(
-            @RequestBody @Validated UpdatePersonalStatementDto updatePersonalStatementDto
-            ) {
+    @PutMapping
+    public void updateProfessionalProfile(
+            @RequestBody @Validated SaveProfessionalProfileDto updatePersonalStatementDto
+    ) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();
-        professionalProfileService.updatePersonalStatement(userId, updatePersonalStatementDto);
-    }
-
-    @PutMapping("/resume")
-    public void updateResume(
-            @RequestBody UpdateResumeDto updateResumeDto
-            ) {
-        Long userId = SecurityContextUtils.getAuthorizedUserId();
-        professionalProfileService.updateResume(userId, updateResumeDto);
+        professionalProfileService.update(userId, updatePersonalStatementDto);
     }
 
     @PostMapping("/visibility")
