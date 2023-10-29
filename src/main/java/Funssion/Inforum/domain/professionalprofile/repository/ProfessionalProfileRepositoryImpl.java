@@ -3,18 +3,12 @@ package Funssion.Inforum.domain.professionalprofile.repository;
 import Funssion.Inforum.common.exception.etc.DeleteFailException;
 import Funssion.Inforum.common.exception.etc.UpdateFailException;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
-import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdatePersonalStatementDto;
-import Funssion.Inforum.domain.professionalprofile.dto.request.UpdateResumeDto;
-import Funssion.Inforum.domain.tag.TagUtils;
+import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 
 @Repository
@@ -27,11 +21,14 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     }
 
     @Override
-    public void create(Long userId, CreateProfessionalProfileDto professionalProfile) {
+    public void create(Long userId, SaveProfessionalProfileDto professionalProfile) {
         String sql = "INSERT INTO member.professional_profile (user_id, introduce, tech_stack, description, answer1, answer2, answer3, resume) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                "VALUES (?, ?, ?::jsonb, ?, ?, ?, ?, ?);";
 
-        template.update(sql, getAllParams(userId, professionalProfile));
+        ArrayList<Object> paramList = new ArrayList<>();
+        paramList.add(userId);
+
+        template.update(sql, getAllParams(professionalProfile, paramList).toArray());
     }
 
     @Override
@@ -44,23 +41,15 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     }
 
     @Override
-    public void updatePersonalStatement(Long userId, UpdatePersonalStatementDto personalStatementDto) {
+    public void update(Long userId, SaveProfessionalProfileDto professionalProfile) {
         String sql = "UPDATE member.professional_profile " +
-                "SET introduce = ?, tech_stack = ?, description = ?, answer1 = ?, answer2 = ?, answer3 = ? " +
+                "SET introduce = ?, tech_stack = ?::jsonb, description = ?, answer1 = ?, answer2 = ?, answer3 = ?, resume = ? " +
                 "WHERE user_id = ?";
 
-        int updatedRows = template.update(sql,getAllParams(personalStatementDto, userId));
-        if (updatedRows != 1)
-            throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
-    }
+        ArrayList<Object> paramList = getAllParams(professionalProfile, new ArrayList<>());
+        paramList.add(userId);
 
-    @Override
-    public void updateResume(Long userId, UpdateResumeDto resumeDto) {
-        String sql = "UPDATE member.professional_profile " +
-                "SET resume = ? " +
-                "WHERE user_id = ?";
-
-        int updatedRows = template.update(sql, resumeDto.getResume(), userId);
+        int updatedRows = template.update(sql,paramList.toArray());
         if (updatedRows != 1)
             throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
     }
@@ -87,21 +76,7 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
             throw new DeleteFailException("professional_profile deleted rows not 1 actually " + deletedRows);
     }
 
-    private Object[] getAllParams(UpdatePersonalStatementDto personalStatementDto ,Long userId) {
-        ArrayList<Object> paramList = new ArrayList<>();
-        paramList.add(personalStatementDto.getIntroduce());
-        paramList.add(personalStatementDto.getTechStack());
-        paramList.add(personalStatementDto.getDescription());
-        paramList.add(personalStatementDto.getAnswer1());
-        paramList.add(personalStatementDto.getAnswer2());
-        paramList.add(personalStatementDto.getAnswer3());
-        paramList.add(userId);
-        return paramList.toArray();
-    }
-
-    private Object[] getAllParams(Long userId, CreateProfessionalProfileDto profile) {
-        ArrayList<Object> paramList = new ArrayList<>();
-        paramList.add(userId);
+    private ArrayList<Object> getAllParams(SaveProfessionalProfileDto profile, ArrayList<Object> paramList) {
         paramList.add(profile.getIntroduce());
         paramList.add(profile.getTechStack());
         paramList.add(profile.getDescription());
@@ -109,7 +84,7 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
         paramList.add(profile.getAnswer2());
         paramList.add(profile.getAnswer3());
         paramList.add(profile.getResume());
-        return paramList.toArray();
+        return paramList;
     }
 
     private RowMapper<ProfessionalProfile> professionalPrifileRowMapper() {
