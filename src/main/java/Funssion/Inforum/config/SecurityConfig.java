@@ -127,36 +127,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-//    @Bean
-//    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-//        return (authorities) -> {
-//            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-//
-//            authorities.forEach(authority -> {
-//                if (OidcUserAuthority.class.isInstance(authority)) {
-//                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-//
-//                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-//                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-//
-//                    // Map the claims found in idToken and/or userInfo
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-//                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-//
-//                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-//
-//                    // Map the attributes found in userAttributes
-//                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-//
-//                }
-//            });
-//
-//            return mappedAuthorities;
-//
-//
-//        };
-//    }
 }
