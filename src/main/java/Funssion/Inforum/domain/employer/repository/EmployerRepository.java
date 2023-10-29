@@ -60,7 +60,7 @@ public class EmployerRepository {
     }
 
     public EmployerLikesEmployee likeEmployee(Long userId){
-        Long employerId = SecurityContextUtils.getUserId();
+        Long employerId = SecurityContextUtils.getAuthorizedUserId();
         String sql =
                 "INSERT INTO employer.to_employee (employer_id, employee_id) values(?,?)";
         template.update(sql, employerId, userId);

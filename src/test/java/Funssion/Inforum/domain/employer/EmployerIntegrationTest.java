@@ -58,7 +58,6 @@ public class EmployerIntegrationTest {
     }
 
     @Test
-    @WithMockUser(roles="EMPLOYER")
     @DisplayName("채용자가 지원자를 스크랩 한다.")
     void employerLikesEmployee() throws Exception {
         SecurityContextHolder.getContext().setAuthentication(
