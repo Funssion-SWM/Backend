@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/professional-profile")
+@RequestMapping("/users/profile/professional")
 @RequiredArgsConstructor
 public class ProfessionalProfileController {
 

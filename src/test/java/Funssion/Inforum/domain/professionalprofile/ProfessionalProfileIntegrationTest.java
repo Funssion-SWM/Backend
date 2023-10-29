@@ -95,7 +95,7 @@ public class ProfessionalProfileIntegrationTest {
         @Test
         @DisplayName("로그인 하지 않은 경우")
         void createWithoutLogin() throws Exception {
-            mvc.perform(post("/professional-profile"))
+            mvc.perform(post("/users/profile/professional"))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -103,7 +103,7 @@ public class ProfessionalProfileIntegrationTest {
         @DisplayName("정상 작성")
         void success() throws Exception {
 
-            mvc.perform(post("/professional-profile")
+            mvc.perform(post("/users/profile/professional")
                     .with(user(createdMember1.getId().toString()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(fullRequestForm))
@@ -112,7 +112,7 @@ public class ProfessionalProfileIntegrationTest {
             assertThat(professionalProfileRepository.findByUserId(createdMember1.getId()))
                     .isInstanceOf(ProfessionalProfile.class);
 
-            mvc.perform(post("/professional-profile")
+            mvc.perform(post("/users/profile/professional")
                             .with(user(createdMember2.getId().toString()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequestForm))
@@ -131,7 +131,7 @@ public class ProfessionalProfileIntegrationTest {
         @DisplayName("로그인 검증 실패 케이스")
         void validateEx() throws Exception {
 
-            mvc.perform(put("/professional-profile")
+            mvc.perform(put("/users/profile/professional")
                             .content(updateRequestForm)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isUnauthorized());
@@ -140,7 +140,7 @@ public class ProfessionalProfileIntegrationTest {
         @Test
         @DisplayName("생성하기 전 수정하는 케이스")
         void updateBeforeCreated() throws Exception {
-            mvc.perform(put("/professional-profile")
+            mvc.perform(put("/users/profile/professional")
                             .with(user(createdMember1.getId().toString()))
                             .content(updateRequestForm)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -150,7 +150,7 @@ public class ProfessionalProfileIntegrationTest {
         @Test
         @DisplayName("정상 수정 케이스")
         void updateSuccess() throws Exception {
-            mvc.perform(put("/professional-profile")
+            mvc.perform(put("/users/profile/professional")
                             .with(user(createdMemberWithProfessionalProfile.getId().toString()))
                             .content(updateRequestForm)
                             .contentType(MediaType.APPLICATION_JSON))
