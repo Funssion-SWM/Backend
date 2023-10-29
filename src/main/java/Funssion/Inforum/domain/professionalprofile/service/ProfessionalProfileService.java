@@ -11,7 +11,12 @@ import Funssion.Inforum.domain.professionalprofile.repository.ProfessionalProfil
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+import static Funssion.Inforum.common.constant.Role.*;
 
 @Service
 @Slf4j
@@ -21,30 +26,36 @@ public class ProfessionalProfileService {
     private final ProfessionalProfileRepository professionalProfileRepository;
 
     public ProfessionalProfileResponseDto getProfessionalProfile(Long userId) {
-        Long clientId = SecurityContextUtils.getUserId();
-        String clientRole = SecurityContextUtils.getAuthority();
-        log.info("clientRole={}",clientRole);
-
-        validateAccess(userId, clientId, clientRole);
+        ProfessionalProfile validatedProfile = getValidatedProfile(userId);
 
         return ProfessionalProfileResponseDto.valueOf(
-                professionalProfileRepository.findByUserId(userId)
+                validatedProfile
         );
     }
 
-    private void validateAccess(Long userId, Long clientId, String clientRole) {
+    private ProfessionalProfile getValidatedProfile(Long userId) {
+        ProfessionalProfile professionalProfile = getNonNullProfile(userId);
+
+        Long clientId = SecurityContextUtils.getAuthorizedUserId();
+
+        if (!professionalProfile.getIsVisible() && !clientId.equals(userId))
+            throw new ForbiddenException("비공개 설정된 프로필은 열람할 수 없습니다.");
+
+        if (!clientId.equals(userId) && !EMPLOYER.isEqualTo(SecurityContextUtils.getAuthorities()))
+            throw new ForbiddenException("일반 유저는 접근할 수 없습니다");
+
+        return professionalProfile;
+    }
+
+    private ProfessionalProfile getNonNullProfile(Long userId) {
         ProfessionalProfile professionalProfile;
+
         try{
             professionalProfile = professionalProfileRepository.findByUserId(userId);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("해당 유저의 정보를 찾을 수 없습니다.");
         }
-
-        if (!professionalProfile.getIsVisible() && !clientId.equals(userId))
-            throw new ForbiddenException("비공개 설정된 프로필은 열람할 수 없습니다.");
-
-        if (!clientId.equals(userId) && !clientRole.equals(Role.EMPLOYER.getRoles()))
-            throw new ForbiddenException("일반 유저는 접근할 수 없습니다");
+        return professionalProfile;
     }
 
     public void createProfessionalProfile(Long userId, SaveProfessionalProfileDto saveProfessionalProfileDto) {
@@ -53,6 +64,18 @@ public class ProfessionalProfileService {
 
     public void update(Long userId, SaveProfessionalProfileDto saveProfessionalProfileDto) {
         professionalProfileRepository.update(userId, saveProfessionalProfileDto);
+    }
+
+    public Boolean getVisibility(Long userId) {
+        return getNonNullVisibility(userId);
+    }
+
+    private Boolean getNonNullVisibility(Long userId) {
+        try {
+            return professionalProfileRepository.findVisibilityByUserId(userId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("해당 유저의 정보를 찾을 수 없습니다.");
+        }
     }
 
     public void updateVisibility(Long userId, Boolean isVisible) {

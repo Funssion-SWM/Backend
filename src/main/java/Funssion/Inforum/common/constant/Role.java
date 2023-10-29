@@ -1,7 +1,15 @@
 package Funssion.Inforum.common.constant;
 
+import Funssion.Inforum.common.exception.etc.EnumParseException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor
@@ -14,6 +22,12 @@ public enum Role {
     OAUTH_FIRST_JOIN ("ROLE_FIRST_JOIN_OAUTH_USER");
 
     private final String roles;
+
+    public boolean isEqualTo(Collection<? extends GrantedAuthority> authorities) {
+        return new HashSet<>(authorities.stream().map(Objects::toString).toList())
+                .containsAll(Arrays.stream(this.roles.split(",")).toList());
+    }
+
     public static String getIncludingRoles(String role){
         return Role.valueOf(role).getRoles();
     }

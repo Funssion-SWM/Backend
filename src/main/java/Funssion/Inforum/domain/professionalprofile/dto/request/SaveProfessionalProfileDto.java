@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.professionalprofile.dto.request;
 
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -10,6 +11,8 @@ import lombok.*;
 public class SaveProfessionalProfileDto {
     @Size(max = 500, message = "한 줄 자기소개는 500자를 초과할 수 없습니다")
     private String introduce;
+    @Size(max = 50)
+    private String developmentArea;
     @Size(max = 1000)
     private String techStack;
     @Size(max = 500)

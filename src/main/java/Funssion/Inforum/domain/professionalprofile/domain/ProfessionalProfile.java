@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfessionalProfile {
     private final Long userId;
     private final String introduce;
+    private final String developmentArea;
     private final String techStack;
     private final String answer1;
     private final String answer2;
