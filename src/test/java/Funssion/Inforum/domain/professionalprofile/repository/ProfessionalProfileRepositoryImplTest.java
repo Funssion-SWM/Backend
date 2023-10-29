@@ -29,6 +29,7 @@ class ProfessionalProfileRepositoryImplTest {
     ProfessionalProfile savedProfile;
     SaveProfessionalProfileDto saveProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
+            .developmentArea("BACKEND")
             .techStack("[{\"stack\": \"java\", \"level\": 5}]")
             .description("java gosu")
             .answer1("yes")
@@ -56,6 +57,7 @@ class ProfessionalProfileRepositoryImplTest {
     void updatePersonalStatement() {
         SaveProfessionalProfileDto updatePersonalStatementDto = SaveProfessionalProfileDto.builder()
                 .introduce("updated")
+                .developmentArea("updated")
                 .techStack("[{\"level\": 5, \"stack\": \"updated\"}]")
                 .description("updated")
                 .answer1("updated")
@@ -69,6 +71,7 @@ class ProfessionalProfileRepositoryImplTest {
         ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
 
         assertThat(updatedProfile.getIntroduce()).isEqualTo(updatePersonalStatementDto.getIntroduce());
+        assertThat(updatedProfile.getDevelopmentArea()).isEqualTo(updatePersonalStatementDto.getDevelopmentArea());
         assertThat(updatedProfile.getTechStack()).isEqualTo(updatePersonalStatementDto.getTechStack());
         assertThat(updatedProfile.getDescription()).isEqualTo(updatePersonalStatementDto.getDescription());
         assertThat(updatedProfile.getAnswer1()).isEqualTo(updatePersonalStatementDto.getAnswer1());
@@ -84,6 +87,15 @@ class ProfessionalProfileRepositoryImplTest {
 
         assertThatThrownBy(() -> profileRepository.findByUserId(savedProfile.getUserId()))
                 .isInstanceOf(EmptyResultDataAccessException.class);
+    }
+
+    @Test
+    @DisplayName("visibility 설정 조회하기")
+    void findVisibility() {
+        Boolean isVisible = profileRepository.findVisibilityByUserId(savedProfile.getUserId()); // default true
+
+        assertThat(savedProfile.getIsVisible()).isTrue();
+        assertThat(isVisible).isTrue();
     }
 
     @Test

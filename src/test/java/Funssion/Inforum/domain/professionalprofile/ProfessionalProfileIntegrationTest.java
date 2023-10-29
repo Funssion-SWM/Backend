@@ -1,8 +1,14 @@
 package Funssion.Inforum.domain.professionalprofile;
 
+import Funssion.Inforum.common.constant.Role;
+import Funssion.Inforum.domain.member.constant.LoginType;
+import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
+import Funssion.Inforum.domain.member.entity.CustomUserDetails;
+import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
 import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.repository.ProfessionalProfileRepository;
@@ -14,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static Funssion.Inforum.common.constant.Role.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -33,6 +41,8 @@ public class ProfessionalProfileIntegrationTest {
     MockMvc mvc;
 
     @Autowired
+    AuthService authService;
+    @Autowired
     MemberRepository memberRepository;
     @Autowired
     ProfessionalProfileRepository professionalProfileRepository;
@@ -40,6 +50,7 @@ public class ProfessionalProfileIntegrationTest {
     String fullRequestForm =
             "{" +
                     "\"introduce\": \"안녕하세요\"," +
+                    "\"developmentArea\": \"BACKEND\"," +
                     "\"techStack\": \"[{\\\"stack\\\": \\\"Spring\\\", \\\"level\\\": 5}]\"," +
                     "\"description\": \"스프링 장인\"," +
                     "\"answer1\": \"~~~ 였습니다.\"," +
@@ -51,6 +62,7 @@ public class ProfessionalProfileIntegrationTest {
     String updateRequestForm =
             "{" +
                     "\"introduce\": \"updated\"," +
+                    "\"developmentArea\": \"FRONTEND\"," +
                     "\"techStack\": \"[{\\\"stack\\\": \\\"updated\\\", \\\"level\\\": 5}]\"," +
                     "\"answer1\": \"updated\"," +
                     "\"answer2\": \"updated\"," +
@@ -63,6 +75,7 @@ public class ProfessionalProfileIntegrationTest {
     SaveMemberResponseDto createdMemberWithProfessionalProfile;
     SaveProfessionalProfileDto createdProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
+            .developmentArea("BACKEND")
             .techStack("[{\"stack\": \"java\", \"level\": 5}]")
             .description("java gosu")
             .answer1("yes")
@@ -74,13 +87,15 @@ public class ProfessionalProfileIntegrationTest {
     @BeforeEach
     void init() {
         createdMember1 = memberRepository.save(
-                SocialMember.createSocialMember("test@gmail.com", "jinu")
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("jinu", LoginType.NON_SOCIAL, "test@gmail.com", "test"))
         );
         createdMember2 = memberRepository.save(
                 SocialMember.createSocialMember("test2@gmail.com", "jinu2")
         );
         createdMemberWithProfessionalProfile = memberRepository.save(
-                SocialMember.createSocialMember("test3@gmail.com", "jinu3")
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("jinu3", LoginType.NON_SOCIAL, "test3@gmail.com", "test"))
         );
         professionalProfileRepository.create(
                 createdMemberWithProfessionalProfile.getId(),
@@ -166,6 +181,43 @@ public class ProfessionalProfileIntegrationTest {
     @Nested
     @DisplayName("자소서, 이력서 조회하기")
     class GetProfessionalProfile {
+
+        UserDetails existUserDetails;
+        UserDetails professionalProfileOwnerDetails;
+        UserDetails mockEmployerUserDetails;
+
+        @BeforeEach
+        void init() {
+             existUserDetails = authService.loadUserByUsername(createdMember1.getEmail());
+             professionalProfileOwnerDetails = authService.loadUserByUsername(createdMemberWithProfessionalProfile.getEmail());
+             mockEmployerUserDetails = new CustomUserDetails(createdMember2.getId(), EMPLOYER.getRoles(), createdMember2.getName(),"test",true,false);
+        }
+
+        @Test
+        @DisplayName("채용자로 로그인 했는 지 검증")
+        void validateIsEmployer() throws Exception {
+            // 로그인 없이 조회
+            mvc.perform(get("/users/profile/professional/"+createdMemberWithProfessionalProfile.getId()))
+                    .andExpect(status().isUnauthorized());
+            // 일반 유저로 조회
+            mvc.perform(get("/users/profile/professional/"+createdMemberWithProfessionalProfile.getId())
+                    .with(user(existUserDetails)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("정상 케이스")
+        void getUserProfile() throws Exception {
+            // 채용자가 유저 프로필 조회
+            mvc.perform(get("/users/profile/professional/"+createdMemberWithProfessionalProfile.getId())
+                    .with(user(mockEmployerUserDetails)))
+                    .andExpect(content().string(containsString("\"userId\":"+createdMemberWithProfessionalProfile.getId())));
+
+            // 본인 프로필 조회
+            mvc.perform(get("/users/profile/professional/"+createdMemberWithProfessionalProfile.getId())
+                            .with(user(professionalProfileOwnerDetails)))
+                    .andExpect(content().string(containsString("\"userId\":"+createdMemberWithProfessionalProfile.getId())));
+        }
     }
 
 

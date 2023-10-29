@@ -33,6 +33,12 @@ public class ProfessionalProfileController {
         professionalProfileService.update(userId, updatePersonalStatementDto);
     }
 
+    @GetMapping("/visibility")
+    public Boolean getVisibility() {
+        Long userId = SecurityContextUtils.getAuthorizedUserId();
+        return professionalProfileService.getVisibility(userId);
+    }
+
     @PostMapping("/visibility")
     public void updateVisibility(@RequestParam Boolean isVisible) {
         Long userId = SecurityContextUtils.getAuthorizedUserId();

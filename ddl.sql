@@ -137,6 +137,7 @@ CREATE TABLE "member".notification (
 CREATE TABLE member.professional_profile (
     user_id int8 not null PRIMARY KEY,
     introduce varchar(502),
+    development_area varchar(50),
     tech_stack jsonb,
     answer1 varchar(502),
     answer2 varchar(502),
