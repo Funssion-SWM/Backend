@@ -152,7 +152,7 @@ CREATE TABLE employer.to_employee(
     employer_id int8 not null,
     employee_id int8 not null,
     primary key(employer_id,employee_id)
-)
+);
 
 create table post.comment(
     id serial primary key,

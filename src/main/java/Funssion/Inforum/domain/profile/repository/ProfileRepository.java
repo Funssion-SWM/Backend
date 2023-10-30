@@ -1,4 +1,4 @@
-package Funssion.Inforum.domain.profile;
+package Funssion.Inforum.domain.profile.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;

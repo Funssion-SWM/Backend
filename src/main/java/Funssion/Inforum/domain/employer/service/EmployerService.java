@@ -45,16 +45,11 @@ public class EmployerService {
         notificationRepository.save(
                 Notification.builder()
                         .receiverId(userId)
-                        .postTypeToShow(null)
-                        .postIdToShow(0L)
                         .senderId(senderProfile.getEmployerId())
                         .senderName(senderProfile.getCompanyName())
                         .senderImagePath(senderProfile.getImagePath())
                         .senderRank("EMPLOYER")
-                        .senderPostType(null)
-                        .senderPostId(0L)
                         .notificationType(NEW_EMPLOYER)
-                        .isChecked(false)
                         .build()
         );
     }
