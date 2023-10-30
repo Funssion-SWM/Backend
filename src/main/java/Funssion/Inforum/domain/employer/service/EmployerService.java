@@ -48,6 +48,7 @@ public class EmployerService {
                         .senderId(senderProfile.getEmployerId())
                         .senderName(senderProfile.getCompanyName())
                         .senderImagePath(senderProfile.getImagePath())
+                        .senderRank("EMPLOYER")
                         .notificationType(NEW_EMPLOYER)
                         .build()
         );
