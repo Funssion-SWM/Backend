@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfessionalProfileResponseDto {
     private final Long userId;
     private final String introduce;
+    private final String developmentArea;
     private final String techStack;
     private final String answer1;
     private final String answer2;
@@ -22,6 +23,7 @@ public class ProfessionalProfileResponseDto {
         return ProfessionalProfileResponseDto.builder()
                 .userId(professionalProfile.getUserId())
                 .introduce(professionalProfile.getIntroduce())
+                .developmentArea(professionalProfile.getDevelopmentArea())
                 .techStack(professionalProfile.getTechStack())
                 .description(professionalProfile.getDescription())
                 .answer1(professionalProfile.getAnswer1())

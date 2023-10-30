@@ -22,7 +22,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.like.dto.response.LikeResponseDto;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
-import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import Funssion.Inforum.domain.score.service.ScoreService;
 import lombok.RequiredArgsConstructor;
