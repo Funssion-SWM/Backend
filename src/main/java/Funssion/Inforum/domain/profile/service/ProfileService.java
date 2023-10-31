@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.profile.service;
 
+import Funssion.Inforum.domain.profile.TechStackDto;
 import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import Funssion.Inforum.domain.profile.dto.response.UserProfileForEmployer;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ public class ProfileService {
 
     private final ProfileRepository profileRepository;
 
-    public List<UserProfileForEmployer> searchUserProfilesForEmployer(String developmentArea, String techStack) {
-        return profileRepository.findUserProfilesForEmployer(developmentArea, techStack);
+    public List<UserProfileForEmployer> searchUserProfilesForEmployer(TechStackDto techStackDto) {
+        return profileRepository.findUserProfilesForEmployer(techStackDto);
     }
 }
