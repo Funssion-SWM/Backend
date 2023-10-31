@@ -4,6 +4,7 @@ import Funssion.Inforum.access_handler.AuthenticationSuccessHandler;
 import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
 import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
 import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
@@ -26,6 +27,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+
+import static Funssion.Inforum.common.constant.Role.*;
 
 @Slf4j
 @Configuration
@@ -59,10 +62,11 @@ public class SecurityConfig {
                                 headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)))
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
-                                .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
-                                .requestMatchers(HttpMethod.GET,"/users/employer").hasRole("EMPLOYER")
+                                .requestMatchers(HttpMethod.GET,"/users/employer").hasRole(EMPLOYER.toString())
+                                .requestMatchers(HttpMethod.GET, "/users/profile").hasRole(EMPLOYER.toString())
                                 //users 포함한 end point 보안 적용
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",
@@ -70,7 +74,6 @@ public class SecurityConfig {
                                         "/users/password",
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
                                 .requestMatchers("/employer/**").hasRole("EMPLOYER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()

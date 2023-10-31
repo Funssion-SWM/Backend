@@ -1,7 +1,9 @@
 package Funssion.Inforum.domain.profile.repository;
 
 import Funssion.Inforum.common.constant.PostType;
+import Funssion.Inforum.common.utils.CustomListUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.profile.TechStackDto;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import Funssion.Inforum.domain.profile.dto.response.UserProfileForEmployer;
 import Funssion.Inforum.domain.profile.repository.ProfileRepository;
@@ -10,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -103,23 +106,38 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     }
 
     @Override
-    public List<UserProfileForEmployer> findUserProfilesForEmployer(String developmentArea, String techStack) {
-        String sql = "SELECT m.id, m.name, m.image_path, m.rank, p.introduce, p.development_area, p.tech_stack, p.description " +
-                "FROM member.info m, member.professional_profile p, (" +
-                "   SELECT user_id, 2 score " +
-                "   FROM \"member\".professional_profile " +
-                "   WHERE tech_stack::text LIKE '%'||?||'%' " +
-                "   GROUP BY user_id" +
-                ") tech_matched FULL OUTER JOIN (" +
-                "   SELECT user_id, 1 score " +
-                "   FROM \"member\".professional_profile " +
-                "   WHERE development_area = ? " +
-                "   GROUP BY user_id" +
-                ") area_matched ON tech_matched.user_id = area_matched.user_id " +
-                "WHERE p.user_id = coalesce(tech_matched.user_id, area_matched.user_id) and m.id = p.user_id " +
-                "ORDER BY COALESCE(tech_matched.score, 0) + coalesce(area_matched.score, 0) desc";
+    public List<UserProfileForEmployer> findUserProfilesForEmployer(TechStackDto techStackDto) {
+        ArrayList<Object> paramList = new ArrayList<>();
+        paramList.add(techStackDto.getDevelopmentArea());
 
-        return template.query(sql, userProfileRowMapperForEmployer(), developmentArea, techStack);
+
+        String sql = "SELECT * " +
+                "FROM (" +
+                "   SELECT m.id, m.name, m.image_path, m.rank, p.introduce, p.development_area, p.tech_stack, p.description, (" +
+                "       SELECT 2*count(stack_element)" +
+                "       FROM jsonb_array_elements(p.tech_stack) AS stack_element" +
+                "       WHERE p.development_area = ? AND stack_element->>'stack' in " + techStackElements(techStackDto.getTechStacks(), paramList) +
+                "   ) matched_count" +
+                "   FROM member.professional_profile p, member.info m" +
+                "   WHERE p.user_id = m.id " +
+                ") sub " +
+                "WHERE matched_count > 0 " +
+                "ORDER BY matched_count desc";
+
+        return template.query(sql, userProfileRowMapperForEmployer(), paramList.toArray());
+    }
+
+    private String techStackElements(List<String> techStacks, ArrayList<Object> paramList) {
+        StringBuilder techStackElements = new StringBuilder("(");
+
+        for (String techStack : techStacks) {
+            techStackElements.append("?");
+            paramList.add(techStack);
+            if (techStacks.lastIndexOf(techStack) != techStacks.size()-1)
+                techStackElements.append(",");
+        }
+
+        return techStackElements.append(")").toString();
     }
 
     private RowMapper<UserProfileForEmployer> userProfileRowMapperForEmployer() {

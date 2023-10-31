@@ -15,4 +15,9 @@ public abstract class CustomListUtils {
                 .map(Long::valueOf)
                 .toList();
     }
+
+    public static List<String> toStringList(String string) {
+        return Arrays.stream(string.substring(1, string.length() - 1).split(","))
+                .toList();
+    }
 }

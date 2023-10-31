@@ -2,6 +2,7 @@ package Funssion.Inforum.domain.profile.repository;
 
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
+import Funssion.Inforum.domain.profile.TechStackDto;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import Funssion.Inforum.domain.profile.dto.response.UserProfileForEmployer;
 
@@ -12,5 +13,5 @@ public interface ProfileRepository {
     void updateAuthorImagePathInPost(Long userId, String newImageURL);
     AuthorProfile findAuthorProfile(PostType postType, Long postId);
     Long findAuthorId(PostType postType, Long postId);
-    List<UserProfileForEmployer> findUserProfilesForEmployer(String developmentArea, String techStack);
+    List<UserProfileForEmployer> findUserProfilesForEmployer(TechStackDto techStackDto);
 }
