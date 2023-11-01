@@ -64,6 +64,17 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     }
 
     @Override
+    public void updateDescription(Long userId, String description) {
+        String sql = "UPDATE member.professional_profile " +
+                "SET description = ? " +
+                "WHERE user_id = ?";
+
+        int updatedRows = template.update(sql,description, userId);
+        if (updatedRows != 1)
+            throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
+    }
+
+    @Override
     public void updateVisibility(Long userId, Boolean isVisible) {
         String sql = "UPDATE member.professional_profile " +
                 "SET is_visible = ? " +

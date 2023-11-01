@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -106,5 +107,15 @@ class ProfessionalProfileRepositoryImplTest {
 
         assertThat(savedProfile.getIsVisible()).isTrue();
         assertThat(updatedProfile.getIsVisible()).isFalse();
+    }
+
+    @Test
+    @DisplayName("description 업데이트하기")
+    void updateDescription() {
+        profileRepository.updateDescription(savedProfile.getUserId(), "updated");
+        ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
+
+        assertThat(updatedProfile.getDescription()).isEqualTo("updated");
+        assertThat(updatedProfile.getIntroduce()).isEqualTo(savedProfile.getIntroduce());
     }
 }

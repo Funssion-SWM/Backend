@@ -11,6 +11,7 @@ public interface ProfessionalProfileRepository {
     ProfessionalProfile findByUserId(Long userId);
     Boolean findVisibilityByUserId(Long userId);
     void update(Long userId, SaveProfessionalProfileDto professionalProfile);
+    void updateDescription(Long userId, String description);
     void updateVisibility(Long userId, Boolean isVisible);
     void delete(Long userId);
 }

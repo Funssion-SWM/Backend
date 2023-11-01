@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.professionalprofile;
 
 import Funssion.Inforum.common.constant.Role;
+import Funssion.Inforum.domain.gpt.GptService;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
@@ -16,9 +17,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.BDDMockito;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static Funssion.Inforum.common.constant.Role.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -35,10 +44,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 public class ProfessionalProfileIntegrationTest {
 
     @Autowired
     MockMvc mvc;
+
+    @MockBean
+    GptService gptService;
 
     @Autowired
     AuthService authService;
