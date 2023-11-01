@@ -116,12 +116,12 @@ public class ProfileIntegrationTest {
         @Test
         @DisplayName("로그인, 채용자 인지 검증")
         void validateAuth() throws Exception {
-            mvc.perform(get("/users/profile")
+            mvc.perform(post("/users/profile")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestTechStackForm))
                     .andExpect(status().isUnauthorized());
 
-            mvc.perform(get("/users/profile")
+            mvc.perform(post("/users/profile")
                     .with(user(createdMember1.getId().toString()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestTechStackForm))
@@ -131,7 +131,7 @@ public class ProfileIntegrationTest {
         @Test
         @DisplayName("정상 조회")
         void success() throws Exception {
-            mvc.perform(get("/users/profile")
+            mvc.perform(post("/users/profile")
                             .with(user(mockEmployerUserDetails))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestTechStackForm))
