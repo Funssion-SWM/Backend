@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.security.core.parameters.P;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -31,7 +32,6 @@ class ProfessionalProfileRepositoryImplTest {
             .introduce("hi")
             .developmentArea("BACKEND")
             .techStack("[{\"stack\": \"java\", \"level\": 5}]")
-            .description("java gosu")
             .answer1("yes")
             .answer2("no")
             .answer3("good")
@@ -59,7 +59,6 @@ class ProfessionalProfileRepositoryImplTest {
                 .introduce("updated")
                 .developmentArea("updated")
                 .techStack("[{\"level\": 5, \"stack\": \"updated\"}]")
-                .description("updated")
                 .answer1("updated")
                 .answer2("updated")
                 .answer3("updated")
@@ -73,7 +72,6 @@ class ProfessionalProfileRepositoryImplTest {
         assertThat(updatedProfile.getIntroduce()).isEqualTo(updatePersonalStatementDto.getIntroduce());
         assertThat(updatedProfile.getDevelopmentArea()).isEqualTo(updatePersonalStatementDto.getDevelopmentArea());
         assertThat(updatedProfile.getTechStack()).isEqualTo(updatePersonalStatementDto.getTechStack());
-        assertThat(updatedProfile.getDescription()).isEqualTo(updatePersonalStatementDto.getDescription());
         assertThat(updatedProfile.getAnswer1()).isEqualTo(updatePersonalStatementDto.getAnswer1());
         assertThat(updatedProfile.getAnswer2()).isEqualTo(updatePersonalStatementDto.getAnswer2());
         assertThat(updatedProfile.getAnswer3()).isEqualTo(updatePersonalStatementDto.getAnswer3());
@@ -106,5 +104,15 @@ class ProfessionalProfileRepositoryImplTest {
 
         assertThat(savedProfile.getIsVisible()).isTrue();
         assertThat(updatedProfile.getIsVisible()).isFalse();
+    }
+
+    @Test
+    @DisplayName("description 업데이트하기")
+    void updateDescription() {
+        profileRepository.updateDescription(savedProfile.getUserId(), "updated");
+        ProfessionalProfile updatedProfile = profileRepository.findByUserId(savedProfile.getUserId());
+
+        assertThat(updatedProfile.getDescription()).isEqualTo("updated");
+        assertThat(updatedProfile.getIntroduce()).isEqualTo(savedProfile.getIntroduce());
     }
 }

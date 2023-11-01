@@ -56,7 +56,6 @@ public class EmployerIntegrationTestV2 {
     SaveProfessionalProfileDto createdProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
             .techStack("{\"java\": 5}")
-            .description("java gosu")
             .answer1("yes")
             .answer2("no")
             .answer3("good")

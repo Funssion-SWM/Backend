@@ -22,8 +22,8 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
 
     @Override
     public void create(Long userId, SaveProfessionalProfileDto professionalProfile) {
-        String sql = "INSERT INTO member.professional_profile (user_id, introduce, development_area, tech_stack, description, answer1, answer2, answer3, resume) " +
-                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO member.professional_profile (user_id, introduce, development_area, tech_stack, answer1, answer2, answer3, resume) " +
+                "VALUES (?, ?, ?, ?::jsonb, ?, ?, ?, ?);";
 
         ArrayList<Object> paramList = new ArrayList<>();
         paramList.add(userId);
@@ -52,13 +52,24 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
     @Override
     public void update(Long userId, SaveProfessionalProfileDto professionalProfile) {
         String sql = "UPDATE member.professional_profile " +
-                "SET introduce = ?, development_area = ?, tech_stack = ?::jsonb, description = ?, answer1 = ?, answer2 = ?, answer3 = ?, resume = ? " +
+                "SET introduce = ?, development_area = ?, tech_stack = ?::jsonb, answer1 = ?, answer2 = ?, answer3 = ?, resume = ? " +
                 "WHERE user_id = ?";
 
         ArrayList<Object> paramList = getAllParams(professionalProfile, new ArrayList<>());
         paramList.add(userId);
 
         int updatedRows = template.update(sql,paramList.toArray());
+        if (updatedRows != 1)
+            throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
+    }
+
+    @Override
+    public void updateDescription(Long userId, String description) {
+        String sql = "UPDATE member.professional_profile " +
+                "SET description = ? " +
+                "WHERE user_id = ?";
+
+        int updatedRows = template.update(sql,description, userId);
         if (updatedRows != 1)
             throw new UpdateFailException("professional_profile updated rows not 1 actually " + updatedRows);
     }
@@ -89,7 +100,6 @@ public class ProfessionalProfileRepositoryImpl implements ProfessionalProfileRep
         paramList.add(profile.getIntroduce());
         paramList.add(profile.getDevelopmentArea());
         paramList.add(profile.getTechStack());
-        paramList.add(profile.getDescription());
         paramList.add(profile.getAnswer1());
         paramList.add(profile.getAnswer2());
         paramList.add(profile.getAnswer3());

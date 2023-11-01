@@ -4,18 +4,26 @@ import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
 import Funssion.Inforum.common.exception.notfound.NotFoundException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.professionalprofile.domain.ProfessionalProfile;
 import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.response.ProfessionalProfileResponseDto;
 import Funssion.Inforum.domain.professionalprofile.repository.ProfessionalProfileRepository;
+import Funssion.Inforum.s3.S3Repository;
+import Funssion.Inforum.s3.S3Utils;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collection;
 
+import static Funssion.Inforum.common.constant.CRUDType.UPDATE;
 import static Funssion.Inforum.common.constant.Role.*;
 
 @Service
@@ -23,7 +31,10 @@ import static Funssion.Inforum.common.constant.Role.*;
 @RequiredArgsConstructor
 public class ProfessionalProfileService {
 
+    @Value("${aws.s3.resume-dir}")
+    private String RESUME_DIR;
     private final ProfessionalProfileRepository professionalProfileRepository;
+    private final S3Repository s3Repository;
 
     public ProfessionalProfileResponseDto getProfessionalProfile(Long userId) {
         ProfessionalProfile validatedProfile = getValidatedProfile(userId);
@@ -78,7 +89,21 @@ public class ProfessionalProfileService {
         }
     }
 
+
     public void updateVisibility(Long userId, Boolean isVisible) {
         professionalProfileRepository.updateVisibility(userId, isVisible);
+    }
+
+    public ImageDto uploadImageInResume(Long userId, MultipartFile image) {
+
+        String imageName = S3Utils.generateImageNameOfS3(userId);
+
+        String bucketName = s3Repository.createFolder(RESUME_DIR, userId.toString());
+        String uploadedURL = s3Repository.upload(image, bucketName, imageName);
+
+        return ImageDto.builder()
+                .imageName(imageName)
+                .imagePath(uploadedURL)
+                .build();
     }
 }

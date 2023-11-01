@@ -69,7 +69,6 @@ public class ProfileIntegrationTest {
                 .answer2("test")
                 .answer3("test")
                 .resume("{\"content\": \"i'm a amazing programmer\"}")
-                .description("test")
                 .build());
 
         professionalProfileRepository.create(createdMember2.getId(), SaveProfessionalProfileDto.builder()
@@ -80,7 +79,6 @@ public class ProfileIntegrationTest {
                 .answer2("test")
                 .answer3("test")
                 .resume("{\"content\": \"i'm a amazing programmer\"}")
-                .description("test")
                 .build());
 
         professionalProfileRepository.create(createdMember3.getId(), SaveProfessionalProfileDto.builder()
@@ -91,7 +89,6 @@ public class ProfileIntegrationTest {
                 .answer2("test")
                 .answer3("test")
                 .resume("{\"content\": \"i'm a amazing programmer\"}")
-                .description("test")
                 .build());
     }
 
