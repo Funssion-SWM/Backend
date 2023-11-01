@@ -5,6 +5,7 @@ import Funssion.Inforum.domain.gpt.GptService;
 import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.dto.response.ProfessionalProfileResponseDto;
 import Funssion.Inforum.domain.professionalprofile.service.ProfessionalProfileService;
+import Funssion.Inforum.s3.dto.response.ImageDto;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
@@ -54,10 +55,9 @@ public class ProfessionalProfileController {
     }
 
     @PostMapping("/resume/image")
-    public void uploadImageInResume(
-            @RequestPart MultipartFile image
-            ) {
-
+    public ImageDto uploadImageInResume(@RequestPart MultipartFile image) {
+        Long userId = SecurityContextUtils.getAuthorizedUserId();
+        return professionalProfileService.uploadImageInResume(userId, image);
     }
 
     @GetMapping("/{id}")
