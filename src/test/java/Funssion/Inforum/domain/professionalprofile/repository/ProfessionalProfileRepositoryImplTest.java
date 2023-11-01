@@ -32,7 +32,6 @@ class ProfessionalProfileRepositoryImplTest {
             .introduce("hi")
             .developmentArea("BACKEND")
             .techStack("[{\"stack\": \"java\", \"level\": 5}]")
-            .description("java gosu")
             .answer1("yes")
             .answer2("no")
             .answer3("good")
@@ -60,7 +59,6 @@ class ProfessionalProfileRepositoryImplTest {
                 .introduce("updated")
                 .developmentArea("updated")
                 .techStack("[{\"level\": 5, \"stack\": \"updated\"}]")
-                .description("updated")
                 .answer1("updated")
                 .answer2("updated")
                 .answer3("updated")
@@ -74,7 +72,6 @@ class ProfessionalProfileRepositoryImplTest {
         assertThat(updatedProfile.getIntroduce()).isEqualTo(updatePersonalStatementDto.getIntroduce());
         assertThat(updatedProfile.getDevelopmentArea()).isEqualTo(updatePersonalStatementDto.getDevelopmentArea());
         assertThat(updatedProfile.getTechStack()).isEqualTo(updatePersonalStatementDto.getTechStack());
-        assertThat(updatedProfile.getDescription()).isEqualTo(updatePersonalStatementDto.getDescription());
         assertThat(updatedProfile.getAnswer1()).isEqualTo(updatePersonalStatementDto.getAnswer1());
         assertThat(updatedProfile.getAnswer2()).isEqualTo(updatePersonalStatementDto.getAnswer2());
         assertThat(updatedProfile.getAnswer3()).isEqualTo(updatePersonalStatementDto.getAnswer3());

@@ -65,7 +65,6 @@ public class ProfessionalProfileIntegrationTest {
                     "\"introduce\": \"안녕하세요\"," +
                     "\"developmentArea\": \"BACKEND\"," +
                     "\"techStack\": \"[{\\\"stack\\\": \\\"Spring\\\", \\\"level\\\": 5}]\"," +
-                    "\"description\": \"스프링 장인\"," +
                     "\"answer1\": \"~~~ 였습니다.\"," +
                     "\"answer2\": \"앞으로는 ~~~\"," +
                     "\"answer3\": \"저는 ~~ 입니다.\"," +
@@ -90,7 +89,6 @@ public class ProfessionalProfileIntegrationTest {
             .introduce("hi")
             .developmentArea("BACKEND")
             .techStack("[{\"stack\": \"java\", \"level\": 5}]")
-            .description("java gosu")
             .answer1("yes")
             .answer2("no")
             .answer3("good")

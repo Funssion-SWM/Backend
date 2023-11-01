@@ -15,8 +15,6 @@ public class SaveProfessionalProfileDto {
     private String developmentArea;
     @Size(max = 1000)
     private String techStack;
-    @Size(max = 500)
-    private String description;
     @Size(max = 500, message = "질문 1에 대한 답변은 500자를 초과할 수 없습니다")
     private String answer1;
     @Size(max = 500, message = "질문 2에 대한 답변은 500자를 초과할 수 없습니다")
