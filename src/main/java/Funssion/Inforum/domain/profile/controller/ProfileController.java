@@ -20,7 +20,7 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    @GetMapping
+    @PostMapping
     public List<UserProfileForEmployer> searchUserProfilesForEmployer(
             @RequestBody TechStackDto techStackDto
             ) {

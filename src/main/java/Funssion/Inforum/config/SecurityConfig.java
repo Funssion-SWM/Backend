@@ -66,7 +66,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/users/employer").hasRole(EMPLOYER.toString())
-                                .requestMatchers(HttpMethod.GET, "/users/profile").hasRole(EMPLOYER.toString())
+                                .requestMatchers(HttpMethod.POST, "/users/profile").hasRole(EMPLOYER.toString())
                                 //users 포함한 end point 보안 적용
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",
