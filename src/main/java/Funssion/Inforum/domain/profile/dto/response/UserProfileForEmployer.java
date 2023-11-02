@@ -15,4 +15,5 @@ public class UserProfileForEmployer {
     private final String developmentArea;
     private final String techStack;
     private final String description;
+    private final Boolean isLike;
 }
