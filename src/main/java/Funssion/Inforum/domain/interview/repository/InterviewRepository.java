@@ -6,7 +6,6 @@ import Funssion.Inforum.domain.interview.constant.InterviewStatus;
 import Funssion.Inforum.domain.interview.domain.Interview;
 import Funssion.Inforum.domain.interview.dto.InterviewAnswerDto;
 import Funssion.Inforum.domain.interview.dto.QuestionsDto;
-import lombok.Getter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -22,6 +21,7 @@ public class InterviewRepository {
 
     public void saveQuestions(Long employeeId, QuestionsDto questionsDto){
         Long employerId = SecurityContextUtils.getAuthorizedUserId();
+
         String sql = "INSERT INTO interview.info (employer_id, employee_id, question_1, question_2, question_3) values(?,?,?,?,?)";
         template.update(sql,employerId,employeeId, questionsDto.getQuestion1(),questionsDto.getQuestion2(),questionsDto.getQuestion3());
     }
@@ -32,40 +32,47 @@ public class InterviewRepository {
                 "SELECT EXISTS " +
                     "(SELECT 1 " +
                     "FROM interview.info " +
-                    "WHERE employer_id = ? AND employee_id = ? AND interviewing NOT IN ('DONE'))";
+                    "WHERE employer_id = ? AND employee_id = ? )";
         return template.queryForObject(sql,Boolean.class,employerId,employeeId);
     }
-    public Interview getInterviewQuestionOf(Long employeeId){
+    public Interview getInterviewQuestionOf(Long employeeId, Long employerId){
         String sql =
-                "SELECT employer_id, status, question1, question2, question3 " +
+                "SELECT employer_id, status, question_1, question_2, question_3 " +
                 "FROM interview.info " +
-                "WHERE employee_id = ?";
-        return template.queryForObject(sql,interviewRowMapper(),employeeId);
+                "WHERE employee_id = ? and employer_id = ?";
+        return template.queryForObject(sql,interviewRowMapper(),employeeId, employerId);
     }
 
-    public InterviewStatus saveAnswerOfQuestion(InterviewAnswerDto interviewAnswerDto,Long userId) {
-        Status status = switch (interviewAnswerDto.getQuestionNumber()) {
-            case 1 -> new Status("answer_1", InterviewStatus.ING_Q2 );
-            case 2 -> new Status("answer_2", InterviewStatus.ING_Q3 );
-            case 3 -> new Status("answer_3", InterviewStatus.DONE );
+    public void saveAnswerOfQuestion(InterviewAnswerDto interviewAnswerDto,Long userId) {
+        String columnNameOfAnswer = switch (interviewAnswerDto.getQuestionNumber()) {
+            case 1 -> "answer_1";
+            case 2 -> "answer_2";
+            case 3 -> "answer_3";
             default -> throw new BadRequestException("인터뷰 답변객체의 번호가 '1','2','3' 이 아닙니다.");
         };
 
         String sql =
                 "UPDATE interview.info " +
-                "SET " + status.getColumnNameOfAnswer() + "= ? AND status = ? " +
+                "SET " + columnNameOfAnswer + " = ? " +
                 "WHERE employer_id = ? and employee_id = ?";
 
-        template.update(sql,interviewAnswerDto.getAnswer(), status.getInterviewStatusAfter(), interviewAnswerDto.getEmployerId(),userId);
+        template.update(sql,interviewAnswerDto.getAnswer(), interviewAnswerDto.getEmployerId(),userId);
+    }
 
-        return getInterviewStatusOfUser(interviewAnswerDto.getEmployerId(), userId);
+    public InterviewStatus updateStatus(Long employerId, Long employeeId, InterviewStatus interviewStatus){
+        String sql =
+                "UPDATE interview.info " +
+                "SET status = ? " +
+                "WHERE employer_id = ? and employee_id = ?";
+        template.update(sql,interviewStatus.toString(), employerId, employeeId);
+        return getInterviewStatusOfUser(employerId, employeeId);
     }
     public InterviewStatus startInterview(Long employerId, Long employeeId) {
         String sql =
                 "UPDATE interview.info " +
                 "SET status = ? " +
                 "WHERE employer_id = ? and employee_id = ?";
-        template.update(sql, InterviewStatus.ING_Q1,employerId,employeeId);
+        template.update(sql, InterviewStatus.ING_Q1.toString(),employerId,employeeId);
 
         return getInterviewStatusOfUser(employerId,employeeId);
     }
@@ -90,9 +97,9 @@ public class InterviewRepository {
             Interview.builder()
                     .employerId(rs.getLong("employer_id"))
                     .status(rs.getString("status"))
-                    .question1(rs.getString("question1"))
-                    .question2(rs.getString("question2"))
-                    .question3(rs.getString("question3"))
+                    .question1(rs.getString("question_1"))
+                    .question2(rs.getString("question_2"))
+                    .question3(rs.getString("question_3"))
                     .build();
     }
 
@@ -106,16 +113,5 @@ public class InterviewRepository {
         return !interviewStatusOfUser.getStatus().startsWith(String.valueOf(interviewAnswerDto.getQuestionNumber()));
     }
 
-
-    @Getter
-    private class Status{
-        private String columnNameOfAnswer;
-        private InterviewStatus interviewStatusAfter;
-
-        public Status(String columnNameOfAnswer, InterviewStatus interviewStatusAfterAnswer) {
-            this.columnNameOfAnswer = columnNameOfAnswer;
-            this.interviewStatusAfter = interviewStatusAfterAnswer;
-        }
-    }
 
 }

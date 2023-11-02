@@ -289,7 +289,7 @@ create table interview.info(
     id bigserial primary key,
     employer_id int8,
     employee_id int8,
-    status varchar(5), ---'DONE', 'ING_1','ING_2','ING_3', 'READY'
+    status varchar(8) default 'READY', ---'DONE', 'ING_Q1','ING_Q2','ING_Q3', 'READY'
     question_1 varchar,
     answer_1 varchar,
     question_2 varchar,

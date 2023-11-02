@@ -22,15 +22,14 @@ public class InterviewController {
     public IsSuccessResponseDto saveInterviewQuestions(@PathVariable Long employeeId, @RequestBody @Valid QuestionsDto questionsDto){
         return interviewService.saveQuestionsAndNotifyInterview(employeeId,questionsDto);
     }
-    @GetMapping("/questions/{employeeId}")
-    public InterviewQuestionDto getInterviewQuestion(@PathVariable Long employeeId){
-        return interviewService.getInterviewInfoTo(employeeId);
+    @GetMapping("/questions/{employerId}/{employeeId}")
+    public InterviewQuestionDto getInterviewQuestion(@PathVariable Long employerId, @PathVariable Long employeeId){
+        return interviewService.getInterviewInfoTo(employeeId, employerId);
     }
     @ApiResponse(description="1번 문제를 봤을 때 호출됩니다. 이에 따라 status가 1번문제 보는중으로 바뀜")
     @PutMapping("/start/{employerId}")
     public InterviewStatus startInterviewByEmployee(@PathVariable Long employerId){
         Long userId = SecurityContextUtils.getAuthorizedUserId();
-        if(!userId.equals(employerId)) throw new InterviewForbiddenException();
 
         return interviewService.startInterview(employerId,userId);
     }
