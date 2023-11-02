@@ -37,4 +37,6 @@ public interface MemberRepository {
     void deleteUser(Long userId);
 
     Long getDailyScore(Long userId);
+
+    String getCompanyName(Long userId);
 }

@@ -20,4 +20,5 @@ public class SaveMemberResponseDto {
     private final LocalDateTime createdDate;
     private final String email;
     private final String role;
+    private String companyName;
 }

@@ -3,6 +3,7 @@ create schema post;
 create schema tag;
 create schema score;
 create schema employer;
+create schema interview;
 create sequence post.memo_series_order_seq start 1;
 
 CREATE TABLE tag.memo_to_tag (
@@ -283,4 +284,18 @@ create table score.info (
     liked_author_id int8 null,
     created_date timestamp default current_timestamp,
     primary key (user_id,score_type,post_id)
+);
+
+create table interview.info(
+    id bigserial primary key,
+    employer_id int8,
+    employee_id int8,
+    status varchar(8) default 'READY', ---'DONE', 'ING_Q1','ING_Q2','ING_Q3', 'READY'
+    question_1 varchar,
+    answer_1 varchar,
+    question_2 varchar,
+    answer_2 varchar,
+    question_3 varchar,
+    answer_3 varchar,
+    unique (employer_id, employee_id)
 );

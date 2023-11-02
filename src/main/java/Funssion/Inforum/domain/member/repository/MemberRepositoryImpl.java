@@ -265,6 +265,15 @@ public class MemberRepositoryImpl implements MemberRepository {
         return jdbcTemplate.queryForObject(sql,Long.class,userId);
     }
 
+    @Override
+    public String getCompanyName(Long userId) {
+        String sql =
+                "SELECT company " +
+                "FROM member.info " +
+                "WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql,String.class,userId);
+    }
+
     private RowMapper<NonSocialMember> nonSocialmemberRowMapper(){
         return new RowMapper<NonSocialMember>() {
             @Override

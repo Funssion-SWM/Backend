@@ -75,6 +75,9 @@ public class SecurityConfig {
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
                                 .requestMatchers("/employer/**").hasRole("EMPLOYER")
+                                .requestMatchers(HttpMethod.POST,"/interview/questions/**").hasRole("EMPLOYER")
+                                .requestMatchers(HttpMethod.GET,"/interview/answers/**").hasAnyRole("EMPLOYER","USER")
+                                .requestMatchers(HttpMethod.POST,"/interview/answers/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
