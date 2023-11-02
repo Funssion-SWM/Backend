@@ -1,12 +1,11 @@
 package Funssion.Inforum.domain.profile.repository;
 
 import Funssion.Inforum.common.constant.PostType;
-import Funssion.Inforum.common.utils.CustomListUtils;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.profile.TechStackDto;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import Funssion.Inforum.domain.profile.dto.response.UserProfileForEmployer;
-import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -109,9 +108,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     public List<UserProfileForEmployer> findUserProfilesForEmployer(TechStackDto techStackDto) {
         ArrayList<Object> paramList = new ArrayList<>();
         paramList.add(techStackDto.getDevelopmentArea());
-
-
-        String sql = "SELECT * " +
+        String sql = "SELECT *, CASE WHEN EMPLOYER_LIKE.employee_id IS NOT NULL THEN 'true' ELSE 'false' END AS i_like " +
                 "FROM (" +
                 "   SELECT m.id, m.name, m.image_path, m.rank, p.introduce, p.development_area, p.tech_stack, p.description, (" +
                 "       SELECT 2*count(stack_element)" +
@@ -121,9 +118,16 @@ public class ProfileRepositoryImpl implements ProfileRepository {
                 "   FROM member.professional_profile p, member.info m" +
                 "   WHERE p.user_id = m.id " +
                 ") sub " +
+                "LEFT JOIN (" +
+                "   SELECT employee_id " +
+                "   FROM employer.to_employee " +
+                "   WHERE employer_id = ?" +
+                ") EMPLOYER_LIKE " +
+                "ON sub.id = EMPLOYER_LIKE.employee_id " +
                 "WHERE matched_count > 0 " +
                 "ORDER BY matched_count desc";
 
+        paramList.add(SecurityContextUtils.getAuthorizedUserId());
         return template.query(sql, userProfileRowMapperForEmployer(), paramList.toArray());
     }
 
@@ -144,6 +148,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
         return (rs, rowNum) -> UserProfileForEmployer.builder()
                 .id(rs.getLong("id"))
                 .name(rs.getString("name"))
+                .isLike(rs.getBoolean("i_like"))
                 .imagePath(rs.getString("image_path"))
                 .rank(rs.getString("rank"))
                 .introduce(rs.getString("introduce"))

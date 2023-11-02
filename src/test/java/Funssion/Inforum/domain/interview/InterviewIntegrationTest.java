@@ -14,7 +14,7 @@ import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.notification.repository.NotificationRepository;
-import Funssion.Inforum.domain.professionalprofile.dto.request.CreateProfessionalProfileDto;
+import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.repository.ProfessionalProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
@@ -65,10 +65,9 @@ class InterviewIntegrationTest {
     SaveMemberResponseDto saveEmployeeDto;
     SaveMemberResponseDto saveEmployerDto;
 
-    CreateProfessionalProfileDto createdProfessionalProfileDto = CreateProfessionalProfileDto.builder()
+    SaveProfessionalProfileDto createdProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
             .techStack("{\"java\": 5}")
-            .description("java gosu")
             .answer1("yes")
             .answer2("no")
             .answer3("good")
