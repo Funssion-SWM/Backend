@@ -49,6 +49,16 @@ public class InterviewService {
         return interviewRepository.updateStatus(interviewAnswerDto.getEmployerId(),userId,interviewStatusAfterAnswer);
 
     }
+    public InterviewStatus updateStatus(Long employerId, Long employeeId){
+        InterviewStatus afterStatus = switch(interviewRepository.getInterviewStatusOfUser(employerId, employeeId)){
+            case ING_Q1 -> InterviewStatus.ING_Q2;
+            case ING_Q2 -> InterviewStatus.ING_Q3;
+            case ING_Q3 -> InterviewStatus.DONE;
+            case READY -> throw new BadRequestException("READY 상태에서 update status를 호출할 수 없습니다.");
+            case DONE ->  throw new BadRequestException("DONE 상태에서 update status를 호출할 수 없습니다.");
+        };
+        return interviewRepository.updateStatus(employerId, employeeId, afterStatus);
+    }
 
     private static InterviewStatus getInterviewStatus(InterviewAnswerDto interviewAnswerDto) {
         InterviewStatus interviewStatusAfterAnswer = switch (interviewAnswerDto.getQuestionNumber()) {

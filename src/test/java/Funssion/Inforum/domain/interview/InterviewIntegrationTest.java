@@ -32,15 +32,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -169,7 +167,7 @@ class InterviewIntegrationTest {
             interviewRepository.saveQuestions(saveEmployeeDto.getId(), questionsDto);
 
             UserDetails employee = authService.loadUserByUsername(saveEmployeeDto.getEmail());
-            MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/interview/questions/" + saveEmployerDto.getId() + "/" + saveEmployeeDto.getId())
+            MvcResult result = mvc.perform(get("/interview/questions/" + saveEmployerDto.getId() + "/" + saveEmployeeDto.getId())
                             .with(user(employee)))
                     .andReturn();
             String responseBody = result.getResponse().getContentAsString();
@@ -209,6 +207,10 @@ class InterviewIntegrationTest {
             UserDetails employee = authService.loadUserByUsername(saveEmployeeDto.getEmail());
             mvc.perform(put("/interview/start/" + saveEmployerDto.getId())
                     .with(user(employee)));
+
+            //1번 문제 보고 종료 -> 2번 풀고있는 상태로 업데이트
+            mvc.perform(get("/interview/continue/" + saveEmployerDto.getId())
+                            .with(user(employee)));
 
             InterviewAnswerDto interviewAnswerDto = new InterviewAnswerDto(saveEmployerDto.getId(), 1,"1번문제의 답입니다.");
             String firstAnswerString = objectMapper.writeValueAsString(interviewAnswerDto);

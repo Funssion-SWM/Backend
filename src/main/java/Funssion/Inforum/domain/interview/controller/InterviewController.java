@@ -26,6 +26,13 @@ public class InterviewController {
     public InterviewQuestionDto getInterviewQuestion(@PathVariable Long employerId, @PathVariable Long employeeId){
         return interviewService.getInterviewInfoTo(employeeId, employerId);
     }
+    @GetMapping("/continue/{employerId}")
+    public InterviewStatus updateStatus(@PathVariable Long employerId){
+        Long userId = SecurityContextUtils.getAuthorizedUserId();
+
+        return interviewService.updateStatus(employerId,userId);
+    }
+
     @ApiResponse(description="1번 문제를 봤을 때 호출됩니다. 이에 따라 status가 1번문제 보는중으로 바뀜")
     @PutMapping("/start/{employerId}")
     public InterviewStatus startInterviewByEmployee(@PathVariable Long employerId){

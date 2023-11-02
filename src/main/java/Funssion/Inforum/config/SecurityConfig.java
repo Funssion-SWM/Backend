@@ -77,6 +77,8 @@ public class SecurityConfig {
                                 .requestMatchers("/employer/**").hasRole("EMPLOYER")
                                 .requestMatchers(HttpMethod.POST,"/interview/questions/**").hasRole("EMPLOYER")
                                 .requestMatchers(HttpMethod.GET,"/interview/answers/**").hasAnyRole("EMPLOYER","USER")
+                                .requestMatchers(HttpMethod.GET,"/interview/start/**").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET,"/interview/continue/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.POST,"/interview/answers/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()
