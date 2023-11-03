@@ -4,7 +4,6 @@ import Funssion.Inforum.access_handler.AuthenticationSuccessHandler;
 import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
 import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
 import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
-import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
@@ -28,7 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-import static Funssion.Inforum.common.constant.Role.*;
+import static Funssion.Inforum.common.constant.Role.EMPLOYER;
 
 @Slf4j
 @Configuration

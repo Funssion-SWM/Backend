@@ -1,13 +1,14 @@
 package Funssion.Inforum.domain.employer.domain;
 
+import Funssion.Inforum.domain.interview.constant.InterviewStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Getter
 @Builder
-@RequiredArgsConstructor
-public class Employee {
+public class EmployeeWithStatus {
     private final Long userId;
     private final String username;
     private final String imagePath;
@@ -17,4 +18,5 @@ public class Employee {
     private final String description;
     private final String techStack;
     private final Boolean isVisible;
+    private final InterviewStatus status;
 }
