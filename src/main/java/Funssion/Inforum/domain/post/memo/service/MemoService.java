@@ -100,12 +100,19 @@ public class MemoService {
         tagRepository.saveTags(createdMemo.getId(),form.getMemoTags());
 
         if (!form.getIsTemporary()) {
+            updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), createdMemo);
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
             scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getId());
             sendNotificationToFollower(authorId, createdMemo);
         }
 
         return new MemoDto(createdMemo);
+    }
+
+    private void updateSeriesInfo(Long seriesId, String seriesTitle, Memo savedMemo) {
+        if (Objects.isNull(seriesId) || Objects.isNull(seriesTitle)) return;
+
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesTitle, savedMemo.getAuthorId(), List.of(savedMemo.getId()));
     }
 
     private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
@@ -171,6 +178,7 @@ public class MemoService {
         checkUpdatableMemo(willBeUpdatedMemo, form);
 
         updateHistory(form, userId, willBeUpdatedMemo);
+        updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), willBeUpdatedMemo);
         try {
             tagRepository.updateTags(memoId,updatedTags);
         } catch (SQLException e) {

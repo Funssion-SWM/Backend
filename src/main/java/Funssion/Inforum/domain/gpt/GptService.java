@@ -31,7 +31,6 @@ public class GptService {
     private OpenAiService openAiService;
     private final ProfessionalProfileRepository professionalProfileRepository;
 
-    @Transactional
     @Async("threadPoolTaskExecutor")
     public void getDescriptionByGPTAndUpdateDescription(Long userId, List<String> answerList) {
         openAiService = new OpenAiService(GPT_API_KEY);
