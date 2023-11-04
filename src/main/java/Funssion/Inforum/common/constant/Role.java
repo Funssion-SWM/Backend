@@ -1,6 +1,5 @@
 package Funssion.Inforum.common.constant;
 
-import Funssion.Inforum.common.exception.etc.EnumParseException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Getter
 @RequiredArgsConstructor

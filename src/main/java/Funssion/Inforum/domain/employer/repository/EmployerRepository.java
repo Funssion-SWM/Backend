@@ -25,7 +25,7 @@ public class EmployerRepository {
     public List<Employee> getInterviewEmployees(Boolean isDone){
         Long employerId = SecurityContextUtils.getAuthorizedUserId();
         String sql =
-                "SELECT U.id, U.name, U.image_path, U.rank, EMP.introduce, EMP.development_area, EMP.description, jsonb_array_elements(EMP.tech_stack) AS tech_stack, EMP.is_visible " +
+                "SELECT U.id, U.name, U.image_path, U.rank, EMP.introduce, EMP.development_area, EMP.description, EMP.tech_stack, EMP.is_visible " +
                 "FROM member.info U, member.professional_profile EMP " +
                 "WHERE U.id = EMP.user_id " +
                 "AND (SELECT status " +
@@ -42,7 +42,7 @@ public class EmployerRepository {
     public List<EmployeeWithStatus> getLikeEmployees() {
         Long employerId = SecurityContextUtils.getAuthorizedUserId();
         String sql =
-                "SELECT U.id, U.name, U.image_path, U.rank, EMP.introduce, EMP.development_area, EMP.description, jsonb_array_elements(EMP.tech_stack) AS tech_stack, EMP.is_visible, INTER.status " +
+                "SELECT U.id, U.name, U.image_path, U.rank, EMP.introduce, EMP.development_area, EMP.description, EMP.tech_stack, EMP.is_visible, INTER.status " +
                 "FROM member.info U " +
                 "INNER JOIN member.professional_profile EMP " +
                 "ON U.id = EMP.user_id " +
