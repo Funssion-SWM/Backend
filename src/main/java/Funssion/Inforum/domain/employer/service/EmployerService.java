@@ -67,7 +67,7 @@ public class EmployerService {
 
     public InterviewResult getResultOfInterview(Long employeeId){
         Long employerId = SecurityContextUtils.getAuthorizedUserId();
-        if(!interviewRepository.getInterviewStatusOfUser(employerId, employeeId).getStatus().equals(InterviewStatus.DONE.toString()))
+        if(!interviewRepository.getInterviewStatusOfUser(employerId, employeeId).equals(InterviewStatus.DONE))
             throw new BadRequestException("면접이 완료되지 않은 지원자입니다.");
 
         return employerRepository.getInterviewResultOf(employeeId);
