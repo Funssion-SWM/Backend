@@ -59,6 +59,7 @@ public class EmployerIntegrationTestV2 {
 
     SaveMemberResponseDto saveEmployeeDto;
     SaveMemberResponseDto saveEmployerDto;
+    QuestionsDto questionsDto = new QuestionsDto("1번 질문", "2번 질문", "3번 질문");
 
     SaveProfessionalProfileDto createdProfessionalProfileDto = SaveProfessionalProfileDto.builder()
             .introduce("hi")
@@ -164,7 +165,6 @@ public class EmployerIntegrationTestV2 {
                 saveEmployeeDto3.getId(),
                 saveProfessionalProfileDto
         );
-        QuestionsDto questionsDto = new QuestionsDto("1번 질문", "2번 질문", "3번 질문");
         interviewRepository.saveQuestions(saveEmployeeDto.getId(),questionsDto);
         interviewRepository.saveQuestions(saveEmployeeDto2.getId(),questionsDto);
         interviewRepository.saveQuestions(saveEmployeeDto3.getId(),questionsDto);
@@ -179,6 +179,38 @@ public class EmployerIntegrationTestV2 {
         String contentAsString = result.getResponse().getContentAsString();
         List<String> employeesTechStack = JsonPath.read(contentAsString, "$[*].techStack");
         assertThat(employeesTechStack).hasSize(1);
+
+    }
+
+    @Test
+    @DisplayName("면접이 완료되지 않은 지원자의 면접 결과를 가져올 수 없다.")
+    void cannotAccessResultWhenEmployeeNotDone() throws Exception {
+        memberRepository.authorizeEmployer(saveEmployerDto.getId());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(saveEmployerDto.getId(), "a1234567!", List.of(new SimpleGrantedAuthority("ROLE_EMPLOYER")))
+        );
+        interviewRepository.saveQuestions(saveEmployeeDto.getId(),questionsDto);
+        UserDetails employerUserDetails = authService.loadUserByUsername(saveEmployerDto.getEmail());
+        mvc.perform(get("/employer/interview-result/"+saveEmployeeDto.getId())
+                        .with(user(employerUserDetails)))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    @DisplayName("면접이 완료된 사람의 면접 결과를 가져올 수 있다..")
+    void canOnlyAccessResultWhenEmployeeDone() throws Exception {
+        memberRepository.authorizeEmployer(saveEmployerDto.getId());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(saveEmployerDto.getId(), "a1234567!", List.of(new SimpleGrantedAuthority("ROLE_EMPLOYER")))
+        );
+        interviewRepository.saveQuestions(saveEmployeeDto.getId(),questionsDto);
+        interviewRepository.updateStatus(saveEmployerDto.getId(),saveEmployeeDto.getId(), InterviewStatus.DONE);
+
+        UserDetails employerUserDetails = authService.loadUserByUsername(saveEmployerDto.getEmail());
+        mvc.perform(get("/employer/interview-result/"+saveEmployeeDto.getId())
+                        .with(user(employerUserDetails)))
+                .andExpect(status().isOk());
 
     }
     @Test
