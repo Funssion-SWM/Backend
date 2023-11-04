@@ -110,7 +110,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
         paramList.add(techStackDto.getDevelopmentArea());
         String sql = "SELECT *, CASE WHEN EMPLOYER_LIKE.employee_id IS NOT NULL THEN 'true' ELSE 'false' END AS i_like " +
                 "FROM (" +
-                "   SELECT m.id, m.name, m.image_path, m.rank, p.introduce, p.development_area, jsonp.tech_stack, p.description, (" +
+                "   SELECT m.id, m.name, m.image_path, m.rank, p.introduce, p.development_area, p.tech_stack, p.description, (" +
                 "       SELECT 2*count(stack_element)" +
                 "       FROM jsonb_array_elements(p.tech_stack) AS stack_element" +
                 "       WHERE p.development_area = ? AND stack_element->>'stack' in " + techStackElements(techStackDto.getTechStacks(), paramList) +

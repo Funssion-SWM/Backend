@@ -2,6 +2,9 @@ package Funssion.Inforum.domain.employer;
 
 import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.employer.repository.EmployerRepository;
+import Funssion.Inforum.domain.interview.constant.InterviewStatus;
+import Funssion.Inforum.domain.interview.dto.QuestionsDto;
+import Funssion.Inforum.domain.interview.repository.InterviewRepository;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.EmployerSaveDto;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
@@ -12,16 +15,23 @@ import Funssion.Inforum.domain.member.service.AuthService;
 import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.professionalprofile.dto.request.SaveProfessionalProfileDto;
 import Funssion.Inforum.domain.professionalprofile.repository.ProfessionalProfileRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -44,6 +54,8 @@ public class EmployerIntegrationTestV2 {
     NotificationRepository notificationRepository;
     @Autowired
     ProfessionalProfileRepository professionalProfileRepository;
+    @Autowired
+    InterviewRepository interviewRepository;
 
     SaveMemberResponseDto saveEmployeeDto;
     SaveMemberResponseDto saveEmployerDto;
@@ -112,35 +124,63 @@ public class EmployerIntegrationTestV2 {
 
     }
 
-//    @Test
-//    @DisplayName("권한받은 채용자가 지원자 리스트를 받아본다.")
-//    void getEmployeesLIst() throws Exception {
-//        memberRepository.authorizeEmployer(saveEmployerDto.getId());
-//        saveUsersAndResumes(7); //기존 저장 1명 + 7 명 = 총 8명
-//        UserDetails employerUserDetails = authService.loadUserByUsername(saveEmployerDto.getEmail());
-//        MvcResult firstResult = mvc.perform(get("/employer/employees")
-//                        .with(user(employerUserDetails)))
-//                .andReturn();
-//        String contentAsString1 = firstResult.getResponse().getContentAsString();
-//        List<EmployeeDto> employees1 = JsonPath.read(contentAsString1, "$");
-//        assertThat(employees1).hasSize(5);
-//
-//        MvcResult secondResult = mvc.perform(get("/employer/employees")
-//                        .param("page","1")
-//                        .with(user(employerUserDetails)))
-//                .andReturn();
-//        String contentAsString2 = secondResult.getResponse().getContentAsString();
-//        List<EmployeeDto> employees2 = JsonPath.read(contentAsString2, "$");
-//        assertThat(employees2).hasSize(3);
-//
-//        MvcResult thirdResult = mvc.perform(get("/employer/employees")
-//                        .param("page","2")
-//                        .with(user(employerUserDetails)))
-//                .andReturn();
-//        String contentAsString3 = thirdResult.getResponse().getContentAsString();
-//        List<EmployeeDto> employees3 = JsonPath.read(contentAsString3, "$");
-//        assertThat(employees3).hasSize(0);
-//    }
+    @Test
+    @DisplayName("채용자가 인터뷰를 완료한 유저 리스트를 받아봅니다.")
+    void getInterviewUserList() throws Exception{
+        SaveProfessionalProfileDto saveProfessionalProfileDto = SaveProfessionalProfileDto.builder()
+                .introduce("hi")
+                .developmentArea("BACKEND")
+                .techStack("[{\"stack\": \"java\", \"level\": 5}]")
+                .answer1("yes")
+                .answer2("no")
+                .answer3("good")
+                .resume("{\"content\": \"i'm a amazing programmer\"}")
+                .build();
+        memberRepository.authorizeEmployer(saveEmployerDto.getId());
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(saveEmployerDto.getId(), "a1234567!", List.of(new SimpleGrantedAuthority("ROLE_EMPLOYER")))
+        );
+        SaveMemberResponseDto saveEmployeeDto = memberRepository.save(
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("employee1", LoginType.NON_SOCIAL, "test1@gmail.com", "a1234567!"))
+        );
+        SaveMemberResponseDto saveEmployeeDto2 = memberRepository.save(
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("employee2", LoginType.NON_SOCIAL, "test2@gmail.com", "a1234567!"))
+        );
+        SaveMemberResponseDto saveEmployeeDto3 = memberRepository.save(
+                NonSocialMember.createNonSocialMember(
+                        new MemberSaveDto("employee3", LoginType.NON_SOCIAL, "test3@gmail.com", "a1234567!"))
+        );
+        professionalProfileRepository.create(
+                saveEmployeeDto.getId(),
+                saveProfessionalProfileDto
+        );
+        professionalProfileRepository.create(
+                saveEmployeeDto2.getId(),
+                saveProfessionalProfileDto
+        );
+        professionalProfileRepository.create(
+                saveEmployeeDto3.getId(),
+                saveProfessionalProfileDto
+        );
+        QuestionsDto questionsDto = new QuestionsDto("1번 질문", "2번 질문", "3번 질문");
+        interviewRepository.saveQuestions(saveEmployeeDto.getId(),questionsDto);
+        interviewRepository.saveQuestions(saveEmployeeDto2.getId(),questionsDto);
+        interviewRepository.saveQuestions(saveEmployeeDto3.getId(),questionsDto);
+
+        interviewRepository.updateStatus(saveEmployerDto.getId(),saveEmployeeDto2.getId(), InterviewStatus.DONE);
+        UserDetails employerUserDetails = authService.loadUserByUsername(saveEmployerDto.getEmail());
+
+        MvcResult result = mvc.perform(get("/employer/employees")
+                        .with(user(employerUserDetails))
+                        .param("done", "true"))
+                .andReturn();
+        String contentAsString = result.getResponse().getContentAsString();
+        List<String> employeesTechStack = JsonPath.read(contentAsString, "$[*].techStack");
+        assertThat(employeesTechStack).hasSize(1);
+
+    }
     @Test
     @WithMockUser(roles="USER")
     @DisplayName("일반 유저는 EMPLOYER 권한의 api 요청을 할 수 없다.")
