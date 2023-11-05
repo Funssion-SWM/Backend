@@ -1,8 +1,13 @@
 package Funssion.Inforum.domain.interview.service;
 
+import Funssion.Inforum.common.constant.NotificationType;
+import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.DuplicateException;
+import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.employer.dto.EmployerProfile;
+import Funssion.Inforum.domain.employer.repository.EmployerRepository;
 import Funssion.Inforum.domain.interview.constant.InterviewStatus;
 import Funssion.Inforum.domain.interview.domain.Interview;
 import Funssion.Inforum.domain.interview.dto.InterviewAnswerDto;
@@ -10,22 +15,50 @@ import Funssion.Inforum.domain.interview.dto.InterviewQuestionDto;
 import Funssion.Inforum.domain.interview.dto.QuestionsDto;
 import Funssion.Inforum.domain.interview.exception.InterviewForbiddenException;
 import Funssion.Inforum.domain.interview.repository.InterviewRepository;
+import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
+import Funssion.Inforum.domain.mypage.repository.MyRepository;
+import Funssion.Inforum.domain.notification.domain.Notification;
+import Funssion.Inforum.domain.notification.repository.NotificationRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static Funssion.Inforum.common.constant.NotificationType.*;
+import static Funssion.Inforum.common.constant.PostType.*;
+import static Funssion.Inforum.domain.interview.constant.InterviewStatus.*;
 
 @Service
 @RequiredArgsConstructor
 public class InterviewService {
     private final InterviewRepository interviewRepository;
     private final MemberRepository memberRepository;
+    private final NotificationRepository notificationRepository;
+    private final MyRepository myRepository;
+    private final EmployerRepository employerRepository;
+
     public IsSuccessResponseDto saveQuestionsAndNotifyInterview(Long employeeId, QuestionsDto questionsDto){
         if(interviewRepository.findIfAlreadyInterviewing(employeeId)) throw new DuplicateException("이미 면접요청을 보낸 지원자입니다.");
 
+        Long employerId = SecurityContextUtils.getAuthorizedUserId();
+
         interviewRepository.saveQuestions(employeeId,questionsDto);
-        // ToDo : notification
+        sendNotificationToInterviewee(employerId, employeeId);
 
         return new IsSuccessResponseDto(true, "성공적으로 면접알림을 전송하였습니다.");
+    }
+
+    private void sendNotificationToInterviewee(Long employerId, Long employeeId) {
+        EmployerProfile employerProfile = employerRepository.getEmployerProfile(employerId);
+
+        notificationRepository.save(Notification.builder()
+                        .receiverId(employeeId)
+                        .senderId(employerProfile.getEmployerId())
+                        .senderName(employerProfile.getCompanyName())
+                        .senderRank("EMPLOYER")
+                        .senderImagePath(employerProfile.getImagePath())
+                        .notificationType(NEW_INTERVIEW)
+                .build());
     }
 
 
@@ -46,14 +79,32 @@ public class InterviewService {
         interviewRepository.saveAnswerOfQuestion(interviewAnswerDto,userId);
 
         InterviewStatus interviewStatusAfterAnswer = getInterviewStatus(interviewAnswerDto);
+
+        if (interviewStatusAfterAnswer.equals(DONE))
+            sendNotificationToInterviewer(interviewAnswerDto.getEmployerId(), userId);
+
         return interviewRepository.updateStatus(interviewAnswerDto.getEmployerId(),userId,interviewStatusAfterAnswer);
 
     }
-    public InterviewStatus updateStatus(Long employerId, Long employeeId){
+
+    private void sendNotificationToInterviewer(Long employerId, Long employeeId) {
+        MemberProfileEntity employeeProfile = myRepository.findProfileByUserId(employeeId);
+
+        notificationRepository.save(Notification.builder()
+                .receiverId(employerId)
+                .senderId(employeeProfile.getUserId())
+                .senderName(employeeProfile.getNickname())
+                .senderRank(employeeProfile.getRank())
+                .senderImagePath(employeeProfile.getProfileImageFilePath())
+                .notificationType(NEW_INTERVIEW_COMPLETE)
+                .build());
+    }
+
+    public InterviewStatus updateStatus(Long employerId, Long employeeId) {
         InterviewStatus afterStatus = switch(interviewRepository.getInterviewStatusOfUser(employerId, employeeId)){
-            case ING_Q1 -> InterviewStatus.ING_Q2;
-            case ING_Q2 -> InterviewStatus.ING_Q3;
-            case ING_Q3 -> InterviewStatus.DONE;
+            case ING_Q1 -> ING_Q2;
+            case ING_Q2 -> ING_Q3;
+            case ING_Q3 -> DONE;
             case READY -> throw new BadRequestException("READY 상태에서 update status를 호출할 수 없습니다.");
             case DONE ->  throw new BadRequestException("DONE 상태에서 update status를 호출할 수 없습니다.");
         };
@@ -62,9 +113,9 @@ public class InterviewService {
 
     private static InterviewStatus getInterviewStatus(InterviewAnswerDto interviewAnswerDto) {
         InterviewStatus interviewStatusAfterAnswer = switch (interviewAnswerDto.getQuestionNumber()) {
-            case 1 -> InterviewStatus.ING_Q2;
-            case 2 -> InterviewStatus.ING_Q3;
-            case 3 -> InterviewStatus.DONE;
+            case 1 -> ING_Q2;
+            case 2 -> ING_Q3;
+            case 3 -> DONE;
             default -> throw new BadRequestException("인터뷰 답변객체의 번호가 '1','2','3' 이 아닙니다.");
         };
         return interviewStatusAfterAnswer;
