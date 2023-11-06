@@ -4,6 +4,7 @@ import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,9 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         String email = oAuth2User.getAttribute("email");
         String nickname = UUID.randomUUID().toString().substring(0,15);
 
+        memberRepository.findNonSocialMemberByEmail(email).ifPresent(m->{
+            throw new DuplicateMemberException("일반 회원가입으로 등록된 이메일입니다.");
+        });
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
         if(socialMember.isEmpty()){
