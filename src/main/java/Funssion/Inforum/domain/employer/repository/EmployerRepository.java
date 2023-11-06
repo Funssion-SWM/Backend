@@ -22,6 +22,14 @@ public class EmployerRepository {
         this.template = new JdbcTemplate(dataSource);
     }
 
+    public List<Long> getEmployersLikedUser(Long likedUserId) {
+        String sql = "SELECT employer_id " +
+                "FROM employer.to_employee " +
+                "WHERE employee_id = ?";
+
+        return template.queryForList(sql, Long.class, likedUserId);
+    }
+
     public List<Employee> getInterviewEmployees(Boolean isDone){
         Long employerId = SecurityContextUtils.getAuthorizedUserId();
         String sql =

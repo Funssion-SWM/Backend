@@ -131,7 +131,7 @@ CREATE TABLE "member".notification (
     sender_post_type varchar(10),
     sender_post_id int8,
     sender_rank varchar(15) not null,
-    notification_type varchar(20) NOT NULL,
+    notification_type varchar(30) NOT NULL,
     is_checked boolean not null default false,
     created timestamp NOT NULL DEFAULT current_timestamp
 );

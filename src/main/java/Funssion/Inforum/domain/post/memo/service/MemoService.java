@@ -124,24 +124,29 @@ public class MemoService {
     }
 
     private void sendNotificationToFollowerAndEmployer(Long senderId, Memo createdMemo) {
-        sendNotificationToFollower(senderId, createdMemo);
-        sendNotificationToEmployer(createdMemo);
+        ArrayList<Long> noticedUserList = new ArrayList<>();
+        sendNotificationToFollower(senderId, createdMemo, noticedUserList);
+        sendNotificationToEmployer(senderId, createdMemo, noticedUserList);
     }
 
-    private void sendNotificationToEmployer(Memo createdMemo) {
-        List<EmployeeWithStatus> employerList = employerRepository.getLikeEmployees();
+    private void sendNotificationToEmployer(Long senderId, Memo createdMemo, ArrayList<Long> noticedUserList) {
+        List<Long> employerIdList = employerRepository.getEmployersLikedUser(senderId);
 
-        for (EmployeeWithStatus employer : employerList) {
-            sendNotification(createdMemo, employer.getUserId(), NEW_POST_LIKED_EMPLOYEE);
+        for (Long employerId : employerIdList) {
+            if (noticedUserList.contains(employerId)) continue;
+            sendNotification(createdMemo, employerId, NEW_POST_LIKED_EMPLOYEE);
+            noticedUserList.add(employerId);
         }
     }
 
-    private void sendNotificationToFollower(Long senderId, Memo createdMemo) {
+    private void sendNotificationToFollower(Long senderId, Memo createdMemo, ArrayList<Long> noticedUserList) {
         List<Long> followerIdList =
                 followRepository.findFollowedUserIdByUserId(senderId);
 
         for (Long receiverId : followerIdList) {
+            if (noticedUserList.contains(receiverId)) continue;
             sendNotification(createdMemo, receiverId, NEW_POST_FOLLOWED);
+            noticedUserList.add(receiverId);
         }
     }
 
@@ -217,7 +222,7 @@ public class MemoService {
         // 임시글 -> 등록
         if (willBeUpdatedMemo.getIsTemporary()) {
             createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
-            sendNotificationToFollower(userId, willBeUpdatedMemo);
+            sendNotificationToFollowerAndEmployer(userId, willBeUpdatedMemo);
             scoreService.checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_MEMO, willBeUpdatedMemo.getId());
         }
         // 등록된 글 -> 임시글
