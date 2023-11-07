@@ -9,6 +9,7 @@ public class UserProfileForEmployer {
 
     private final Long id;
     private final String name;
+    private final String email;
     private final String imagePath;
     private final String rank;
     private final String introduce;

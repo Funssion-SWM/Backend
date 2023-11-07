@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class Employee {
     private final Long userId;
     private final String username;
+    private final String email;
     private final String imagePath;
     private final String rank;
     private final String introduce;
