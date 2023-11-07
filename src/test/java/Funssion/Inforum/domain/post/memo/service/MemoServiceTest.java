@@ -5,6 +5,7 @@ import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.employer.repository.EmployerRepository;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -47,6 +48,8 @@ public class MemoServiceTest {
     @Mock MemoRepository memoRepository;
     @Mock TagRepository tagRepository;
     @Mock MyRepository myRepository;
+    @Mock
+    EmployerRepository employerRepository;
     @Mock S3Repository s3Repository;
     @Mock
     ScoreRepository scoreRepository;
@@ -373,6 +376,8 @@ public class MemoServiceTest {
             willThrow(HistoryNotFoundException.class)
                     .given(myRepository)
                     .updateHistory(any(), any(), any(), any());
+            given(employerRepository.getEmployersLikedUser(any()))
+                    .willReturn(Collections.emptyList());
 
             MemoDto memo = memoService.createMemo(memoSaveDto);
 
@@ -456,6 +461,8 @@ public class MemoServiceTest {
                         .willReturn(memo2);
                 given(followRepository.findFollowedUserIdByUserId(any()))
                         .willReturn(Collections.emptyList());
+                given(employerRepository.getEmployersLikedUser(any()))
+                        .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID4, memoSaveDto);
 
@@ -472,6 +479,8 @@ public class MemoServiceTest {
                 given(memoRepository.updateContentInMemo(memoSaveDto, memoID5))
                         .willReturn(memo2);
                 given(followRepository.findFollowedUserIdByUserId(any()))
+                        .willReturn(Collections.emptyList());
+                given(employerRepository.getEmployersLikedUser(any()))
                         .willReturn(Collections.emptyList());
 
                 MemoDto updated = memoService.updateMemo(memoID5, memoSaveDto);
@@ -524,6 +533,8 @@ public class MemoServiceTest {
             given(tagRepository.updateTags(eq(memoID4), any()))
                     .willThrow(SQLException.class);
             given(followRepository.findFollowedUserIdByUserId(any()))
+                    .willReturn(Collections.emptyList());
+            given(employerRepository.getEmployersLikedUser(any()))
                     .willReturn(Collections.emptyList());
 
             assertThatThrownBy(() -> memoService.updateMemo(memoID4, memoSaveDto))
