@@ -1,5 +1,6 @@
 package Funssion.Inforum.constant;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,7 +14,7 @@ public class WithMockCustomUserSecurityContextFactory implements WithSecurityCon
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
         CustomUserDetails principal =
-                new CustomUserDetails(Long.valueOf(customUser.authorId()), customUser.username(),"password",true,false);
+                new CustomUserDetails(Long.valueOf(customUser.authorId()), Role.USER.toString(), customUser.username(),"password",true,false);
         Authentication auth =
                 UsernamePasswordAuthenticationToken.authenticated(principal, "password", principal.getAuthorities());
         context.setAuthentication(auth);

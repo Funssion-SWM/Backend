@@ -12,12 +12,12 @@ public class ForbiddenException extends RuntimeException{
 
     public ForbiddenException(String message) {
         this.message = message;
-        this.errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
+        this.errorResult = new ErrorResult(HttpStatus.FORBIDDEN, message);
     }
 
     public ForbiddenException(String message, Throwable cause) {
         super(cause);
         this.message = message;
-        this.errorResult = new ErrorResult(HttpStatus.NOT_FOUND, message);
+        this.errorResult = new ErrorResult(HttpStatus.FORBIDDEN, message);
     }
 }

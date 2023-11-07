@@ -1,12 +1,10 @@
 package Funssion.Inforum.domain.post.qna.service;
 
-import Funssion.Inforum.common.constant.CRUDType;
-import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.constant.ScoreType;
-import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.constant.*;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.employer.repository.EmployerRepository;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -22,7 +20,7 @@ import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.service.ScoreService;
-import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -35,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
@@ -55,6 +52,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final NotificationRepository notificationRepository;
     private final ProfileRepository profileRepository;
     private final FollowRepository followRepository;
+    private final EmployerRepository employerRepository;
 
     @Value("${aws.s3.question-dir}")
     private String QUESTION_DIR;
@@ -81,6 +79,17 @@ public class QuestionServiceImpl implements QuestionService {
         noticedUserList.add(createdQuestion.getAuthorId());
         sendNotificationToLinkedMemoAuthor(memoId, createdQuestion, noticedUserList);
         sendNotificationToFollower(createdQuestion, noticedUserList);
+        sendNotificationToEmployer(createdQuestion, noticedUserList);
+    }
+
+    private void sendNotificationToEmployer(Question createdQuestion, ArrayList<Long> noticedUserList) {
+        List<Long> employerIdList = employerRepository.getEmployersLikedUser(createdQuestion.getAuthorId());
+
+        for (Long employerId : employerIdList) {
+            if (noticedUserList.contains(employerId)) continue;
+            sendNotification(createdQuestion, employerId, NEW_POST_LIKED_EMPLOYEE);
+            noticedUserList.add(employerId);
+        }
     }
 
     private void sendNotificationToLinkedMemoAuthor(Long memoId, Question createdQuestion, ArrayList<Long> noticedUserList) {
@@ -90,20 +99,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (noticedUserList.contains(receiverId)) return;
 
-        notificationRepository.save(
-                Notification.builder()
-                        .receiverId(receiverId)
-                        .postTypeToShow(QUESTION)
-                        .postIdToShow(createdQuestion.getId())
-                        .senderId(createdQuestion.getAuthorId())
-                        .senderPostType(QUESTION)
-                        .senderRank(createdQuestion.getRank())
-                        .senderPostId(createdQuestion.getId())
-                        .senderName(createdQuestion.getAuthorName())
-                        .senderImagePath(createdQuestion.getAuthorImagePath())
-                        .notificationType(NEW_QUESTION)
-                        .build()
-        );
+        sendNotification(createdQuestion, receiverId, NEW_QUESTION);
         noticedUserList.add(receiverId);
     }
 
@@ -112,22 +108,26 @@ public class QuestionServiceImpl implements QuestionService {
                 followRepository.findFollowedUserIdByUserId(createdQuestion.getAuthorId());
         for (Long receiverId : followerIdList) {
             if (noticedUserList.contains(receiverId)) continue;
-            notificationRepository.save(
-                    Notification.builder()
-                            .receiverId(receiverId)
-                            .postTypeToShow(QUESTION)
-                            .postIdToShow(createdQuestion.getId())
-                            .senderId(createdQuestion.getAuthorId())
-                            .senderPostType(QUESTION)
-                            .senderPostId(createdQuestion.getId())
-                            .senderName(createdQuestion.getAuthorName())
-                            .senderImagePath(createdQuestion.getAuthorImagePath())
-                            .senderRank(createdQuestion.getRank())
-                            .notificationType(NEW_POST_FOLLOWED)
-                            .build()
-            );
+            sendNotification(createdQuestion, receiverId, NEW_POST_FOLLOWED);
             noticedUserList.add(receiverId);
         }
+    }
+
+    private void sendNotification(Question createdQuestion, Long receiverId, NotificationType notificationType) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(receiverId)
+                        .postTypeToShow(QUESTION)
+                        .postIdToShow(createdQuestion.getId())
+                        .senderId(createdQuestion.getAuthorId())
+                        .senderPostType(QUESTION)
+                        .senderPostId(createdQuestion.getId())
+                        .senderName(createdQuestion.getAuthorName())
+                        .senderImagePath(createdQuestion.getAuthorImagePath())
+                        .senderRank(createdQuestion.getRank())
+                        .notificationType(notificationType)
+                        .build()
+        );
     }
 
     private void findMemoAndUpdateQuestionsCount(Long memoId,Sign sign) {

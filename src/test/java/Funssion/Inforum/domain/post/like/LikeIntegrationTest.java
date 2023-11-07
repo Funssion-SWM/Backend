@@ -24,7 +24,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.qna.service.AnswerService;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
-import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -14,7 +14,7 @@ import Funssion.Inforum.domain.post.qna.dto.request.AnswerSaveDto;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import Funssion.Inforum.domain.profile.domain.AuthorProfile;
 import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.s3.S3Repository;
@@ -71,11 +71,11 @@ public class AnswerServiceImpl implements AnswerService {
                         .postTypeToShow(QUESTION)
                         .postIdToShow(questionId)
                         .senderId(createdAnswer.getAuthorId())
-                        .senderPostType(ANSWER)
-                        .senderRank(createdAnswer.getRank())
-                        .senderPostId(createdAnswer.getId())
                         .senderName(createdAnswer.getAuthorName())
                         .senderImagePath(createdAnswer.getAuthorImagePath())
+                        .senderRank(createdAnswer.getRank())
+                        .senderPostType(ANSWER)
+                        .senderPostId(createdAnswer.getId())
                         .notificationType(NEW_ANSWER)
                         .build()
         );

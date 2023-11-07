@@ -2,6 +2,8 @@ CREATE SCHEMA member;
 create schema post;
 create schema tag;
 create schema score;
+create schema employer;
+create schema interview;
 create sequence post.memo_series_order_seq start 1;
 
 CREATE TABLE tag.memo_to_tag (
@@ -94,6 +96,8 @@ CREATE TABLE member.info (
     created_date timestamp,
     follow_cnt int8 not null default 0,
     follower_cnt int8 not null default 0,
+    company varchar(20) null,
+    role varchar(20) not null default 'USER',
     is_deleted bool not null default false,
     rank varchar(15) not null default 'BRONZE_5',
     score int8 not null default 0,
@@ -127,9 +131,28 @@ CREATE TABLE "member".notification (
     sender_post_type varchar(10),
     sender_post_id int8,
     sender_rank varchar(15) not null,
-    notification_type varchar(20) NOT NULL,
+    notification_type varchar(30) NOT NULL,
     is_checked boolean not null default false,
     created timestamp NOT NULL DEFAULT current_timestamp
+);
+
+CREATE TABLE member.professional_profile (
+    user_id int8 not null PRIMARY KEY,
+    introduce varchar(502),
+    development_area varchar(50),
+    tech_stack jsonb,
+    answer1 varchar(502),
+    answer2 varchar(502),
+    answer3 varchar(502),
+    description varchar(502),
+    resume TEXT,
+    is_visible boolean not null default true
+);
+
+CREATE TABLE employer.to_employee(
+    employer_id int8 not null,
+    employee_id int8 not null,
+    primary key(employer_id,employee_id)
 );
 
 create table post.comment(
@@ -261,4 +284,18 @@ create table score.info (
     liked_author_id int8 null,
     created_date timestamp default current_timestamp,
     primary key (user_id,score_type,post_id)
+);
+
+create table interview.info(
+    id bigserial primary key,
+    employer_id int8,
+    employee_id int8,
+    status varchar(8) default 'READY', ---'DONE', 'ING_Q1','ING_Q2','ING_Q3', 'READY'
+    question_1 varchar,
+    answer_1 varchar,
+    question_2 varchar,
+    answer_2 varchar,
+    question_3 varchar,
+    answer_3 varchar,
+    unique (employer_id, employee_id)
 );

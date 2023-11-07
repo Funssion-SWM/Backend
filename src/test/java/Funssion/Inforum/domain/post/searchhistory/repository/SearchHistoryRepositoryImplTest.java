@@ -56,7 +56,6 @@ class SearchHistoryRepositoryImplTest {
         repository.save(history2);
 
         List<SearchHistory> foundList = repository.findAllByUserIdRecent10(TEST_USER_ID);
-        log.info("{}",foundList);
 
         assertThat(foundList.size()).isEqualTo(2);
         assertThat(foundList.get(0).getSearchText()).isEqualTo(history2.getSearchText());

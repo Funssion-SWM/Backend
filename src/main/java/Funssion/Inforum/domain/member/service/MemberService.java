@@ -1,13 +1,11 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
-import Funssion.Inforum.domain.member.dto.request.MemberInfoDto;
-import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
-import Funssion.Inforum.domain.member.dto.request.NicknameRequestDto;
-import Funssion.Inforum.domain.member.dto.request.PasswordUpdateDto;
+import Funssion.Inforum.domain.member.dto.request.*;
 import Funssion.Inforum.domain.member.dto.response.*;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
@@ -18,7 +16,7 @@ import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
-import Funssion.Inforum.domain.profile.ProfileRepository;
+import Funssion.Inforum.domain.profile.repository.ProfileRepository;
 import Funssion.Inforum.jwt.TokenProvider;
 import Funssion.Inforum.s3.S3Repository;
 import Funssion.Inforum.s3.S3Utils;
@@ -28,14 +26,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /* Spring Security 에서 유저의 정보를 가저오기 위한 로직이 포함. */
 @Slf4j
@@ -72,8 +72,42 @@ public class MemberService {
         NonSocialMember member = NonSocialMember.createNonSocialMember(memberSaveDto);
         SaveMemberResponseDto savedMember = memberRepository.save(member);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(savedMember.getId(), memberSaveDto.getUserPw());
+        UsernamePasswordAuthenticationToken authentication = makeAuthentication(savedMember, memberSaveDto.getUserPw());
+
+        makeLoginForSavedUser(request, response, authentication);
+        return savedMember;
+    }
+
+    private UsernamePasswordAuthenticationToken makeAuthentication(SaveMemberResponseDto savedMember, String memberSaveDto) {
+        Collection<GrantedAuthority> grantedAuthorities = setAuthorityOf(savedMember);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(savedMember.getId(), memberSaveDto, grantedAuthorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        return authentication;
+    }
+
+    private Collection<GrantedAuthority> setAuthorityOf(SaveMemberResponseDto savedMember) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        String roles = Role.getIncludingRoles(savedMember.getRole());
+        for(String role : roles.split(",")){
+            if (!StringUtils.hasText(role)) continue;
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+        return authorities;
+    }
+
+    @Transactional
+    public SaveMemberResponseDto requestEmployerRegistration (EmployerSaveDto employerSaveDto, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //중복 처리 한번더 검증
+        if(!isValidEmail(employerSaveDto.getUserEmail()).isValid()){
+            throw new DuplicateMemberException("이미 가입된 회원 이메일입니다.");
+        }
+        if(!isValidName(employerSaveDto.getUserName()).isValid()){
+            throw new DuplicateMemberException("이미 가입된 닉네임입니다.");
+        }
+
+        SaveMemberResponseDto savedMember = memberRepository.save(employerSaveDto);
+
+        UsernamePasswordAuthenticationToken authentication = makeAuthentication(savedMember, employerSaveDto.getUserPw());
 
         makeLoginForSavedUser(request, response, authentication);
         return savedMember;

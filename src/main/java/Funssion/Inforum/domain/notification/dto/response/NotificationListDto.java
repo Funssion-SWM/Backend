@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.notification.dto.response;
 
+import Funssion.Inforum.common.constant.NotificationType;
 import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.notification.domain.Notification;
 import Funssion.Inforum.domain.post.comment.dto.response.PostIdAndTypeInfo;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class NotificationListDto {
     private final Long id;
+    private final NotificationType notificationType;
     private final Long senderId;
     private final String senderName;
     private final String senderImagePath;
@@ -27,6 +29,7 @@ public class NotificationListDto {
     public static NotificationListDto valueOf(Notification notification) {
         return NotificationListDto.builder()
                 .id(notification.getId())
+                .notificationType(notification.getNotificationType())
                 .senderId(notification.getSenderId())
                 .senderName(notification.getSenderName())
                 .senderImagePath(notification.getSenderImagePath())

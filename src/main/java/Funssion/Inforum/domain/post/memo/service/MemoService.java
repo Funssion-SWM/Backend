@@ -1,14 +1,13 @@
 package Funssion.Inforum.domain.post.memo.service;
 
-import Funssion.Inforum.common.constant.DateType;
-import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.constant.ScoreType;
-import Funssion.Inforum.common.constant.Sign;
+import Funssion.Inforum.common.constant.*;
 import Funssion.Inforum.common.exception.badrequest.BadRequestException;
 import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.employer.domain.EmployeeWithStatus;
+import Funssion.Inforum.domain.employer.repository.EmployerRepository;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
 import Funssion.Inforum.domain.mypage.exception.HistoryNotFoundException;
@@ -42,6 +41,7 @@ import java.util.Objects;
 
 import static Funssion.Inforum.common.constant.CRUDType.*;
 import static Funssion.Inforum.common.constant.NotificationType.NEW_POST_FOLLOWED;
+import static Funssion.Inforum.common.constant.NotificationType.NEW_POST_LIKED_EMPLOYEE;
 import static Funssion.Inforum.common.constant.PostType.MEMO;
 import static Funssion.Inforum.common.constant.Sign.MINUS;
 import static Funssion.Inforum.common.constant.Sign.PLUS;
@@ -60,10 +60,10 @@ public class MemoService {
     private final MemoRepository memoRepository;
     private final TagRepository tagRepository;
     private final MyRepository myRepository;
-    private final ScoreRepository scoreRepository;
     private final S3Repository s3Repository;
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
+    private final EmployerRepository employerRepository;
 
     public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
 
@@ -100,12 +100,19 @@ public class MemoService {
         tagRepository.saveTags(createdMemo.getId(),form.getMemoTags());
 
         if (!form.getIsTemporary()) {
+            updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), createdMemo);
             createOrUpdateHistory(authorId, createdMemo.getCreatedDate(), PLUS);
             scoreService.checkUserDailyScoreAndAdd(authorId,ScoreType.MAKE_MEMO, createdMemo.getId());
-            sendNotificationToFollower(authorId, createdMemo);
+            sendNotificationToFollowerAndEmployer(authorId, createdMemo);
         }
 
         return new MemoDto(createdMemo);
+    }
+
+    private void updateSeriesInfo(Long seriesId, String seriesTitle, Memo savedMemo) {
+        if (Objects.isNull(seriesId) || Objects.isNull(seriesTitle)) return;
+
+        memoRepository.updateSeriesIdAndTitle(seriesId, seriesTitle, savedMemo.getAuthorId(), List.of(savedMemo.getId()));
     }
 
     private void createOrUpdateHistory(Long userId, LocalDateTime curDate, Sign sign) {
@@ -116,26 +123,48 @@ public class MemoService {
         }
     }
 
-    private void sendNotificationToFollower(Long senderId, Memo createdMemo) {
+    private void sendNotificationToFollowerAndEmployer(Long senderId, Memo createdMemo) {
+        ArrayList<Long> noticedUserList = new ArrayList<>();
+        sendNotificationToFollower(senderId, createdMemo, noticedUserList);
+        sendNotificationToEmployer(senderId, createdMemo, noticedUserList);
+    }
+
+    private void sendNotificationToEmployer(Long senderId, Memo createdMemo, ArrayList<Long> noticedUserList) {
+        List<Long> employerIdList = employerRepository.getEmployersLikedUser(senderId);
+
+        for (Long employerId : employerIdList) {
+            if (noticedUserList.contains(employerId)) continue;
+            sendNotification(createdMemo, employerId, NEW_POST_LIKED_EMPLOYEE);
+            noticedUserList.add(employerId);
+        }
+    }
+
+    private void sendNotificationToFollower(Long senderId, Memo createdMemo, ArrayList<Long> noticedUserList) {
         List<Long> followerIdList =
                 followRepository.findFollowedUserIdByUserId(senderId);
 
         for (Long receiverId : followerIdList) {
-            notificationRepository.save(
-                    Notification.builder()
-                            .receiverId(receiverId)
-                            .postTypeToShow(MEMO)
-                            .postIdToShow(createdMemo.getId())
-                            .senderId(createdMemo.getAuthorId())
-                            .senderPostType(MEMO)
-                            .senderPostId(createdMemo.getId())
-                            .senderName(createdMemo.getAuthorName())
-                            .senderImagePath(createdMemo.getAuthorImagePath())
-                            .senderRank(createdMemo.getRank())
-                            .notificationType(NEW_POST_FOLLOWED)
-                            .build()
-            );
+            if (noticedUserList.contains(receiverId)) continue;
+            sendNotification(createdMemo, receiverId, NEW_POST_FOLLOWED);
+            noticedUserList.add(receiverId);
         }
+    }
+
+    private void sendNotification(Memo createdMemo, Long receiverId, NotificationType notificationType) {
+        notificationRepository.save(
+                Notification.builder()
+                        .receiverId(receiverId)
+                        .postTypeToShow(MEMO)
+                        .postIdToShow(createdMemo.getId())
+                        .senderId(createdMemo.getAuthorId())
+                        .senderPostType(MEMO)
+                        .senderPostId(createdMemo.getId())
+                        .senderName(createdMemo.getAuthorName())
+                        .senderImagePath(createdMemo.getAuthorImagePath())
+                        .senderRank(createdMemo.getRank())
+                        .notificationType(notificationType)
+                        .build()
+        );
     }
 
     public List<MemoListDto> getDraftMemos() {
@@ -171,6 +200,7 @@ public class MemoService {
         checkUpdatableMemo(willBeUpdatedMemo, form);
 
         updateHistory(form, userId, willBeUpdatedMemo);
+        updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), willBeUpdatedMemo);
         try {
             tagRepository.updateTags(memoId,updatedTags);
         } catch (SQLException e) {
@@ -192,7 +222,7 @@ public class MemoService {
         // 임시글 -> 등록
         if (willBeUpdatedMemo.getIsTemporary()) {
             createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
-            sendNotificationToFollower(userId, willBeUpdatedMemo);
+            sendNotificationToFollowerAndEmployer(userId, willBeUpdatedMemo);
             scoreService.checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_MEMO, willBeUpdatedMemo.getId());
         }
         // 등록된 글 -> 임시글

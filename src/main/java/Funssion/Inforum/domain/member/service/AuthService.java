@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepositoryImpl;
@@ -21,7 +22,7 @@ public class AuthService implements UserDetailsService {
         NonSocialMember member = nonSocialMemberRepository.findNonSocialMemberByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("이 이메일과 매칭되는 유저가 존재하지 않습니다 : " + userEmail));
         // non social, social 섞어있기 때문에, user_id를 CustomUserDetail 의 id로 생성합니다. -> 토큰의 getName의 user_id가 들어갑니다.
-        return new CustomUserDetails(member.getUserId(), member.getUserEmail(), member.getUserPw(), true, false);
+        return new CustomUserDetails(member.getUserId(), Role.getIncludingRoles(member.getRole()), member.getUserEmail(), member.getUserPw(), true, false);
     }
 
 }

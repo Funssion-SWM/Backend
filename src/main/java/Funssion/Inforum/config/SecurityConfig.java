@@ -1,7 +1,12 @@
 package Funssion.Inforum.config;
 
+import Funssion.Inforum.access_handler.AuthenticationSuccessHandler;
+import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
+import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
+import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
 import Funssion.Inforum.domain.member.service.OAuthService;
-import Funssion.Inforum.jwt.*;
+import Funssion.Inforum.jwt.JwtSecurityConfig;
+import Funssion.Inforum.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,22 +19,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
-import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import static Funssion.Inforum.common.constant.Role.EMPLOYER;
 
 @Slf4j
 @Configuration
@@ -63,16 +61,24 @@ public class SecurityConfig {
                                 headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)))
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
-                                .requestMatchers(HttpMethod.OPTIONS, "/**/*").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/users").permitAll()
-                                //users 포함한 end point 보안 적용 X
+                                .requestMatchers(HttpMethod.POST,"/users/employer").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/users/employer").hasRole(EMPLOYER.toString())
+                                .requestMatchers(HttpMethod.POST, "/users/profile").hasRole(EMPLOYER.toString())
+                                //users 포함한 end point 보안 적용
                                 .requestMatchers(HttpMethod.GET,"/users/**").permitAll()
                                 .requestMatchers("/users/authenticate-email",
                                         "/users/authenticate-email/find",
                                         "/users/password",
                                         "/users/authenticate-code",
                                         "/users/check-duplication").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
+                                .requestMatchers("/employer/**").hasRole("EMPLOYER")
+                                .requestMatchers(HttpMethod.POST,"/interview/questions/**").hasRole("EMPLOYER")
+                                .requestMatchers(HttpMethod.GET,"/interview/answers/**").hasAnyRole("EMPLOYER","USER")
+                                .requestMatchers(HttpMethod.GET,"/interview/start/**").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET,"/interview/continue/**").hasRole("USER")
+                                .requestMatchers(HttpMethod.POST,"/interview/answers/**").hasRole("USER")
                                 .requestMatchers(HttpMethod.GET, "/score/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/score/rank/**").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/users/login").authenticated() //spring security filter에서 redirect
@@ -128,37 +134,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public GrantedAuthoritiesMapper userAuthoritiesMapper() {
-        return (authorities) -> {
-            Set<GrantedAuthority> mappedAuthorities = new HashSet<>();
-
-            authorities.forEach(authority -> {
-                if (OidcUserAuthority.class.isInstance(authority)) {
-                    OidcUserAuthority oidcUserAuthority = (OidcUserAuthority) authority;
-
-                    OidcIdToken idToken = oidcUserAuthority.getIdToken();
-                    OidcUserInfo userInfo = oidcUserAuthority.getUserInfo();
-
-                    // Map the claims found in idToken and/or userInfo
-                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-
-                } else if (OAuth2UserAuthority.class.isInstance(authority)) {
-                    OAuth2UserAuthority oauth2UserAuthority = (OAuth2UserAuthority) authority;
-
-                    Map<String, Object> userAttributes = oauth2UserAuthority.getAttributes();
-
-                    // Map the attributes found in userAttributes
-                    // to one or more GrantedAuthority's and add it to mappedAuthorities
-
-                }
-            });
-
-            return mappedAuthorities;
-
-
-        };
     }
 }
