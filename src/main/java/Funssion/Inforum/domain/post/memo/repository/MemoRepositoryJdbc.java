@@ -96,6 +96,19 @@ public class MemoRepositoryJdbc implements MemoRepository{
     }
 
     @Override
+    public List<Memo> findAllByTagsOrderByMatchesAndLikes(Long memoId) {
+        String sql = "SELECT m.* " +
+                "FROM post.memo m , UNNEST(m.tags) tag_element " +
+                "WHERE tag_element ILIKE ANY(ARRAY(SELECT tags FROM post.memo WHERE id = ? AND array_length(tags, 1) >= 1)) " +
+                "AND NOT id = ? " +
+                "AND is_temporary = false " +
+                "GROUP BY id " +
+                "ORDER BY COUNT(tag_element) desc, likes desc, id desc";
+
+        return template.query(sql, memoRowMapper(), memoId, memoId);
+    }
+
+    @Override
     public List<Memo> findAllDraftMemosByUserId(Long userId) {
         String sql = "select * from post.memo where author_id = ? and is_temporary = true order by id desc";
 
