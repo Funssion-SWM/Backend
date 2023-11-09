@@ -189,6 +189,13 @@ public class MemoService {
         return responseDto;
     }
 
+    public List<MemoListDto> getMemoRecommendations(Long id) {
+
+        return memoRepository.findAllByTagsOrderByMatchesAndLikes(id).stream()
+                .map(MemoListDto::new)
+                .toList();
+    }
+
     @Transactional
     public MemoDto updateMemo(Long memoId, MemoSaveDto form) {
 

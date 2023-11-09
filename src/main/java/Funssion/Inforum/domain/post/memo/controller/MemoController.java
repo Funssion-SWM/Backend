@@ -61,6 +61,13 @@ public class MemoController {
         memoService.deleteMemo(id);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<MemoListDto> getMemoRecommendationsByTags(
+            @PathVariable @Min(1) Long id
+    ) {
+        return memoService.getMemoRecommendations(id);
+    }
+
     @PostMapping("/{id}/image")
     public ImageDto uploadImageInMemo(
             @PathVariable @Min(1) Long id,
