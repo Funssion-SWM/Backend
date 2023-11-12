@@ -207,7 +207,6 @@ public class MemoService {
         checkUpdatableMemo(willBeUpdatedMemo, form);
 
         updateHistory(form, userId, willBeUpdatedMemo);
-        updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), willBeUpdatedMemo);
         try {
             tagRepository.updateTags(memoId,updatedTags);
         } catch (SQLException e) {
@@ -228,6 +227,7 @@ public class MemoService {
 
         // 임시글 -> 등록
         if (willBeUpdatedMemo.getIsTemporary()) {
+            updateSeriesInfo(form.getSeriesId(), form.getSeriesTitle(), willBeUpdatedMemo);
             createOrUpdateHistory(userId, willBeUpdatedMemo.getCreatedDate(), PLUS);
             sendNotificationToFollowerAndEmployer(userId, willBeUpdatedMemo);
             scoreService.checkUserDailyScoreAndAdd(userId,ScoreType.MAKE_MEMO, willBeUpdatedMemo.getId());
