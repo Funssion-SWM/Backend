@@ -232,7 +232,7 @@ class MemoRepositoryJdbcTest {
 
             @Test
             @DisplayName("임시 저장중인 메모를 시리즈로 생성")
-            void exUpdateTemporaryMemo() {
+            void texUpdateTemporaryMemo() {
                 List<Long> testMemoIdList = List.of(createdMemo3.getId(), createdMemo4.getId());
 
                 assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId2, testMemoIdList))
