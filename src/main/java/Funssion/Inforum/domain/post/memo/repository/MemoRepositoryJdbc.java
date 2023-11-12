@@ -298,7 +298,7 @@ public class MemoRepositoryJdbc implements MemoRepository{
         for (Long memoId : memoIdList) {
             String sql = "UPDATE post.memo " +
                     "SET series_id = ?, series_title = ?, series_order = nextval('post.memo_series_order_seq'::regclass) " +
-                    "WHERE id = ? and author_id = ? and is_temporary = false";
+                    "WHERE id = ? and author_id = ?";
 
             updatedRows += template.update(sql, seriesId, seriesTitle, memoId, authorId);
         }

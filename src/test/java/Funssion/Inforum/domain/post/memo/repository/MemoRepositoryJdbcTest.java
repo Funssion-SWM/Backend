@@ -230,14 +230,14 @@ class MemoRepositoryJdbcTest {
                         .isInstanceOf(UpdateFailException.class);
             }
 
-            @Test
-            @DisplayName("임시 저장중인 메모를 시리즈로 생성")
-            void texUpdateTemporaryMemo() {
-                List<Long> testMemoIdList = List.of(createdMemo3.getId(), createdMemo4.getId());
-
-                assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId2, testMemoIdList))
-                        .isInstanceOf(UpdateFailException.class);
-            }
+//            @Test
+//            @DisplayName("임시 저장중인 메모를 시리즈로 생성")
+//            void texUpdateTemporaryMemo() {
+//                List<Long> testMemoIdList = List.of(createdMemo3.getId(), createdMemo4.getId());
+//
+//                assertThatThrownBy(() -> repository.updateSeriesIdAndTitle(testSeriesId, testSeriesTitle1, userId2, testMemoIdList))
+//                        .isInstanceOf(UpdateFailException.class);
+//            }
 
             @Test
             @DisplayName("메모 시리즈에서 삭제")
