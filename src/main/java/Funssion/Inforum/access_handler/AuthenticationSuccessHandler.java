@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -100,9 +101,14 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
     }
 
     private String redirectUriByFirstJoinOrNot(Authentication authentication){
-        OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
+        return getRedirectUri(authentication);
+    }
+
+    @NotNull
+    public String getRedirectUri(Authentication authentication) {
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Collection<? extends GrantedAuthority> authorities = oAuth2User.getAuthorities();
-        if(authorities.stream().filter(o -> o.getAuthority().equals(Role.OAUTH_FIRST_JOIN)).findAny().isPresent()){
+        if(authorities.stream().filter(o -> o.getAuthority().equals(Role.OAUTH_FIRST_JOIN.getRoles())).findAny().isPresent()){
             return UriComponentsBuilder.fromHttpUrl(signUpURI)
                     .path(authentication.getName())
                     .build().toString();
