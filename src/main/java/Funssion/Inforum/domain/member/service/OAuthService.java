@@ -8,6 +8,7 @@ import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -33,6 +34,11 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         OAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         String email = oAuth2User.getAttribute("email");
+        return getCustomUserDetails(oAuth2User, email);
+    }
+
+    @NotNull
+    public CustomUserDetails getCustomUserDetails(OAuth2User oAuth2User, String email) {
         String nickname = UUID.randomUUID().toString().substring(0,15);
 
         memberRepository.findNonSocialMemberByEmail(email).ifPresent(m->{
@@ -44,10 +50,10 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
             SocialMember savedSocialMember = SocialMember.createSocialMember(email, nickname);
             SaveMemberResponseDto savedResponse = memberRepository.save(savedSocialMember);
             String roles = Role.addRole(Role.getIncludingRoles(savedResponse.getRole()), Role.OAUTH_FIRST_JOIN);// 최초 회원가입을 위한 임시 role 추가
-            return new CustomUserDetails(String.valueOf(savedResponse.getId()),roles,oAuth2User.getAttributes());
+            return new CustomUserDetails(String.valueOf(savedResponse.getId()), roles, oAuth2User.getAttributes());
         }
         else{
-            return new CustomUserDetails(String.valueOf(socialMember.get().getUserId()),Role.getIncludingRoles(socialMember.get().getRole()),oAuth2User.getAttributes());
+            return new CustomUserDetails(String.valueOf(socialMember.get().getUserId()), Role.getIncludingRoles(socialMember.get().getRole()), oAuth2User.getAttributes());
         }
     }
 }

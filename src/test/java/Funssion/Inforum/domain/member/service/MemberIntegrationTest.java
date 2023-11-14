@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.domain.member.constant.LoginType;
 import Funssion.Inforum.domain.member.dto.request.MemberSaveDto;
@@ -8,20 +9,28 @@ import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
+import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import jakarta.mail.internet.MimeMessage;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -34,13 +43,15 @@ class MemberIntegrationTest {
     @Autowired
     MemberService memberService;
 
-
+    @Autowired
+    OAuthService oAuthService;
     // 인증 메일 관련 주입
     @Autowired
     MailService mailService;
-
     @MockBean
     JavaMailSender mailSender;
+    @MockBean
+    OAuth2UserRequest oAuth2UserRequest;
 
     @Autowired
     AuthCodeRepository authCodeRepository;
@@ -124,12 +135,41 @@ class MemberIntegrationTest {
 
         }
     }
-    /*
-     * <requestMemberRegistration>
-     * 1.중복아닌거 가정하고 / NonSocial 로그인 타입 요청시 / 저장 객체 반환
-     * 2.중복이면 ? / .. / throw duplication
-     * 3.중복아니고, social 이면 / .. / throw
-     *
-     */
+    @Nested
+    @DisplayName("회원가입")
+    class registerUser{
+        @Test
+        @DisplayName("OAuth 회원가입시 authentication 객체 확인")
+        void registerByOAuth(){
+            String userEmail = "test@gmail.com";
+            OAuth2User mockOAuth2User = mock(OAuth2User.class);
+            when(mockOAuth2User.getAttributes()).thenReturn(Map.of());
+            assertThat(oAuthService.getCustomUserDetails(mockOAuth2User,userEmail).
+                    getAuthorities().stream().map(auth->auth.getAuthority()))
+                        .contains(Role.USER.getRoles(),Role.OAUTH_FIRST_JOIN.getRoles());
+        }
+        @Test
+        @DisplayName("OAuth 에 회원가입된 것으로 로그인시 authentication 객체 확인")
+        void registerByOAuthWhenAlreadyRegistered(){
+            String userEmail = "test@gmail.com";
+            memberRepository.save(SocialMember.createSocialMember(userEmail,"nickname"));
+
+            OAuth2User mockOAuth2User = mock(OAuth2User.class);
+            when(mockOAuth2User.getAttributes()).thenReturn(Map.of());
+            assertThat(oAuthService.getCustomUserDetails(mockOAuth2User,userEmail).
+                    getAuthorities().stream().map(auth->auth.getAuthority()))
+                    .contains(Role.USER.getRoles());
+        }
+        @Test
+        @DisplayName("OAuth 에 일반 가입된 이메일로 로그인시 authentication 객체 확인")
+        void registerByOAuthWhenAlreadyRegisteredByNonSocial(){
+            String userEmail = "test@gmail.com";
+            memberRepository.save(NonSocialMember.createNonSocialMember(new MemberSaveDto("name",LoginType.NON_SOCIAL,userEmail,"a1234567@")));
+
+            OAuth2User mockOAuth2User = mock(OAuth2User.class);
+            when(mockOAuth2User.getAttributes()).thenReturn(Map.of());
+            assertThatThrownBy(()->oAuthService.getCustomUserDetails(mockOAuth2User,userEmail)).isExactlyInstanceOf(DuplicateMemberException.class);
+        }
+    }
 
 }
