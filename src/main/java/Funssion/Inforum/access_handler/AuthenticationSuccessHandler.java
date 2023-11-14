@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,7 +51,9 @@ public class AuthenticationSuccessHandler extends SavedRequestAwareAuthenticatio
 
         resolveResponseCookieByOrigin(request, response, accessToken, refreshToken);
         response.sendRedirect(redirectUriByFirstJoinOrNot(authentication));
-
+        if (authentication.getAuthorities().stream().filter(o->o.getAuthority().equals(Role.EXCEPTION.getRoles())).findAny().isPresent()){
+            response.sendError(HttpStatus.SC_CONFLICT,"같은 이메일로 등록된 일반 계정이 존재합니다.");
+        }
     }
 
     private static void makeSuccessResponseBody(HttpServletResponse response) throws IOException {
