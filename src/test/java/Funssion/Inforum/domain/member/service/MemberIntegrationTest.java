@@ -9,7 +9,6 @@ import Funssion.Inforum.domain.member.dto.response.GenCodeResponse;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.AuthCodeRepository;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import jakarta.mail.internet.MimeMessage;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -168,7 +166,7 @@ class MemberIntegrationTest {
 
             OAuth2User mockOAuth2User = mock(OAuth2User.class);
             when(mockOAuth2User.getAttributes()).thenReturn(Map.of());
-            assertThatThrownBy(()->oAuthService.getCustomUserDetails(mockOAuth2User,userEmail)).isExactlyInstanceOf(DuplicateMemberException.class);
+            assertThat(oAuthService.getCustomUserDetails(mockOAuth2User,userEmail).getAuthorities().stream().map(o->o.getAuthority())).contains(Role.EXCEPTION.getRoles());
         }
     }
 
