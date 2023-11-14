@@ -1,9 +1,6 @@
 package Funssion.Inforum.config;
 
-import Funssion.Inforum.access_handler.AuthenticationSuccessHandler;
-import Funssion.Inforum.access_handler.JwtAccessDeniedHandler;
-import Funssion.Inforum.access_handler.JwtAuthenticationEntryPoint;
-import Funssion.Inforum.access_handler.NonSocialLoginFailureHandler;
+import Funssion.Inforum.access_handler.*;
 import Funssion.Inforum.domain.member.service.OAuthService;
 import Funssion.Inforum.jwt.JwtSecurityConfig;
 import Funssion.Inforum.jwt.TokenProvider;
@@ -42,6 +39,7 @@ public class SecurityConfig {
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final OAuthService oAuthService;
     private final AuthenticationSuccessHandler authenticationSuccessHandler;
+    private final OAuthAuthenticationFailureHandler oAuthAuthenticationFailureHandler;
     @Value("${jwt.domain}") private String domain;
 
 
@@ -111,7 +109,8 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .clientRegistrationRepository(clientRegistrationRepository)
                         .userInfoEndpoint(it -> it.userService(oAuthService))
-                        .successHandler(authenticationSuccessHandler))
+                        .successHandler(authenticationSuccessHandler)
+                        .failureHandler(oAuthAuthenticationFailureHandler))
                 .formLogin((formLogin) -> formLogin
                         .loginProcessingUrl("/users/login")
                         .failureHandler(nonSocialLoginFailureHandler)
