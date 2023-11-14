@@ -1,5 +1,6 @@
 package Funssion.Inforum.domain.member.service;
 
+import Funssion.Inforum.access_handler.OAuthAuthenticationFailureHandler;
 import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
     private final MemberRepository memberRepository;
+    private final OAuthAuthenticationFailureHandler oAuthAuthenticationFailureHandler;
 
 
     @Override
@@ -34,16 +36,15 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         OAuth2UserService delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         String email = oAuth2User.getAttribute("email");
+        memberRepository.findNonSocialMemberByEmail(email).ifPresent(m->{
+            throw new DuplicateMemberException("일반 회원가입으로 등록된 이메일입니다.");
+        });
         return getCustomUserDetails(oAuth2User, email);
     }
 
     @NotNull
     public CustomUserDetails getCustomUserDetails(OAuth2User oAuth2User, String email) {
         String nickname = UUID.randomUUID().toString().substring(0,15);
-
-        memberRepository.findNonSocialMemberByEmail(email).ifPresent(m->{
-            throw new DuplicateMemberException("일반 회원가입으로 등록된 이메일입니다.");
-        });
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
         if(socialMember.isEmpty()){
