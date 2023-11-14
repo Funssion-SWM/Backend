@@ -4,7 +4,6 @@ import Funssion.Inforum.common.constant.Role;
 import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
 import Funssion.Inforum.domain.member.entity.CustomUserDetails;
 import Funssion.Inforum.domain.member.entity.SocialMember;
-import Funssion.Inforum.domain.member.exception.DuplicateMemberException;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +40,9 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
     public CustomUserDetails getCustomUserDetails(OAuth2User oAuth2User, String email) {
         String nickname = UUID.randomUUID().toString().substring(0,15);
 
-        memberRepository.findNonSocialMemberByEmail(email).ifPresent(m->{
-            throw new DuplicateMemberException("일반 회원가입으로 등록된 이메일입니다.");
-        });
+        if(memberRepository.findNonSocialMemberByEmail(email).isPresent()){
+            return exceptionHandlingUserDetails(oAuth2User);
+        }
         Optional<SocialMember> socialMember = memberRepository.findSocialMemberByEmail(email);
 
         if(socialMember.isEmpty()){
@@ -55,5 +54,10 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         else{
             return new CustomUserDetails(String.valueOf(socialMember.get().getUserId()), Role.getIncludingRoles(socialMember.get().getRole()), oAuth2User.getAttributes());
         }
+    }
+
+    @NotNull
+    private static CustomUserDetails exceptionHandlingUserDetails(OAuth2User oAuth2User) {
+        return new CustomUserDetails("0", Role.EXCEPTION.getRoles(), oAuth2User.getAttributes());
     }
 }

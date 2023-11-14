@@ -17,6 +17,7 @@ public enum Role {
     ADMIN ("ROLE_ADMIN,ROLE_EMPLOYER,ROLE_USER"),
     TEMP_EMPLOYER("ROLE_TEMPORARY_EMPLOYER"),
     TEMP_USER ("ROLE_TEMPORARY_USER"),
+    EXCEPTION("exception"),
     OAUTH_FIRST_JOIN ("ROLE_FIRST_JOIN_OAUTH_USER");
 
     private final String roles;
