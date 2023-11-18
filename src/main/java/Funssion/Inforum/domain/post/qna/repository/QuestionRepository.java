@@ -6,6 +6,7 @@ import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 public interface QuestionRepository {
     Question createQuestion(Question question);
@@ -36,4 +37,6 @@ public interface QuestionRepository {
     List<Question> getQuestionsOfMyAnswer(Long userId, Long pageNum, Long resultCntPerPage);
 
     List<Question> getQuestionsOfMyLikedAnswer(Long userId, Long pageNum, Long resultCntPerPage);
+
+    OptionalLong getQuestionIdByMemoId(Long memoId);
 }

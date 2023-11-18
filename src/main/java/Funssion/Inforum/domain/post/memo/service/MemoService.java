@@ -6,7 +6,6 @@ import Funssion.Inforum.common.exception.etc.ArrayToListException;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.exception.forbidden.ForbiddenException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.employer.domain.EmployeeWithStatus;
 import Funssion.Inforum.domain.employer.repository.EmployerRepository;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.entity.MemberProfileEntity;
@@ -19,8 +18,8 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
-import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import Funssion.Inforum.domain.score.service.ScoreService;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
 import Funssion.Inforum.s3.S3Repository;
@@ -64,6 +63,7 @@ public class MemoService {
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
     private final EmployerRepository employerRepository;
+    private final QuestionRepository questionRepository;
 
     public List<MemoListDto> getMemosForMainPage(DateType period, OrderType orderBy, Long pageNum, Long resultCntPerPage) {
 
@@ -256,6 +256,7 @@ public class MemoService {
         Memo willBeDeletedMemo = memoRepository.findById(memoId);
 
         checkPermission(userId, willBeDeletedMemo);
+        checkMemoHasQuestionThenCanNotBeDeleted(memoId);
         checkDeletableInSeries(willBeDeletedMemo.getSeriesId());
 
         try {
@@ -272,6 +273,10 @@ public class MemoService {
             scoreService.subtractUserScore(userId,ScoreType.MAKE_MEMO,willBeDeletedMemo.getId());
             notificationRepository.delete(MEMO, willBeDeletedMemo.getId());
         }
+    }
+
+    private void checkMemoHasQuestionThenCanNotBeDeleted(Long memoId) {
+        if (questionRepository.getQuestionIdByMemoId(memoId).isPresent()) throw new CannotDeleteMemoException("질문이 달린 메모는 삭제할 수 없습니다.");
     }
 
     private void checkDeletableInSeries(Long seriesId) {
@@ -327,4 +332,10 @@ public class MemoService {
                 .toList();
     }
 
+    public class CannotDeleteMemoException extends BadRequestException{
+
+        public CannotDeleteMemoException(String message) {
+            super(message);
+        }
+    }
 }

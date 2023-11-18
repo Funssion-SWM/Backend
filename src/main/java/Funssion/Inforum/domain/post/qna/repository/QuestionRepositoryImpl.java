@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalLong;
 
 @Repository
 public class QuestionRepositoryImpl implements QuestionRepository {
@@ -160,6 +161,19 @@ public class QuestionRepositoryImpl implements QuestionRepository {
                 "order by Q.id desc " +
                 "limit ? offset ?";
         return template.query(sql,questionRowMapper(),userId, resultCntPerPage, resultCntPerPage*pageNum);
+    }
+
+    @Override
+    public OptionalLong getQuestionIdByMemoId(Long memoId) {
+        String sql =
+                "SELECT id " +
+                "FROM post.question " +
+                "WHERE memo_id = ?";
+        try {
+            return OptionalLong.of(template.queryForObject(sql, Long.class,memoId));
+        }catch(EmptyResultDataAccessException e){
+            return OptionalLong.empty();
+        }
     }
 
     @Override
