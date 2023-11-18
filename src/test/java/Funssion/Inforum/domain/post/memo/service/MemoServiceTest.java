@@ -16,6 +16,7 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
+import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
 import Funssion.Inforum.domain.score.repository.ScoreRepository;
 import Funssion.Inforum.domain.score.service.ScoreService;
@@ -33,6 +34,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 
 import static Funssion.Inforum.common.constant.CRUDType.READ;
 import static Funssion.Inforum.common.constant.DateType.*;
@@ -50,6 +52,8 @@ public class MemoServiceTest {
     @Mock MyRepository myRepository;
     @Mock
     EmployerRepository employerRepository;
+    @Mock
+    QuestionRepository questionRepository;
     @Mock S3Repository s3Repository;
     @Mock
     ScoreRepository scoreRepository;
@@ -626,6 +630,18 @@ public class MemoServiceTest {
 
             assertThatThrownBy(() -> memoService.deleteMemo(memoID1))
                     .isInstanceOf(ArrayToListException.class);
+        }
+        @Test
+        @DisplayName("질문이 달린 메모는 삭제할 수 없다.")
+        void cannotDeleteMemoWhenQuestionAdded(){
+            Long questionId = 1L;
+            given(AuthUtils.getUserId(AdditionalMatchers.not(eq(READ))))
+                    .willReturn(userID1);
+            given(memoRepository.findById(memoID1))
+                    .willReturn(memo1);
+            given(questionRepository.getQuestionIdByMemoId(memoID1)).willReturn(OptionalLong.of(questionId));
+            assertThatThrownBy(()-> memoService.deleteMemo(memoID1))
+                    .isExactlyInstanceOf(MemoService.CannotDeleteMemoException.class);
         }
 
         @Test
