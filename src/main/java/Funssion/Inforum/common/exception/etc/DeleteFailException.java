@@ -11,6 +11,7 @@ public class DeleteFailException extends GeneralException {
         super(DEFAULT_MESSAGE + message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message));
     }
 
+
     public DeleteFailException(String message, Throwable cause) {
         super(DEFAULT_MESSAGE + message, new ErrorResult(HttpStatus.INTERNAL_SERVER_ERROR, message), cause);
     }

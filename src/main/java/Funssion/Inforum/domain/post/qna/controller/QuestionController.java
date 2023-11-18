@@ -51,7 +51,6 @@ public class QuestionController {
         return questionService.deleteQuestion(questionId,authorId);
     }
 
-
     @GetMapping
     public List<Question> getQuestions(
             @RequestParam (required = false, defaultValue = "NEW") OrderType orderBy,
