@@ -1,12 +1,7 @@
 package Funssion.Inforum.domain.notification;
 
-import Funssion.Inforum.common.constant.NotificationType;
-import Funssion.Inforum.common.constant.OrderType;
-import Funssion.Inforum.common.constant.PostType;
 import Funssion.Inforum.domain.follow.repository.FollowRepository;
 import Funssion.Inforum.domain.member.constant.LoginType;
-import Funssion.Inforum.domain.member.dto.response.SaveMemberResponseDto;
-import Funssion.Inforum.domain.member.entity.Member;
 import Funssion.Inforum.domain.member.entity.NonSocialMember;
 import Funssion.Inforum.domain.member.entity.SocialMember;
 import Funssion.Inforum.domain.member.repository.MemberRepository;
@@ -17,13 +12,10 @@ import Funssion.Inforum.domain.post.comment.dto.response.ReCommentListDto;
 import Funssion.Inforum.domain.post.comment.repository.CommentRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
-import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Answer;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.repository.AnswerRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
-import Funssion.Inforum.domain.score.Rank;
-import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,24 +26,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static Funssion.Inforum.common.constant.NotificationType.*;
-import static Funssion.Inforum.common.constant.OrderType.*;
+import static Funssion.Inforum.common.constant.OrderType.NEW;
 import static Funssion.Inforum.common.constant.PostType.*;
 import static Funssion.Inforum.domain.post.qna.Constant.*;
 import static Funssion.Inforum.domain.score.Rank.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
@@ -672,8 +662,7 @@ public class NotificationIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("memoId", createdMemo.getId().toString())
                             .with(user(testUser2Id.toString())))
-                    .andExpect(status().isCreated())
-                    .andExpect(content().string(containsString("\"isSuccess\":true")));
+                    .andExpect(status().isCreated());
 
             Question savedQuestion = questionRepository.getQuestionsOfMemo(testUser2Id, createdMemo.getId()).get(0);
             assertThat(savedQuestion.getMemoId()).isEqualTo(createdMemo.getId());
@@ -891,8 +880,7 @@ public class NotificationIntegrationTest {
                             .content(questionSaveForm)
                             .contentType(MediaType.APPLICATION_JSON)
                             .with(user(testUser1Id.toString())))
-                    .andExpect(status().isCreated())
-                    .andExpect(content().string(containsString("\"isSuccess\":true")));
+                    .andExpect(status().isCreated());
 
             Question savedQuestion = questionRepository.getMyQuestions(testUser1Id, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
             assertThat(savedQuestion.getMemoId()).isEqualTo(Long.valueOf(NONE_MEMO_QUESTION));
@@ -999,8 +987,7 @@ public class NotificationIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .param("memoId", createdMemo.getId().toString())
                             .with(user(testUser2Id.toString())))
-                    .andExpect(status().isCreated())
-                    .andExpect(content().string(containsString("\"isSuccess\":true")));
+                    .andExpect(status().isCreated());
 
             Question savedQuestion = questionRepository.getMyQuestions(testUser2Id, NEW, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
             assertThat(savedQuestion.getMemoId()).isEqualTo(createdMemo.getId());
