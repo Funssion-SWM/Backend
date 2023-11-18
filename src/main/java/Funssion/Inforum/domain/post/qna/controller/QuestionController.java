@@ -5,10 +5,10 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.dto.IsSuccessResponseDto;
 import Funssion.Inforum.common.exception.etc.UnAuthorizedException;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
-import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.qna.Constant;
 import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
+import Funssion.Inforum.domain.post.qna.dto.response.CreateQuestionDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
 import Funssion.Inforum.domain.post.utils.AuthUtils;
@@ -33,10 +33,9 @@ public class QuestionController {
     private final QuestionService questionService;
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public IsSuccessResponseDto createQuestion(@RequestBody @Validated QuestionSaveDto questionSaveDto,@RequestParam(required = false, defaultValue=Constant.NONE_MEMO_QUESTION) Long memoId){
+    public CreateQuestionDto createQuestion(@RequestBody @Validated QuestionSaveDto questionSaveDto,@RequestParam(required = false, defaultValue=Constant.NONE_MEMO_QUESTION) Long memoId){
         Long authorId = AuthUtils.getUserId(CRUDType.CREATE);
-        questionService.createQuestion(questionSaveDto, authorId, memoId);
-        return new IsSuccessResponseDto(true,"성공적으로 질문이 등록되었습니다.");
+        return new CreateQuestionDto(questionService.createQuestion(questionSaveDto, authorId, memoId).getId(),"성공적으로 질문이 등록 되었습니다." );
     }
 
 

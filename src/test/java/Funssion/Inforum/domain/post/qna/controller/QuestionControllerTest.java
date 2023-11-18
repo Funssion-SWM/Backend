@@ -1,6 +1,7 @@
 package Funssion.Inforum.domain.post.qna.controller;
 
 import Funssion.Inforum.common.utils.SecurityContextUtils;
+import Funssion.Inforum.domain.post.qna.domain.Question;
 import Funssion.Inforum.domain.post.qna.dto.request.QuestionSaveDto;
 import Funssion.Inforum.domain.post.qna.dto.response.QuestionDto;
 import Funssion.Inforum.domain.post.qna.service.QuestionService;
@@ -20,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -69,6 +71,8 @@ class QuestionControllerTest {
             @WithMockUser(username = AUTHORIZED_USER)
             @DisplayName("로그인한 유저가 올바른 질문을 생성")
             void createQuestionByAuthUser() throws Exception {
+                when(questionService.createQuestion(any(QuestionSaveDto.class),any(Long.class),any(Long.class)))
+                        .thenReturn(Question.builder().id(1L).build());
                 mvc.perform(post("/questions")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -79,6 +83,8 @@ class QuestionControllerTest {
             @WithMockUser(username = AUTHORIZED_USER)
             @DisplayName("로그인한 유저가 특정 메모랑 연관된 올바른 질문을 생성")
             void createQuestionInMemoByAuthUser() throws Exception {
+                when(questionService.createQuestion(any(QuestionSaveDto.class),any(Long.class),any(Long.class)))
+                        .thenReturn(Question.builder().id(1L).build());
                 mvc.perform(post("/questions")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -102,6 +108,8 @@ class QuestionControllerTest {
             @WithMockUser(username = SecurityContextUtils.ANONYMOUS_USER_ID_STRING)
             @DisplayName("로그인하지 않은 유저가 올바르지 않은 질문을 생성")
             void createQuestionByNonAuthUser() throws Exception {
+                when(questionService.createQuestion(any(QuestionSaveDto.class),any(Long.class),any(Long.class)))
+                        .thenReturn(Question.builder().id(1L).build());
                 mvc.perform(post("/questions")
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
