@@ -293,9 +293,9 @@ public class QuestionRepositoryImpl implements QuestionRepository {
     private String getSortedSql(OrderType orderBy){
         switch (orderBy){
             case HOT:
-                return "order by likes desc, created_date desc ";
+                return "order by likes desc, created_date desc, id desc ";
             case NEW:
-                return "order by created_date desc ";
+                return "order by created_date desc, id desc ";
             case ANSWERS:
                 return "order by answers desc ";
             case SOLVED:

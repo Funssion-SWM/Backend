@@ -69,28 +69,28 @@ public class MemoRepositoryJdbc implements MemoRepository{
     @Override
     public List<Memo> findAllByDaysOrderByLikes(DateType period, Long pageNum, Long memoCnt) {
         String sql = "select * from post.memo where created_date > current_date - CAST(? AS INTERVAL) and is_temporary = false " +
-                "order by likes desc, id desc " +
+                "order by likes desc, created_date desc, id desc, id desc " +
                 "limit ? offset ?";
         return template.query(sql, memoRowMapper(), period.getInterval(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
     public List<Memo> findAllOrderById(Long pageNum, Long memoCnt) {
-        String sql = "select * from post.memo where is_temporary = false order by id desc " +
+        String sql = "select * from post.memo where is_temporary = false order by created_date desc, id desc " +
                 "limit ? offset ?";
         return template.query(sql, memoRowMapper(), memoCnt, pageNum * memoCnt);
     }
 
     @Override
     public List<Memo> findAllByUserIdOrderById(Long userId, Long pageNum, Long resultCntPerPage) {
-        String sql = "select * from post.memo where author_id = ? and is_temporary = false order by id desc limit ? offset ?";
+        String sql = "select * from post.memo where author_id = ? and is_temporary = false order by created_date desc, id desc limit ? offset ?";
         return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
 
     @Override
     public List<Memo> findAllLikedMemosByUserId(Long userId, Long pageNum, Long resultCntPerPage) {
         String sql = "select * from post.memo i join member.like l on i.id = l.post_id and l.post_type = 'MEMO' " +
-                "where l.user_id = ? and is_temporary = false order by i.id desc " +
+                "where l.user_id = ? and is_temporary = false order by i.created_date desc, id desc " +
                 "limit ? offset ?";
         return template.query(sql, memoRowMapper(), userId, resultCntPerPage, resultCntPerPage*pageNum);
     }
@@ -103,14 +103,14 @@ public class MemoRepositoryJdbc implements MemoRepository{
                 "AND NOT id = ? " +
                 "AND is_temporary = false " +
                 "GROUP BY id " +
-                "ORDER BY COUNT(tag_element) desc, likes desc, id desc";
+                "ORDER BY COUNT(tag_element) desc, likes desc, created_date desc, id desc";
 
         return template.query(sql, memoRowMapper(), memoId, memoId);
     }
 
     @Override
     public List<Memo> findAllDraftMemosByUserId(Long userId) {
-        String sql = "select * from post.memo where author_id = ? and is_temporary = true order by id desc";
+        String sql = "select * from post.memo where author_id = ? and is_temporary = true order by created_date desc, id desc";
 
         return template.query(sql, memoRowMapper(), userId);
     }
@@ -180,10 +180,10 @@ public class MemoRepositoryJdbc implements MemoRepository{
     private static String getOrderBySql(OrderType orderType) {
         switch (orderType) {
             case HOT -> {
-                return  " order by likes desc, id desc ";
+                return  " order by likes desc, created_date desc, id desc ";
             }
             case NEW -> {
-                return  " order by id desc ";
+                return  " order by created_date desc, id desc ";
             }
         }
         throw new BadRequestException("Invalid orderType value");
