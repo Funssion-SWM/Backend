@@ -43,7 +43,7 @@ jobs:
       with:
         host: ${{ secrets.HOST_PROD }}
         username: ec2-user
-        key: ${{ secrets.PRIVATE_KEY }}
+        key: ${{ secrets.NEW_PRIVATE_KEY }}
         script: |
             docker stop backend
             docker rm backend
