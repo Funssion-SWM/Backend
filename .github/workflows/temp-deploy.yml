@@ -49,4 +49,4 @@ jobs:
             docker rm backend
             docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }} 
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }} 
-            docker run -dp 80:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }}
+            docker run -dp 8080:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }}
