@@ -1,0 +1,52 @@
+name: Java CI/CD with Gradle In Temp EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'corretto'
+      
+    - name: Add properties
+      run: echo "${{ secrets.APPLICATION_PROD_TEMP }}" > ./src/main/resources/application.yml
+      
+    - name: Build with Gradle
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 7.5.1
+        arguments: build -x test
+        
+    - name: Docker build
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }} .
+      
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+    - name: Docker push
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }}
+      
+    - name: Deploy to dev
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_PROD }}
+        username: ec2-user
+        key: ${{ secrets.PRIVATE_KEY }}
+        script: |
+            docker stop backend
+            docker rm backend
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }} 
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }} 
+            docker run -dp 80:8080 --name=backend ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_PROD_REPO }}
