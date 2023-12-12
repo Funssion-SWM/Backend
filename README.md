@@ -1,7 +1,7 @@
 ## About the Project
 
 쉽고 즐겁게 개발기록을 할 수 있는 개발자 커뮤니티 **Inforum**  
-Link : https://www.inforum.me
+Link : https://www.inforum24.com
 
 ## Stack
 
