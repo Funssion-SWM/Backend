@@ -22,8 +22,8 @@ public abstract class AuthUtils {
 
     public static void logout(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
-        ResponseCookie invalidateAccessCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
-        ResponseCookie invalidateRefreshCookie = ResponseCookie.from("refreshToken", "none").maxAge(0).path("/").domain(".inforum.me").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie invalidateAccessCookie = ResponseCookie.from("accessToken", "none").maxAge(0).path("/").domain(".inforum24.com").sameSite("none").httpOnly(true).secure(true).build();
+        ResponseCookie invalidateRefreshCookie = ResponseCookie.from("refreshToken", "none").maxAge(0).path("/").domain(".inforum24.com").sameSite("none").httpOnly(true).secure(true).build();
         response.addHeader("Set-Cookie", invalidateAccessCookie.toString());
         response.addHeader("Set-Cookie",invalidateRefreshCookie.toString());
     }
