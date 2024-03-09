@@ -23,6 +23,7 @@ public interface MemoRepository {
     List<Memo> findAllByTag(String tagText, Long userId, OrderType orderType, Long pageNum, Long resultCntPerPage);
     List<Memo> findAllBySeriesId(Long seriesId);
     List<String> findTop3ColorsBySeriesId(Long seriesId);
+    List<Long> findAllIds();
     Memo findById(Long id);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId);
     Memo updateContentInMemo(MemoSaveDto form, Long memoId, Boolean isCreated);

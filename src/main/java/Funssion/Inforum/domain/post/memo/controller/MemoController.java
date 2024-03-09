@@ -5,6 +5,7 @@ import Funssion.Inforum.common.constant.OrderType;
 import Funssion.Inforum.common.utils.SecurityContextUtils;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoIDListDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.service.MemoService;
 import Funssion.Inforum.s3.dto.response.ImageDto;
@@ -95,5 +96,10 @@ public class MemoController {
     @GetMapping("/drafts")
     public List<MemoListDto> getDraftMemos() {
         return memoService.getDraftMemos();
+    }
+
+    @GetMapping("/ids")
+    public List<MemoIDListDto> getMemoIds() {
+        return memoService.getMemoIds();
     }
 }
