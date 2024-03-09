@@ -12,6 +12,7 @@ import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.exception.MemoNotFoundException;
 import Funssion.Inforum.domain.tag.TagUtils;
 import Funssion.Inforum.domain.tag.repository.TagRepository;
+import com.amazonaws.services.s3.S3ResourceType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -199,6 +200,12 @@ public class MemoRepositoryJdbc implements MemoRepository{
     public List<String> findTop3ColorsBySeriesId(Long seriesId) {
         String sql = "SELECT color FROM post.memo WHERE series_id = ? ORDER BY series_order LIMIT 3";
         return template.queryForList(sql, String.class, seriesId);
+    }
+
+    @Override
+    public List<Long> findAllIds() {
+        String sql = "SELECT id FROM post.memo ORDER BY id desc";
+        return template.queryForList(sql, Long.class);
     }
 
     @Override

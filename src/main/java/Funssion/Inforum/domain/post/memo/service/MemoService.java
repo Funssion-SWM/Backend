@@ -16,6 +16,7 @@ import Funssion.Inforum.domain.notification.repository.NotificationRepository;
 import Funssion.Inforum.domain.post.memo.domain.Memo;
 import Funssion.Inforum.domain.post.memo.dto.request.MemoSaveDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoDto;
+import Funssion.Inforum.domain.post.memo.dto.response.MemoIDListDto;
 import Funssion.Inforum.domain.post.memo.dto.response.MemoListDto;
 import Funssion.Inforum.domain.post.memo.repository.MemoRepository;
 import Funssion.Inforum.domain.post.qna.repository.QuestionRepository;
@@ -329,6 +330,12 @@ public class MemoService {
 
         return result.stream()
                 .map(MemoListDto::new)
+                .toList();
+    }
+
+    public List<MemoIDListDto> getMemoIds() {
+        return memoRepository.findAllIds().stream()
+                .map(MemoIDListDto::new)
                 .toList();
     }
 
