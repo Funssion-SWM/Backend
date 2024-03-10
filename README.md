@@ -29,6 +29,21 @@
 ## 아키텍쳐
 ![image](https://github.com/Funssion-SWM/Backend/assets/95288696/e6c2a4da-15ad-47e1-8179-c890afe138f2)
 
+## ERD
+### Member (회원 관련 Schema)
+- - -
+![image](https://github.com/Funssion-SWM/Backend/assets/95288696/e5b2c6ed-7535-4f36-a4c0-c7769acaa976)
+
+
+### Post (게시글 관련 Schema)
+- - -
+![image](https://github.com/Funssion-SWM/Backend/assets/95288696/6bf3a6ad-c525-47b4-ad9d-081cd3ac6063)
+
+## Etc. (채용 프로세스 Schema(employer,interview), 점수 Schema, Tag Schema)
+- - -
+![image](https://github.com/Funssion-SWM/Backend/assets/95288696/cbf76cfd-47d4-4367-b157-aba644079040)
+
+
 ## 화면 구성
 
 |                                                               랜딩 페이지                                                                |                                                                  로그인                                                                   |
