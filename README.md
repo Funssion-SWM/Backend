@@ -26,7 +26,7 @@
 
 <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"> <img src="https://img.shields.io/badge/aws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"> <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/github actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
 
-## 아키텍쳐
+## </br> 아키텍쳐
 ![image](https://github.com/Funssion-SWM/Backend/assets/95288696/e6c2a4da-15ad-47e1-8179-c890afe138f2)
 
 ## ERD
@@ -84,7 +84,7 @@
 
 ### 3. 일반 기능
 
-- 관심 기술 분야를 힌 눈에 확인할 수 있는 마이페이지
+- 관심 기술 분야를 한 눈에 확인할 수 있는 마이페이지
 - 커뮤니티 기능(댓글, 좋아요, 검색, 팔로우/팔로잉)
 - 태그 기반 게시물 추천
 
