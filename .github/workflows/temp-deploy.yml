@@ -45,12 +45,12 @@ jobs:
         username: ec2-user
         key: ${{ secrets.NEW_PRIVATE_KEY }}
         script: |
-          cat << EOF > /var/lib/cloud/scripts/per-boot/recover.sh
+          sudo bash -c 'cat << EOF > /var/lib/cloud/scripts/per-boot/recover.sh
           #!/bin/bash
           docker restart nginx
           docker restart frontend
           docker restart backend
-          EOF
+          EOF'
           
           chmod +x /var/lib/cloud/scripts/per-boot/recover.sh
       
