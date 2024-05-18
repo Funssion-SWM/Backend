@@ -52,7 +52,7 @@ jobs:
           docker restart backend
           EOF'
           
-          chmod +x /var/lib/cloud/scripts/per-boot/recover.sh
+          sudo bash -c 'chmod +x /var/lib/cloud/scripts/per-boot/recover.sh'
       
           docker stop backend
           docker rm backend
