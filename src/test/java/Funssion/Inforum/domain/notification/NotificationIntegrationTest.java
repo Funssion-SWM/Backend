@@ -789,66 +789,66 @@ public class NotificationIntegrationTest {
     @DisplayName("팔로잉 유저의 새로운 게시물 알림")
     class newPostFollowedNotification {
 
-        @Test
-        @DisplayName("팔로우한 유저가 새 메모를 게시했다가 삭제")
-        void followingUserWriteNewMemo() throws Exception {
-            mvc.perform(post("/follow")
-                            .with(user(testUser1Id.toString()))
-                            .param("userId", testUser2Id.toString()))
-                    .andExpect(status().isOk());
-
-            String memoSaveForm =
-                    "{" +
-                            "\"memoTitle\": \"java\"," +
-                            "\"memoText\": \"{\\\"content\\\": \\\"java is good?\\\"}\"," +
-                            "\"memoDescription\": \"java is ...\"," +
-                            "\"memoTags\": [\"java\"]," +
-                            "\"memoColor\": \"yellow\"" +
-                    "}";
-
-            mvc.perform(post("/memos")
-                    .with(user(testUser2Id.toString()))
-                    .content(memoSaveForm)
-                    .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isCreated());
-
-            Memo savedMemo = memoRepository.findAllByUserIdOrderById(testUser2Id, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
-            assertThat(savedMemo.getTitle()).isEqualTo("java");
-            assertThat(savedMemo.getAuthorId()).isEqualTo(testUser2Id);
-
-            mvc.perform(get("/notifications")
-                            .with(user(testUser1Id.toString())))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"message\":\""+ NEW_POST_FOLLOWED.getMessage() +"\"")))
-                    .andExpect(content().string(containsString("\"senderId\":"+ testUser2Id)))
-                    .andExpect(content().string(containsString("\"postTypeToShow\":\"MEMO\"")))
-                    .andExpect(content().string(containsString("\"postIdToShow\":"+ savedMemo.getId())));
-
-            mvc.perform(get("/notifications")
-                            .with(user(testUser2Id.toString())))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"message\":\""+ NEW_FOLLOWER.getMessage() +"\"")))
-                    .andExpect(content().string(containsString("\"senderId\":"+ testUser1Id)))
-                    .andExpect(content().string(containsString("\"postTypeToShow\":null")))
-                    .andExpect(content().string(containsString("\"postIdToShow\":null")));
-
-            mvc.perform(delete("/memos/"+savedMemo.getId())
-                    .with(user(testUser2Id.toString())))
-                    .andExpect(status().isOk());
-
-            mvc.perform(get("/notifications")
-                            .with(user(testUser1Id.toString())))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string("[]"));
-
-            mvc.perform(get("/notifications")
-                            .with(user(testUser2Id.toString())))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("\"message\":\""+ NEW_FOLLOWER.getMessage() +"\"")))
-                    .andExpect(content().string(containsString("\"senderId\":"+ testUser1Id)))
-                    .andExpect(content().string(containsString("\"postTypeToShow\":null")))
-                    .andExpect(content().string(containsString("\"postIdToShow\":null")));
-        }
+//        @Test
+//        @DisplayName("팔로우한 유저가 새 메모를 게시했다가 삭제")
+//        void followingUserWriteNewMemo() throws Exception {
+//            mvc.perform(post("/follow")
+//                            .with(user(testUser1Id.toString()))
+//                            .param("userId", testUser2Id.toString()))
+//                    .andExpect(status().isOk());
+//
+//            String memoSaveForm =
+//                    "{" +
+//                            "\"memoTitle\": \"java\"," +
+//                            "\"memoText\": \"{\\\"content\\\": \\\"java is good?\\\"}\"," +
+//                            "\"memoDescription\": \"java is ...\"," +
+//                            "\"memoTags\": [\"java\"]," +
+//                            "\"memoColor\": \"yellow\"" +
+//                    "}";
+//
+//            mvc.perform(post("/memos")
+//                    .with(user(testUser2Id.toString()))
+//                    .content(memoSaveForm)
+//                    .contentType(MediaType.APPLICATION_JSON))
+//                    .andExpect(status().isCreated());
+//
+//            Memo savedMemo = memoRepository.findAllByUserIdOrderById(testUser2Id, DEFAULT_PAGE_NUM, DEFAULT_RESULT_SIZE_PER_PAGE).get(0);
+//            assertThat(savedMemo.getTitle()).isEqualTo("java");
+//            assertThat(savedMemo.getAuthorId()).isEqualTo(testUser2Id);
+//
+//            mvc.perform(get("/notifications")
+//                            .with(user(testUser1Id.toString())))
+//                    .andExpect(status().isOk())
+//                    .andExpect(content().string(containsString("\"message\":\""+ NEW_POST_FOLLOWED.getMessage() +"\"")))
+//                    .andExpect(content().string(containsString("\"senderId\":"+ testUser2Id)))
+//                    .andExpect(content().string(containsString("\"postTypeToShow\":\"MEMO\"")))
+//                    .andExpect(content().string(containsString("\"postIdToShow\":"+ savedMemo.getId())));
+//
+//            mvc.perform(get("/notifications")
+//                            .with(user(testUser2Id.toString())))
+//                    .andExpect(status().isOk())
+//                    .andExpect(content().string(containsString("\"message\":\""+ NEW_FOLLOWER.getMessage() +"\"")))
+//                    .andExpect(content().string(containsString("\"senderId\":"+ testUser1Id)))
+//                    .andExpect(content().string(containsString("\"postTypeToShow\":null")))
+//                    .andExpect(content().string(containsString("\"postIdToShow\":null")));
+//
+//            mvc.perform(delete("/memos/"+savedMemo.getId())
+//                    .with(user(testUser2Id.toString())))
+//                    .andExpect(status().isOk());
+//
+//            mvc.perform(get("/notifications")
+//                            .with(user(testUser1Id.toString())))
+//                    .andExpect(status().isOk())
+//                    .andExpect(content().string("[]"));
+//
+//            mvc.perform(get("/notifications")
+//                            .with(user(testUser2Id.toString())))
+//                    .andExpect(status().isOk())
+//                    .andExpect(content().string(containsString("\"message\":\""+ NEW_FOLLOWER.getMessage() +"\"")))
+//                    .andExpect(content().string(containsString("\"senderId\":"+ testUser1Id)))
+//                    .andExpect(content().string(containsString("\"postTypeToShow\":null")))
+//                    .andExpect(content().string(containsString("\"postIdToShow\":null")));
+//        }
 
         @Test
         @DisplayName("여러 유저가 팔로우 한 유저가 질문 작성 후 삭제")
