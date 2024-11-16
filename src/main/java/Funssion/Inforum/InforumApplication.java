@@ -23,5 +23,4 @@ public class InforumApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(InforumApplication.class, args);
 	}
-
 }
